@@ -6,6 +6,7 @@ const BACKUP_KEYS = {
   bookParams: 'evalpro-book-params-v1',
   examParams: 'evalpro-exam-params-v1',
   examSettings: 'evalpro-exam-settings-v1',
+  examSubjectConfigs: 'evalpro-exam-subject-configs-v1',
   examStudents: 'evalpro-exam-students-v1',
   theme: 'evalpro-theme'
 };
@@ -22,6 +23,7 @@ function readBackupData() {
   data.bookParams ??= defaultBookParams.map(param => ({ ...param }));
   data.examParams ??= defaultParams.map(param => ({ ...param }));
   data.examSettings ??= { materia: 'Física', pct: 30 };
+  data.examSubjectConfigs ??= {};
   data.examStudents ??= [];
   data.theme = data.theme === 'dark' ? 'dark' : 'light';
   return data;
@@ -62,6 +64,9 @@ function validateBackup(backup) {
       throw new Error(`El campo “${field}” del respaldo tiene un formato inválido.`);
     }
   }
+  if (data.examSubjectConfigs !== undefined && (!data.examSubjectConfigs || typeof data.examSubjectConfigs !== 'object' || Array.isArray(data.examSubjectConfigs))) {
+    throw new Error('La configuración de exámenes por materia tiene un formato inválido.');
+  }
   if (data.roster?.some(student => !student || typeof student.name !== 'string' || !Array.isArray(student.records ?? []))) {
     throw new Error('La lista de alumnos del respaldo está dañada.');
   }
@@ -88,6 +93,7 @@ async function importBackupFile(file) {
       bookParams: imported.bookParams ?? current.bookParams,
       examParams: imported.examParams ?? current.examParams,
       examSettings: imported.examSettings ?? current.examSettings,
+      examSubjectConfigs: imported.examSubjectConfigs ?? {},
       examStudents: imported.examStudents ?? [],
       theme: imported.theme === 'dark' ? 'dark' : 'light'
     };

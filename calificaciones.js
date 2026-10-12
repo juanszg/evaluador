@@ -1,0 +1,702 @@
+// Integra el examen y las actividades del cuaderno en una sola ponderación por materia y parcial.
+var examConfigPartialId = '';
+
+function examConfigKey(subjectId = examConfigSubjectId, partialId = examConfigPartialId) {
+  return subjectId && partialId ? `${subjectId}::${partialId}` : '';
+}
+
+function examConfigFor(subjectId, partialId) {
+  const key = examConfigKey(subjectId, partialId);
+  return examConfigs[key] || examConfigs[subjectId] || null;
+}
+
+function persistExamConfigForSubject() {
+  const key = examConfigKey();
+  if (!key || !subjects.some(subject => subject.id === examConfigSubjectId)) return;
+  const pct = Number($('pesoExamen')?.value);
+  const activityParamId = examConfigs[key]?.activityParamId;
+  examConfigs[key] = {
+    subjectId: examConfigSubjectId,
+    partialId: examConfigPartialId,
+    params: params.map(param => ({ ...param })),
+    pct: Number.isFinite(pct) ? pct : 30,
+    ...(activityParamId ? { activityParamId } : {})
+  };
+  writeStore('evalpro-exam-subject-configs-v1', examConfigs);
+}
+
+function renderExamStudentControls() {
+  const configSubject = $('examConfigSubject');
+  const configPartial = $('examConfigPartial');
+  const entrySubject = $('examSubject');
+  const entryPartial = $('examPartial');
+  if (!configSubject || !configPartial || !entrySubject || !entryPartial) return;
+
+  const subjectId = subjects.some(subject => subject.id === examConfigSubjectId)
+    ? examConfigSubjectId
+    : (subjects.some(subject => subject.id === selectedConfigSubjectId)
+      ? selectedConfigSubjectId
+      : (subjects.some(subject => subject.id === selectedSubjectId) ? selectedSubjectId : subjects[0]?.id || ''));
+  const partialId = academicPartials.some(part => part.id === examConfigPartialId)
+    ? examConfigPartialId
+    : (academicPartials.some(part => part.id === selectedPartialId) ? selectedPartialId : academicPartials[0]?.id || '');
+
+  const subjectOptions = subjects.map(subject => `<option value="${esc(subject.id)}">${esc(subject.name)}</option>`).join('');
+  const partialOptions = academicPartials.map(part => `<option value="${esc(part.id)}">${esc(part.name)}</option>`).join('');
+  configSubject.innerHTML = subjectOptions || '<option value="">Crea una materia en Cuaderno</option>';
+  entrySubject.innerHTML = subjectOptions || '<option value="">Crea una materia primero</option>';
+  configPartial.innerHTML = partialOptions || '<option value="">Crea un parcial</option>';
+  entryPartial.innerHTML = partialOptions || '<option value="">Crea un parcial</option>';
+
+  if (subjectId && partialId) {
+    configSubject.value = subjectId;
+    entrySubject.value = subjectId;
+    configPartial.value = partialId;
+    entryPartial.value = partialId;
+    if (examConfigSubjectId !== subjectId || examConfigPartialId !== partialId) {
+      loadExamConfigForSubject(subjectId, partialId);
+    }
+  } else {
+    examConfigSubjectId = '';
+    examConfigPartialId = '';
+    renderExamStudentOptions();
+  }
+  const existing = $('examStudentMode').value === 'existing';
+  $('examNewStudentField').hidden = existing;
+  $('examExistingStudentField').hidden = !existing;
+}
+
+function loadExamConfigForSubject(subjectId, partialId = examConfigPartialId || selectedPartialId) {
+  const subject = subjects.find(item => item.id === subjectId);
+  const part = academicPartials.find(item => item.id === partialId);
+  if (!subject || !part) return;
+  persistExamConfigForSubject();
+  examConfigSubjectId = subjectId;
+  examConfigPartialId = partialId;
+  const compoundKey = examConfigKey(subjectId, partialId);
+  const legacyConfig = !examConfigs[compoundKey] ? examConfigs[subjectId] : null;
+  const saved = examConfigs[compoundKey] || legacyConfig;
+  if (legacyConfig) {
+    examConfigs[compoundKey] = { ...legacyConfig, subjectId, partialId, params: legacyConfig.params.map(param => ({ ...param })) };
+    delete examConfigs[subjectId];
+  }
+  if (saved && Array.isArray(saved.params) && saved.params.length) {
+    params = saved.params.map(param => ({ ...param }));
+    $('pesoExamen').value = saved.pct ?? 30;
+  } else if (legacyExamSeed && !legacyExamSeedUsed) {
+    params = legacyExamSeed.params.map(param => ({ ...param }));
+    $('pesoExamen').value = legacyExamSeed.pct;
+    legacyExamSeedUsed = true;
+  } else {
+    params = defaultParams.map(param => ({ ...param }));
+    $('pesoExamen').value = 30;
+  }
+  $('examConfigSubject').value = subjectId;
+  $('examSubject').value = subjectId;
+  $('examConfigPartial').value = partialId;
+  $('examPartial').value = partialId;
+  renderParams();
+  renderExamStudentOptions();
+  loadExistingExamStudent();
+  persistExamConfigForSubject();
+  renderAll();
+  refreshBookWeightSummary();
+}
+
+function selectExamConfigSubject(subjectId) {
+  if (!subjects.some(subject => subject.id === subjectId)) {
+    toast('Primero crea o selecciona una materia.');
+    return;
+  }
+  persistExamConfigForSubject();
+  selectedConfigSubjectId = subjectId;
+  if ($('configSubject')) $('configSubject').value = subjectId;
+  bookParams = getPartParams(currentPartial(), subjectId);
+  loadExamConfigForSubject(subjectId, examConfigPartialId || selectedPartialId || academicPartials[0]?.id);
+  renderBookParams();
+  renderRoster();
+}
+
+function selectExamConfigPartial(partialId) {
+  if (!academicPartials.some(part => part.id === partialId)) return;
+  persistExamConfigForSubject();
+  selectedPartialId = partialId;
+  bookParams = getPartParams(currentPartial(), selectedConfigSubjectId || examConfigSubjectId);
+  if ($('partialSelector')) $('partialSelector').value = partialId;
+  loadExamConfigForSubject(examConfigSubjectId || selectedConfigSubjectId || subjects[0]?.id, partialId);
+  renderBookParams();
+  renderCategoryOptions();
+  renderRoster();
+}
+
+function selectPartial(partialId) {
+  if (!academicPartials.some(part => part.id === partialId)) return;
+  selectExamConfigPartial(partialId);
+}
+
+function selectConfigSubject(subjectId) {
+  selectedConfigSubjectId = subjectId || '';
+  if ($('configSubject')) $('configSubject').value = selectedConfigSubjectId;
+  bookParams = getPartParams(currentPartial(), selectedConfigSubjectId || '__general__');
+  renderBookParams();
+  renderRecordSubjects();
+  refreshRecordParameterInfo();
+  if (subjects.some(subject => subject.id === selectedConfigSubjectId)) {
+    selectExamConfigSubject(selectedConfigSubjectId);
+  } else {
+    refreshBookWeightSummary();
+    renderRoster();
+  }
+}
+
+function createPartial() {
+  const name = $('newPartialName').value.trim();
+  if (!name) return toast('Escribe el nombre del parcial.');
+  if (academicPartials.some(part => normalizeName(part.name) === normalizeName(name))) return toast('Ya existe un parcial con ese nombre.');
+  const subjectId = selectedConfigSubjectId || examConfigSubjectId || '__general__';
+  const paramsCopy = getPartParams(currentPartial(), subjectId).map(param => ({ ...param, id: makeId() }));
+  const part = { id: makeId(), name, params: paramsCopy, subjectParams: { [subjectId]: paramsCopy } };
+  academicPartials.push(part);
+  selectedPartialId = part.id;
+  bookParams = paramsCopy;
+  $('newPartialName').value = '';
+  persistPartials();
+  renderPartialSelectors();
+  renderBookParams();
+  renderCategoryOptions();
+  examConfigPartialId = part.id;
+  if (subjects.some(subject => subject.id === examConfigSubjectId || subject.id === selectedConfigSubjectId)) {
+    loadExamConfigForSubject(examConfigSubjectId || selectedConfigSubjectId, part.id);
+  } else {
+    renderExamStudentControls();
+  }
+  renderRoster();
+  toast(`${name} creado. Configura los pesos de examen y actividades hasta sumar 100%.`);
+}
+
+function getExamWeight(subjectId, partialId) {
+  const configured = examParameterFor(subjectId, partialId);
+  if (configured) return Number(configured.weight) || 0;
+  const config = examConfigFor(subjectId, partialId);
+  if (config) return Number(config.pct) || 0;
+  const previousResult = students.find(result => result.subjectId === subjectId && result.partialId === partialId);
+  return Number(previousResult?.examPct) || 0;
+}
+
+function isExamParameter(param) {
+  const name = normalizeName(param?.name || '');
+  return name === 'exam' || name === 'examen' || name.startsWith('examenes');
+}
+
+function examParameterFor(subjectId, partialId) {
+  const part = academicPartials.find(item => item.id === partialId);
+  const configured = getPartParams(part, subjectId);
+  const config = examConfigFor(subjectId, partialId);
+  let match = configured.find(param => param.id === config?.activityParamId);
+  if (!match) match = configured.find(isExamParameter);
+  if (match && config) config.activityParamId = match.id;
+  return match || null;
+}
+
+function syncConfiguredExamParameter() {
+  if (!examConfigSubjectId || !examConfigPartialId) return;
+  const param = examParameterFor(examConfigSubjectId, examConfigPartialId);
+  if (!param) return;
+  const pct = Number($('pesoExamen')?.value);
+  if (Number.isFinite(pct)) param.weight = pct;
+  if (currentPartial()?.id === examConfigPartialId && (selectedConfigSubjectId || '__general__') === examConfigSubjectId) {
+    const current = bookParams.find(item => item.id === param.id);
+    if (current) current.weight = param.weight;
+  }
+  persistPartials();
+}
+
+function combinedPartialParams(part, subjectId) {
+  if (!part || !subjectId || subjectId === '__general__') return getPartParams(part, subjectId || '__general__').map(param => ({ ...param, kind: 'activity' }));
+  const configured = getPartParams(part, subjectId);
+  const examParam = examParameterFor(subjectId, part.id);
+  const examPct = getExamWeight(subjectId, part.id);
+  const hasExamData = students.some(result => result.subjectId === subjectId && result.partialId === part.id);
+  const exam = !examParam && (examPct > 0 || hasExamData)
+    ? [{ id: '__exam__', name: 'Examen', weight: examPct, max: 10, kind: 'exam' }]
+    : [];
+  return [...exam, ...configured.map(param => ({ ...param, kind: param.id === examParam?.id ? 'exam' : 'activity' }))];
+}
+
+function combinedWeightTotal(part, subjectId) {
+  return combinedPartialParams(part, subjectId).reduce((sum, param) => sum + (Number(param.weight) || 0), 0);
+}
+
+function refreshBookWeightSummary() {
+  const hint = $('bookWeightHint');
+  if (!hint || !currentPartial()) return;
+  const part = currentPartial();
+  const subjectId = selectedConfigSubjectId || '__general__';
+  const parameters = combinedPartialParams(part, subjectId);
+  const total = parameters.reduce((sum, param) => sum + (Number(param.weight) || 0), 0);
+  const exam = parameters.find(param => param.kind === 'exam');
+  const activityPct = parameters.filter(param => param.kind !== 'exam').reduce((sum, param) => sum + (Number(param.weight) || 0), 0);
+  const subjectName = subjects.find(subject => subject.id === subjectId)?.name || 'General';
+  const summary = `${part.name} · ${subjectName} · ${exam ? `${exam.name} ${Number(exam.weight || 0).toFixed(1)}% + ` : ''}actividades ${activityPct.toFixed(1)}% = ${total.toFixed(1)}%`;
+  hint.textContent = total > 100.001
+    ? `${summary} — EXCEDE EL 100%. Reduce una o más ponderaciones.`
+    : Math.abs(total - 100) < 0.001 ? `${summary} — configuración completa.` : `${summary} — faltan ${(100 - total).toFixed(1)}% para llegar al 100%.`;
+  hint.classList.toggle('invalid', Math.abs(total - 100) > 0.001);
+  hint.classList.toggle('overweight', total > 100.001);
+}
+
+function showBookWeights() {
+  const config = examConfigFor(selectedConfigSubjectId, currentPartial()?.id);
+  const selected = bookParams.find(param => param.id === config?.activityParamId) || bookParams.find(isExamParameter);
+  if (selected && selectedConfigSubjectId && examConfigPartialId === currentPartial()?.id && examConfigSubjectId === selectedConfigSubjectId) {
+    if (config) config.activityParamId = selected.id;
+    $('pesoExamen').value = selected.weight;
+    persistExamConfigForSubject();
+  }
+  refreshBookWeightSummary();
+  renderRoster();
+}
+
+function saveBookParams() {
+  const part = currentPartial();
+  const subjectId = selectedConfigSubjectId || '__general__';
+  const activityTotal = bookParams.reduce((sum, param) => sum + (Number(param.weight) || 0), 0);
+  const total = combinedWeightTotal(part, subjectId);
+  if (!bookParams.length || bookParams.some(param => !param.name.trim() || Number(param.weight) < 0 || Number(param.max) <= 0)) {
+    toast('Revisa los nombres, pesos y puntajes máximos de las actividades.');
+    return;
+  }
+  if (Math.abs(total - 100) > 0.001) {
+    toast(total > 100 ? `La ponderación suma ${total.toFixed(1)}% y no puede superar 100%. Reduce uno o más parámetros.` : `La ponderación suma ${total.toFixed(1)}%; faltan ${(100 - total).toFixed(1)}% para llegar a 100%.`);
+    return;
+  }
+  part.subjectParams = part.subjectParams || {};
+  part.subjectParams[subjectId] = bookParams.map(param => ({ ...param }));
+  persistPartials();
+  renderBookParams();
+  refreshBookWeightSummary();
+  renderRoster();
+  if (selectedStudentId) openFile(selectedStudentId);
+  toast(`Ponderaciones de ${part.name} para ${subjects.find(subject => subject.id === subjectId)?.name || 'General'} guardadas`);
+}
+
+function applyConfig() {
+  const subject = subjects.find(item => item.id === examConfigSubjectId);
+  const part = academicPartials.find(item => item.id === examConfigPartialId);
+  const total = params.reduce((sum, param) => sum + (Number(param.weight) || 0), 0);
+  const pct = Number($('pesoExamen').value);
+  if (!subject || !part) return toast('Selecciona una materia y un parcial para configurar el examen.');
+  if (!params.length || params.some(param => !param.name.trim() || Number(param.max) <= 0 || Number(param.weight) < 0) || Math.abs(total - 100) > 0.001) {
+    return toast('Los componentes internos del examen deben tener nombre, puntaje máximo y sumar 100%.');
+  }
+  if (!Number.isFinite(pct) || pct < 0 || pct > 100) return toast('El examen debe pesar entre 0 y 100% del parcial.');
+  persistExamConfigForSubject();
+  writeStore('evalpro-exam-params-v1', params);
+  writeStore('evalpro-exam-settings-v1', { subjectId, partialId: part.id, materia: subject.name, parcial: part.name, pct });
+  students = students.map(result => result.subjectId === subjectId && result.partialId === part.id
+    ? { ...result, examPct: pct, contribution: (Number(result.exam) || 0) * pct / 100 }
+    : result);
+  writeStore('evalpro-exam-students-v1', students);
+  showWeights();
+  renderScoreInputs(true);
+  refreshBookWeightSummary();
+  renderAll();
+  renderRoster();
+  toast(`Examen de ${subject.name} · ${part.name} guardado. Ajusta las actividades hasta completar 100%.`);
+}
+
+function loadExistingExamStudent() {
+  if ($('examStudentMode').value !== 'existing') return;
+  const studentId = $('existingExamStudent').value;
+  const subjectId = $('examSubject').value || examConfigSubjectId;
+  const partialId = $('examPartial').value || examConfigPartialId;
+  const result = students.find(item => item.studentId === studentId && item.subjectId === subjectId && item.partialId === partialId);
+  const previousParams = result?.paramsSnapshot || [];
+  document.querySelectorAll('[data-score]').forEach((input, index) => {
+    const oldIndex = previousParams.length ? previousParams.findIndex(param => normalizeName(param.name) === normalizeName(params[index].name)) : index;
+    input.value = result && oldIndex >= 0 ? (result.scores?.[oldIndex] ?? '') : '';
+  });
+  calculateExamGrade();
+  if (!result) $('gradePreview').textContent = 'Este alumno aún no tiene calificación de examen en este parcial.';
+}
+
+function addStudent() {
+  const mode = $('examStudentMode').value;
+  const subject = subjects.find(item => item.id === ($('examSubject').value || examConfigSubjectId));
+  const part = academicPartials.find(item => item.id === ($('examPartial').value || examConfigPartialId));
+  const name = mode === 'existing'
+    ? (roster.find(student => student.id === $('existingExamStudent').value)?.name || '')
+    : $('studentName').value.trim();
+  const exam = Number($('studentWeight').value);
+  if (!subject || !part) return toast('Selecciona la materia y el parcial que vas a calificar.');
+  if (Math.abs(combinedWeightTotal(part, subject.id) - 100) > 0.001) {
+    return toast('Antes de registrar, configura examen y actividades para que sumen 100% en este parcial.');
+  }
+  if (!name) return toast(mode === 'existing' ? 'Selecciona un alumno inscrito en esta materia.' : 'Ingresa el nombre del alumno.');
+  if (!Number.isFinite(exam) || exam < 0 || exam > 10) return toast('Completa los puntajes del examen para calcular una nota de 0 a 10.');
+  const scores = [];
+  for (let index = 0; index < params.length; index++) {
+    const value = Number(document.querySelector(`[data-score="${index}"]`)?.value);
+    if (!Number.isFinite(value) || value < 0 || value > Number(params[index].max)) {
+      return toast(`Revisa ${params[index].name}; debe estar entre 0 y ${params[index].max}.`);
+    }
+    scores.push(value);
+  }
+  const pupil = mode === 'existing' ? roster.find(student => student.id === $('existingExamStudent').value) : getOrCreateStudent(name);
+  if (!pupil) return toast('No se encontró al alumno seleccionado.');
+  subject.studentIds = subject.studentIds || [];
+  if (!subject.studentIds.includes(pupil.id)) subject.studentIds.push(pupil.id);
+  const pct = Number($('pesoExamen').value) || 0;
+  const result = {
+    name: pupil.name, studentId: pupil.id, subjectId: subject.id, subjectName: subject.name,
+    partialId: part.id, exam, examPct: pct, contribution: exam * pct / 100,
+    scores, paramsSnapshot: params.map(param => ({ ...param }))
+  };
+  const resultIndex = students.findIndex(item => item.studentId === pupil.id && item.subjectId === subject.id && item.partialId === part.id);
+  if (resultIndex >= 0) students[resultIndex] = result;
+  else students.push(result);
+
+  pupil.records = pupil.records || [];
+  const recordIndex = pupil.records.findIndex(item => item.categoryId === '__exam__' && item.subjectId === subject.id && item.partialId === part.id);
+  const record = {
+    id: recordIndex >= 0 ? pupil.records[recordIndex].id : makeId(), subjectId: subject.id, subjectName: subject.name,
+    partialId: part.id, categoryId: '__exam__', categoryName: 'Examen', title: 'Examen parcial',
+    date: today(), score: exam, max: 10, note: 'Calificación calculada con los componentes configurados para este parcial.'
+  };
+  if (recordIndex >= 0) pupil.records[recordIndex] = record;
+  else pupil.records.push(record);
+  writeStore('evalpro-exam-students-v1', students);
+  writeStore('evalpro-roster-v1', roster);
+  writeStore('evalpro-subjects-v1', subjects);
+  persistExamConfigForSubject();
+  $('studentName').value = '';
+  $('studentWeight').value = '';
+  document.querySelectorAll('[data-score]').forEach(input => { input.value = ''; });
+  renderRoster();
+  renderAll();
+  toast(`${mode === 'existing' ? 'Calificación actualizada' : 'Calificación guardada'} para ${pupil.name} · ${subject.name} · ${part.name}`);
+}
+
+function examResultFor(studentId, subjectId, partialId) {
+  return students.find(result => result.studentId === studentId && result.subjectId === subjectId && result.partialId === partialId)
+    || students.find(result => result.studentId === studentId && result.subjectId === subjectId && !result.partialId && academicPartials[0]?.id === partialId)
+    || null;
+}
+
+function migrateExamResults() {
+  let resultsChanged = false;
+  let rosterChanged = false;
+  students.forEach(result => {
+    if (!result.subjectId) {
+      const match = subjects.find(subject => normalizeName(subject.name) === normalizeName(result.subjectName || ''));
+      if (match) { result.subjectId = match.id; resultsChanged = true; }
+    }
+    if (!result.partialId && academicPartials[0]) { result.partialId = academicPartials[0].id; resultsChanged = true; }
+    if (result.subjectId && result.partialId && !Number.isFinite(Number(result.examPct))) {
+      const pct = Number(result.contribution) && Number(result.exam) ? Number(result.contribution) * 100 / Number(result.exam) : Number(savedExamSettings?.pct ?? 30);
+      result.examPct = pct;
+      resultsChanged = true;
+    }
+    if (result.subjectId && result.partialId && !Array.isArray(result.paramsSnapshot)) {
+      const saved = examConfigFor(result.subjectId, result.partialId);
+      result.paramsSnapshot = (saved?.params || params).map(param => ({ ...param }));
+      resultsChanged = true;
+    }
+    const pupil = roster.find(student => student.id === result.studentId);
+    if (!pupil || !result.subjectId || !result.partialId) return;
+    pupil.records = pupil.records || [];
+    let record = pupil.records.find(item => item.subjectId === result.subjectId && item.partialId === result.partialId && (item.categoryId === '__exam__' || (item.categoryId === 'examenes' && normalizeName(item.title || '') === normalizeName(result.subjectName || ''))));
+    if (!record) {
+      record = { id: makeId() };
+      pupil.records.push(record);
+      rosterChanged = true;
+    }
+    if (record.categoryId !== '__exam__' || record.score !== result.exam || record.max !== 10 || record.subjectName !== result.subjectName) rosterChanged = true;
+    Object.assign(record, { subjectId: result.subjectId, subjectName: result.subjectName, partialId: result.partialId, categoryId: '__exam__', categoryName: 'Examen', title: 'Examen parcial', score: Number(result.exam), max: 10 });
+  });
+  if (resultsChanged) writeStore('evalpro-exam-students-v1', students);
+  if (rosterChanged) writeStore('evalpro-roster-v1', roster);
+}
+
+function categoryGrade(pupil, subjectId, part, param) {
+  if (param.kind === 'exam' || param.id === '__exam__') {
+    const result = examResultFor(pupil.id, subjectId, part?.id);
+    return result ? Number(result.exam) : null;
+  }
+  const records = (pupil.records || []).filter(record => record.partialId === part?.id
+    && record.categoryId === param.id
+    && (record.subjectId === subjectId || (!record.subjectId && subjectId === '__general__'))
+    && Number(record.max) > 0);
+  return records.length
+    ? records.reduce((sum, record) => sum + (Number(record.score) / Number(record.max)) * 10, 0) / records.length
+    : null;
+}
+
+function partialGrade(pupil, subjectId, part) {
+  const parameters = combinedPartialParams(part, subjectId);
+  const graded = parameters.map(param => ({ param, grade: categoryGrade(pupil, subjectId, part, param) }))
+    .filter(item => item.grade !== null && Number(item.param.weight) > 0);
+  const registeredWeight = graded.reduce((sum, item) => sum + Number(item.param.weight), 0);
+  return registeredWeight
+    ? { grade: graded.reduce((sum, item) => sum + item.grade * Number(item.param.weight), 0) / registeredWeight, registeredWeight, configuredWeight: parameters.reduce((sum, param) => sum + Number(param.weight || 0), 0) }
+    : null;
+}
+
+function subjectFinalGrade(pupil, subject) {
+  const grades = academicPartials.map(part => partialGrade(pupil, subject.id, part)?.grade).filter(Number.isFinite);
+  return grades.length ? grades.reduce((sum, grade) => sum + grade, 0) / grades.length : null;
+}
+
+function studentAverage(pupil) {
+  const joined = subjects.filter(subject => (subject.studentIds || []).includes(pupil.id));
+  const groups = joined.length ? joined : [{ id: '__general__' }];
+  const grades = groups.flatMap(subject => academicPartials.map(part => partialGrade(pupil, subject.id, part)?.grade).filter(Number.isFinite));
+  return grades.length ? grades.reduce((sum, grade) => sum + grade, 0) / grades.length : null;
+}
+
+function removeStudentById(studentId, subjectId, partialId = examConfigPartialId) {
+  const index = students.findIndex(result => result.studentId === studentId && result.subjectId === subjectId && result.partialId === partialId);
+  if (index < 0) return;
+  students.splice(index, 1);
+  const pupil = roster.find(student => student.id === studentId);
+  if (pupil) pupil.records = (pupil.records || []).filter(record => !(record.categoryId === '__exam__' && record.subjectId === subjectId && record.partialId === partialId));
+  writeStore('evalpro-exam-students-v1', students);
+  writeStore('evalpro-roster-v1', roster);
+  renderAll();
+  renderRoster();
+}
+
+function renderAll() {
+  const subject = subjects.find(item => item.id === examConfigSubjectId);
+  const part = academicPartials.find(item => item.id === examConfigPartialId);
+  const visible = students.filter(result => subject && part && result.subjectId === subject.id && result.partialId === part.id);
+  const dashboard = $('dashboard');
+  dashboard.hidden = !visible.length;
+  if (!visible.length) {
+    if (barChart) { barChart.destroy(); barChart = null; }
+    if (doughnutChart) { doughnutChart.destroy(); doughnutChart = null; }
+    return;
+  }
+  const average = visible.reduce((sum, result) => sum + Number(result.exam || 0), 0) / visible.length;
+  const highest = Math.max(...visible.map(result => Number(result.exam) || 0));
+  const passed = visible.filter(result => Number(result.exam) >= 6).length;
+  const pct = Number(visible[0].examPct ?? getExamWeight(subject.id, part.id)) || 0;
+  $('stats').innerHTML = `<div class="stat"><strong>${average.toFixed(2)}</strong><span>Promedio del examen /10</span></div><div class="stat"><strong>${highest.toFixed(2)}</strong><span>Calificación más alta</span></div><div class="stat"><strong>${passed}/${visible.length}</strong><span>Aprobados (≥6)</span></div><div class="stat"><strong>${(average * pct / 100).toFixed(2)} / ${(pct / 10).toFixed(2)}</strong><span>Aporte al parcial (${pct.toFixed(1)}%)</span></div>`;
+  $('rows').innerHTML = visible.map((result, index) => {
+    const components = result.paramsSnapshot || params;
+    return `<tr><td>${index + 1}</td><td><b>${esc(result.name)}</b></td><td>${esc(subject.name)}</td><td>${esc(part.name)}</td><td><span class="badge">${Number(result.exam).toFixed(2)} / 10</span></td><td><b>${Number(result.contribution).toFixed(2)} / ${(Number(result.examPct) / 10).toFixed(2)}</b></td><td>${components.map((param, i) => `${esc(param.name)}: ${result.scores?.[i] ?? 'S/R'}/${param.max}`).join(' · ')}</td><td class="no-print"><button class="btn btn-danger" onclick="removeStudentById('${esc(result.studentId)}','${esc(result.subjectId)}','${esc(result.partialId)}')">Quitar de tabla</button></td></tr>`;
+  }).join('');
+  if (!window.Chart) return;
+  const css = getComputedStyle(document.documentElement);
+  const ink = css.getPropertyValue('--ink').trim();
+  const primary = css.getPropertyValue('--primary').trim();
+  if (barChart) barChart.destroy();
+  barChart = new Chart($('barChart'), { type: 'bar', data: { labels: visible.map(result => result.name), datasets: [{ data: visible.map(result => result.exam), backgroundColor: primary, borderRadius: 6 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 10, ticks: { color: ink } }, x: { ticks: { color: ink } } } } });
+  if (doughnutChart) doughnutChart.destroy();
+  const averages = params.map((param, index) => visible.reduce((sum, result) => sum + (Number(result.scores?.[index]) / Number(param.max) * 100 || 0), 0) / visible.length);
+  doughnutChart = new Chart($('doughnutChart'), { type: 'doughnut', data: { labels: params.map(param => param.name), datasets: [{ data: averages, backgroundColor: ['#7598b8', '#91ad9f', '#d1a47d', '#a8bfd4', '#c4d4e2', '#b8c3d1'], borderColor: css.getPropertyValue('--surface').trim(), borderWidth: 2 }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: ink } } } } });
+}
+
+function rosterViewPart() {
+  if (rosterGradeView === 'overall') return null;
+  if (rosterGradeView === 'final') return academicPartials.find(part => normalizeName(part.name) === 'final') || academicPartials[3] || null;
+  const index = { p1: 0, p2: 1, p3: 2 }[rosterGradeView] ?? 0;
+  return academicPartials[index] || null;
+}
+
+function rosterActionButton(action, pupil) {
+  const controls = {
+    open: { label: `Abrir expediente de ${pupil.name}`, handler: 'openFile', icon: '<path d="M3.5 7.5h6l1.8 1.8h9.2v8.2a1.7 1.7 0 0 1-1.7 1.7H5.2a1.7 1.7 0 0 1-1.7-1.7z"/><path d="M3.5 9.3h17"/><circle cx="12" cy="13.2" r="1.6"/><path d="M8.9 17a3.3 3.3 0 0 1 6.2 0"/>' },
+    edit: { label: `Editar nombre de ${pupil.name}`, handler: 'editStudentName', icon: '<path d="M12 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/><path d="m13.5 5.5 5 5L11 18l-5 1 1-5z"/><path d="m16.8 7.2 2-2a1.4 1.4 0 0 1 2 2l-2 2"/>' },
+    delete: { label: `Borrar alumno ${pupil.name}`, handler: 'removeRosterStudent', icon: '<path d="M4 7h16"/><path d="M10 11v6m4-6v6"/><path d="m6 7 1 13h10l1-13M9 7V4h6v3"/><path d="M3 7h18"/>' }
+  }[action];
+  return `<button type="button" class="roster-action-icon roster-action-${action}" onclick="${controls.handler}('${esc(pupil.id)}')" title="${esc(controls.label)}" aria-label="${esc(controls.label)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${controls.icon}</svg></button>`;
+}
+
+function renderRoster() {
+  const list = $('rosterList');
+  if (!list) return;
+  const select = $('rosterGradeView');
+  if (select) { select.value = rosterGradeView || select.value || 'p1'; rosterGradeView = select.value || 'p1'; }
+  const filtered = filteredRoster();
+  const part = rosterViewPart();
+  const groups = selectedSubjectId
+    ? subjects.filter(subject => subject.id === selectedSubjectId)
+    : subjects;
+  const tables = groups.map(subject => {
+    const pupils = filtered.filter(pupil => (subject.studentIds || []).includes(pupil.id));
+    if (!pupils.length) return '';
+    const parameters = part ? combinedPartialParams(part, subject.id) : [];
+    const weightTotal = part ? parameters.reduce((sum, param) => sum + Number(param.weight || 0), 0) : 0;
+    const headers = part ? parameters.map(param => `<th>${esc(param.name)}<small class="grade-weight">${Number(param.weight || 0).toFixed(1)}%</small></th>`).join('') : '';
+    const rows = pupils.map(pupil => {
+      const details = part ? partialGrade(pupil, subject.id, part) : null;
+      const cells = part ? parameters.map(param => {
+        const grade = categoryGrade(pupil, subject.id, part, param);
+        return `<td class="${grade === null ? 'no-record' : ''}">${grade === null ? 'S/R' : `${grade.toFixed(2)} / 10`}</td>`;
+      }).join('') : '';
+      const finalGrade = part ? details?.grade ?? null : subjectFinalGrade(pupil, subject);
+      const coverage = part ? `${(details?.registeredWeight || 0).toFixed(1)}% / ${weightTotal.toFixed(1)}% registrado` : 'Promedio de parciales disponibles';
+      return `<tr><td><b>${esc(pupil.name)}</b></td><td><button type="button" class="avatar avatar-click ${selectGenderClass(pupil.gender)}" onclick="updateGender('${esc(pupil.id)}')" aria-label="Avatar de ${esc(pupil.name)}">${avatarEmoji(pupil.gender)}</button></td>${cells}<td class="${finalGrade === null ? 'no-record' : ''}">${finalGrade === null ? 'S/R' : `${finalGrade.toFixed(2)} / 10`}<small class="grade-coverage">${coverage}</small></td><td>${rosterActionButton('open', pupil)}</td><td class="roster-actions">${selectedSubjectId ? `<button class="btn btn-orange btn-sm" onclick="removeFromSubject('${esc(pupil.id)}')">Quitar materia</button>` : ''}${rosterActionButton('edit', pupil)}${rosterActionButton('delete', pupil)}</td></tr>`;
+    }).join('');
+    const weightLabel = part ? `Ponderación del parcial: ${parameters.map(param => `${param.name} ${Number(param.weight || 0)}%`).join(' + ') || 'Sin parámetros'} = ${weightTotal.toFixed(1)}%` : 'Calificación final del curso';
+    return `<section class="subject-grade-group"><h4>${esc(subject.name)} · ${part ? esc(part.name) : 'Calificación final'}</h4><p class="param-hint">${weightLabel}</p><div class="table-wrap roster-table"><table class="grades-roster-table"><thead><tr><th>Alumno</th><th>Avatar</th>${headers}<th>${part ? 'Calificación del parcial' : 'Calificación final'}</th><th>Expediente</th><th>Acciones</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
+  }).filter(Boolean).join('');
+  const generalPupils = groups.length ? [] : filtered;
+  const general = generalPupils.length
+    ? `<section class="subject-grade-group"><h4>General</h4><p class="empty">Asigna alumnos a una materia para mostrar sus parámetros y calificaciones por parcial.</p></section>`
+    : '';
+  list.innerHTML = tables || general || `<div class="empty">${roster.length ? 'No hay alumnos inscritos en esta materia que coincidan con los filtros.' : 'Todavía no hay alumnos registrados.'}</div>`;
+  renderStudentOptions();
+  renderSubjectMemberOptions();
+  renderExamStudentControls();
+  updateFilterSummary();
+}
+
+function openFile(id) {
+  const pupil = roster.find(student => student.id === id);
+  if (!pupil) return;
+  const bookTab = document.querySelector('.folder-tab[data-tab="book"]');
+  if (bookTab && !bookTab.classList.contains('active')) switchTab(bookTab);
+  selectedStudentId = id;
+  $('studentFile').hidden = false;
+  expandCollapsibleTarget($('studentFile'));
+  $('fileAvatar').className = `avatar avatar-large ${selectGenderClass(pupil.gender)}`;
+  $('fileAvatar').textContent = avatarEmoji(pupil.gender);
+  $('fileName').textContent = `Expediente · ${pupil.name}`;
+  const memberships = subjects.filter(subject => (subject.studentIds || []).includes(id));
+  const average = studentAverage(pupil);
+  $('fileSummary').textContent = `${(pupil.records || []).length} registros · Promedio general: ${average === null ? 'Sin calificaciones' : `${average.toFixed(2)} / 10`}`;
+  $('fileStats').innerHTML = memberships.flatMap(subject => academicPartials.map(part => {
+    const details = partialGrade(pupil, subject.id, part);
+    const weights = combinedPartialParams(part, subject.id).reduce((sum, param) => sum + Number(param.weight || 0), 0);
+    return `<div class="stat partial-stat"><strong>${details ? details.grade.toFixed(2) : 'S/R'}</strong><span>${esc(subject.name)} · ${esc(part.name)} · ${details ? `${details.registeredWeight.toFixed(1)}% de ${weights.toFixed(1)}% evaluado` : 'Sin registros'}</span></div>`;
+  })).join('');
+  const historyGroups = memberships.map(subject => {
+    const records = (pupil.records || []).filter(record => record.subjectId === subject.id).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+    if (!records.length) return '';
+    const entries = records.map(record => {
+      const part = academicPartials.find(item => item.id === record.partialId);
+      const isExam = record.categoryId === '__exam__';
+      const param = isExam ? (part && combinedPartialParams(part, subject.id).find(item => item.kind === 'exam') || { name: 'Examen' }) : part && getPartParams(part, subject.id).find(item => item.id === record.categoryId);
+      const icon = categorySvg(record.categoryId, param?.name || record.categoryName || '');
+      const scoreText = record.scoreUnit === 'partial-percent' ? `${Number(record.score).toFixed(2)}% del parcial` : `${Number(record.score).toFixed(2)} / ${Number(record.max).toFixed(2)}`;
+      const actions = isExam ? '' : `<div class="record-actions no-print"><button class="btn btn-sm" onclick="editRecord('${esc(pupil.id)}','${esc(record.id)}')">Editar</button><button class="btn btn-danger btn-sm" onclick="deleteRecord('${esc(pupil.id)}','${esc(record.id)}')">Quitar</button></div>`;
+      return `<article class="record-item"><div class="record-main"><span class="record-type">${icon}${esc(subject.name)} · ${esc(param?.name || record.categoryName || 'Registro')} · ${esc(part?.name || 'Sin parcial')}</span><b>${esc(record.title)}</b><small>${esc(record.date || 'Sin fecha')}${record.tasksTotal != null ? ` · Tareas: ${record.tasksDelivered}/${record.tasksTotal}` : ''}${record.note ? ` · ${esc(record.note)}` : ''}</small></div><strong class="record-score">${scoreText}</strong>${actions}</article>`;
+    }).join('');
+    return `<section class="history-subject"><h4>${esc(subject.name)}</h4><div class="record-list">${entries}</div></section>`;
+  }).join('');
+  $('recordList').innerHTML = historyGroups || '<div class="empty">Aún no hay actividades en las materias asignadas.</div>';
+  $('recordStudent').value = id;
+  renderRecordSubjects();
+  requestAnimationFrame(() => $('studentFile').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+}
+
+function expandCollapsibleTarget(target, externalButton = null) {
+  if (!target) return;
+  target.classList.remove('is-collapsed');
+  const button = target.querySelector('.collapse-toggle') || externalButton;
+  if (!button) return;
+  button.setAttribute('aria-expanded', 'true');
+  const label = button.querySelector('.collapse-label');
+  const chevron = button.querySelector('.collapse-chevron');
+  if (label) label.textContent = 'Minimizar';
+  if (chevron) chevron.textContent = '⌄';
+}
+
+function editRecord(studentId, recordId) {
+  const pupil = roster.find(student => student.id === studentId);
+  const record = pupil?.records.find(item => item.id === recordId);
+  if (!pupil || !record) return;
+
+  const bookTab = document.querySelector('.folder-tab[data-tab="book"]');
+  if (bookTab && !bookTab.classList.contains('active')) switchTab(bookTab);
+  expandCollapsibleTarget(document.querySelector('.activity-layout'), document.querySelector('.section-bar .collapse-toggle'));
+
+  editingRecordId = record.id;
+  selectedStudentId = pupil.id;
+  selectedPartialId = academicPartials.some(part => part.id === record.partialId)
+    ? record.partialId
+    : academicPartials[0]?.id;
+  renderPartialSelectors();
+
+  const studentSelect = $('recordStudent');
+  if (![...studentSelect.options].some(option => option.value === pupil.id)) {
+    studentSelect.add(new Option(pupil.name, pupil.id));
+  }
+  studentSelect.value = pupil.id;
+  renderRecordSubjects(record.subjectId);
+  $('recordPartial').value = selectedPartialId;
+  const param = recordParams(currentPartial(), record.subjectId).find(item => item.id === record.categoryId);
+  $('recordCategory').value = record.categoryId;
+  bookParams = recordParams(currentPartial(), record.subjectId);
+  renderCategoryOptions();
+  $('recordCategory').value = record.categoryId;
+  $('recordTitle').value = record.title || '';
+  $('recordDate').value = record.date || today();
+  const contribution = record.scoreUnit === 'partial-percent'
+    ? Number(record.score)
+    : Number(record.score) / Number(record.max || 10) * (Number(param?.weight) || 0);
+  $('recordScore').value = Number.isFinite(contribution) ? contribution.toFixed(2) : '';
+  $('recordMax').value = Number(param?.weight) || 0;
+  $('recordNote').value = record.note || '';
+  $('tasksDelivered').value = record.tasksDelivered ?? '';
+  $('tasksTotal').value = record.tasksTotal ?? '';
+  $('saveRecordButton').textContent = 'Guardar cambios';
+  $('cancelRecordButton').hidden = false;
+  updateCategoryIcon();
+  syncTaskEntry();
+  refreshRecordParameterInfo();
+  requestAnimationFrame(() => document.querySelector('.section-bar').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+}
+
+function removeStudentById(studentId, subjectId, partialId = examConfigPartialId) {
+  const index = students.findIndex(result => result.studentId === studentId && result.subjectId === subjectId && result.partialId === partialId);
+  if (index < 0) return;
+  students.splice(index, 1);
+  const pupil = roster.find(student => student.id === studentId);
+  if (pupil) pupil.records = (pupil.records || []).filter(record => !(record.categoryId === '__exam__' && record.subjectId === subjectId && record.partialId === partialId));
+  writeStore('evalpro-exam-students-v1', students);
+  writeStore('evalpro-roster-v1', roster);
+  renderAll();
+  renderRoster();
+}
+
+function removeRosterStudent(studentId) {
+  if (!confirm('¿Estás seguro de eliminar al alumno y su expediente?')) return;
+  roster = roster.filter(student => student.id !== studentId);
+  subjects.forEach(subject => { subject.studentIds = (subject.studentIds || []).filter(id => id !== studentId); });
+  students = students.filter(result => result.studentId !== studentId);
+  writeStore('evalpro-roster-v1', roster);
+  writeStore('evalpro-subjects-v1', subjects);
+  writeStore('evalpro-exam-students-v1', students);
+  renderSubjects();
+  renderRoster();
+  renderAll();
+}
+
+function createSubject() {
+  const name = $('newSubjectName').value.trim();
+  if (!name) return toast('Escribe el nombre de la materia.');
+  if (subjects.some(subject => normalizeName(subject.name) === normalizeName(name))) return toast('Ya existe una materia con ese nombre.');
+  const subject = { id: makeId(), name, studentIds: [] };
+  subjects.push(subject);
+  writeStore('evalpro-subjects-v1', subjects);
+  selectedSubjectId = subject.id;
+  selectedConfigSubjectId = subject.id;
+  $('newSubjectName').value = '';
+  renderSubjects();
+  renderConfigSubjects();
+  renderBookParams();
+  examConfigSubjectId = subject.id;
+  examConfigPartialId = selectedPartialId || academicPartials[0]?.id || '';
+  renderExamStudentControls();
+  loadExamConfigForSubject(subject.id, examConfigPartialId);
+  renderRoster();
+  toast(`Materia ${name} creada`);
+}
+
+renderExamStudentControls();
+migrateExamResults();
+renderAll();
+renderRoster();
