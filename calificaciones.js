@@ -1,5 +1,47 @@
 // Integra el examen y las actividades del cuaderno en una sola ponderación por materia y parcial.
 var examConfigPartialId = '';
+function renderNewStudentSubjectOptions() {
+  const select = $('newStudentSubject');
+  if (!select) return;
+  const previous = select.value;
+  select.innerHTML = subjects.length
+    ? '<option value="">Selecciona una materia</option>' + subjects.map(subject => `<option value="${esc(subject.id)}">${esc(subject.name)}</option>`).join('')
+    : '<option value="">Crea una materia primero en Cuaderno</option>';
+  if (subjects.some(subject => subject.id === previous)) select.value = previous;
+  else if (subjects.some(subject => subject.id === selectedSubjectId)) select.value = selectedSubjectId;
+}
+
+function registerStudentToSubject() {
+  const name = $('newStudentName').value.trim();
+  const subject = subjects.find(item => item.id === $('newStudentSubject').value);
+  const feedback = $('newStudentFeedback');
+  if (!name) { if (feedback) feedback.textContent = 'Escribe el nombre completo del alumno.'; toast('Escribe el nombre del alumno.'); $('newStudentName').focus(); return; }
+  if (!subject) { if (feedback) feedback.textContent = 'Selecciona una materia para asignar al alumno.'; toast('Selecciona una materia.'); $('newStudentSubject').focus(); return; }
+
+  const existing = roster.find(student => normalizeName(student.name) === normalizeName(name));
+  const pupil = getOrCreateStudent(name, registrationGender);
+  const alreadyEnrolled = (subject.studentIds || []).includes(pupil.id);
+  if (!alreadyEnrolled) {
+    subject.studentIds = [...(subject.studentIds || []), pupil.id];
+    writeStore('evalpro-subjects-v1', subjects);
+  }
+  writeStore('evalpro-roster-v1', roster);
+  renderSubjects();
+  renderNewStudentSubjectOptions();
+  $('newStudentSubject').value = subject.id;
+  renderRoster();
+  renderStudentOptions();
+  renderExamStudentControls();
+  $('newStudentName').value = '';
+  registrationGender = 'neutral';
+  const avatar = $('newStudentAvatar');
+  if (avatar) { avatar.className = 'avatar avatar-picker avatar-neutral'; avatar.textContent = avatarEmoji(registrationGender); }
+  const message = alreadyEnrolled
+    ? `${pupil.name} ya estaba inscrito en ${subject.name}.`
+    : `${existing ? 'Alumno existente agregado' : 'Alumno registrado'}: ${pupil.name} · ${subject.name}.`;
+  if (feedback) feedback.textContent = message;
+  toast(message);
+}
 
 function examConfigKey(subjectId = examConfigSubjectId, partialId = examConfigPartialId) {
   return subjectId && partialId ? `${subjectId}::${partialId}` : '';
@@ -432,6 +474,63 @@ function categoryGrade(pupil, subjectId, part, param) {
     : null;
 }
 
+function rosterGradeStatus(grade) {
+  if (!Number.isFinite(grade)) return '';
+  if (grade >= 9.995) return 'grade-status-perfect';
+  if (grade >= 7.5) return 'grade-status-good';
+  if (grade >= 5) return 'grade-status-warning';
+  return 'grade-status-low';
+}
+
+function renderRecordStudentSuggestions(query = $('recordStudentSearch')?.value || '') {
+  const box = $('recordStudentSearchResults');
+  const select = $('recordStudent');
+  if (!box || !select) return;
+  const normalized = normalizeName(query.trim());
+  if (!normalized) { box.hidden = true; box.innerHTML = ''; return; }
+  const matches = [...select.options].filter(option => option.value && normalizeName(option.textContent).includes(normalized)).slice(0, 8);
+  box.hidden = false;
+  box.innerHTML = matches.length
+    ? matches.map(option => {
+      const pupil = roster.find(student => student.id === option.value);
+      return `<button type="button" class="record-student-suggestion" onclick="selectRecordStudent('${esc(option.value)}')"><span class="avatar ${selectGenderClass(pupil?.gender)}">${avatarEmoji(pupil?.gender)}</span><span>${esc(option.textContent)}</span></button>`;
+    }).join('')
+    : '<div class="record-student-no-match">No hay alumnos que coincidan con la búsqueda.</div>';
+}
+
+function selectRecordStudent(studentId) {
+  const select = $('recordStudent');
+  const option = [...select.options].find(item => item.value === studentId);
+  if (!option) return;
+  select.value = studentId;
+  $('recordStudentSearch').value = option.textContent;
+  $('recordStudentSearchResults').hidden = true;
+  refreshRecordSubjects();
+}
+
+function syncRecordStudentSearch(studentId) {
+  const select = $('recordStudent');
+  const option = [...(select?.options || [])].find(item => item.value === studentId);
+  if (option && $('recordStudentSearch')) $('recordStudentSearch').value = option.textContent;
+  if ($('recordStudentSearchResults')) $('recordStudentSearchResults').hidden = true;
+}
+
+function printRoster() {
+  const card = $('rosterCard');
+  if (!card || !card.querySelector('.grades-roster-table')) {
+    toast('No hay una tabla de alumnos para imprimir.');
+    return;
+  }
+  document.body.classList.add('printing-roster');
+  const clean = () => {
+    document.body.classList.remove('printing-roster');
+    window.removeEventListener('afterprint', clean);
+  };
+  window.addEventListener('afterprint', clean, { once: true });
+  window.print();
+  setTimeout(clean, 1500);
+}
+
 function partialGrade(pupil, subjectId, part) {
   const parameters = combinedPartialParams(part, subjectId);
   const graded = parameters.map(param => ({ param, grade: categoryGrade(pupil, subjectId, part, param) }))
@@ -508,9 +607,51 @@ function rosterActionButton(action, pupil) {
   const controls = {
     open: { label: `Abrir expediente de ${pupil.name}`, handler: 'openFile', icon: '<path d="M3.5 7.5h6l1.8 1.8h9.2v8.2a1.7 1.7 0 0 1-1.7 1.7H5.2a1.7 1.7 0 0 1-1.7-1.7z"/><path d="M3.5 9.3h17"/><circle cx="12" cy="13.2" r="1.6"/><path d="M8.9 17a3.3 3.3 0 0 1 6.2 0"/>' },
     edit: { label: `Editar nombre de ${pupil.name}`, handler: 'editStudentName', icon: '<path d="M12 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/><path d="m13.5 5.5 5 5L11 18l-5 1 1-5z"/><path d="m16.8 7.2 2-2a1.4 1.4 0 0 1 2 2l-2 2"/>' },
-    delete: { label: `Borrar alumno ${pupil.name}`, handler: 'removeRosterStudent', icon: '<path d="M4 7h16"/><path d="M10 11v6m4-6v6"/><path d="m6 7 1 13h10l1-13M9 7V4h6v3"/><path d="M3 7h18"/>' }
+    delete: { label: `Borrar alumno ${pupil.name}`, handler: 'removeRosterStudent', icon: '<path d="M4 7h16"/><path d="M10 11v6m4-6v6"/><path d="m6 7 1 13h10l1-13M9 7V4h6v3"/><path d="M3 7h18"/>' },
+    'remove-subject': { label: 'Quitar de materia', handler: 'removeFromSubject', icon: '<path d="M3.5 7.5h6l1.8 1.8h9.2v8.2a1.7 1.7 0 0 1-1.7 1.7H5.2a1.7 1.7 0 0 1-1.7-1.7z"/><path d="M3.5 9.3h17"/><path d="M15 12l-5 5m0-5 5 5"/>' }
   }[action];
   return `<button type="button" class="roster-action-icon roster-action-${action}" onclick="${controls.handler}('${esc(pupil.id)}')" title="${esc(controls.label)}" aria-label="${esc(controls.label)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${controls.icon}</svg></button>`;
+}
+
+function renderRosterSearchResults() {
+  const box = $('rosterStudentResults');
+  if (!box) return;
+  const query = normalizeName($('rosterStudentSearch')?.value || '');
+  if (!query) {
+    box.innerHTML = '<div class="empty roster-search-empty">Escribe un nombre para localizar a un alumno guardado.</div>';
+    return;
+  }
+  const subject = subjects.find(item => item.id === selectedSubjectId);
+  const matches = roster.filter(pupil => normalizeName(pupil.name).includes(query)).slice(0, 12);
+  if (!matches.length) {
+    box.innerHTML = '<div class="empty roster-search-empty">No hay alumnos registrados con ese nombre.</div>';
+    return;
+  }
+  box.innerHTML = matches.map(pupil => {
+    const isMember = !!subject && (subject.studentIds || []).includes(pupil.id);
+    const status = isMember ? `<span class="roster-lookup-status is-enrolled">Inscrito en ${esc(subject.name)}</span>`
+      : subject ? `<span class="roster-lookup-status is-available">Disponible para agregar</span>`
+        : '<span class="roster-lookup-status">Selecciona una materia para agregar</span>';
+    const add = subject && !isMember
+      ? `<button type="button" class="btn btn-green btn-sm" onclick="addExistingStudentToSubject('${esc(pupil.id)}')"><span aria-hidden="true">＋</span> Agregar a materia</button>`
+      : '';
+    return `<article class="roster-lookup-result"><span class="avatar ${selectGenderClass(pupil.gender)}">${avatarEmoji(pupil.gender)}</span><div class="roster-lookup-person"><b>${esc(pupil.name)}</b>${status}</div><div class="roster-lookup-actions"><button type="button" class="btn btn-sm roster-open-file" onclick="openFile('${esc(pupil.id)}')">Abrir expediente</button>${add}</div></article>`;
+  }).join('');
+}
+
+function addExistingStudentToSubject(studentId) {
+  const subject = subjects.find(item => item.id === selectedSubjectId);
+  const pupil = roster.find(item => item.id === studentId);
+  if (!subject) return toast('Selecciona la materia activa a la que quieres agregar al alumno.');
+  if (!pupil) return toast('No se encontró ese alumno en el registro.');
+  subject.studentIds = subject.studentIds || [];
+  if (subject.studentIds.includes(pupil.id)) return toast(`${pupil.name} ya pertenece a ${subject.name}.`);
+  subject.studentIds.push(pupil.id);
+  writeStore('evalpro-subjects-v1', subjects);
+  renderSubjects();
+  renderSubjectMemberOptions();
+  renderRoster();
+  toast(`${pupil.name} agregado a ${subject.name}.`);
 }
 
 function renderRoster() {
@@ -518,13 +659,15 @@ function renderRoster() {
   if (!list) return;
   const select = $('rosterGradeView');
   if (select) { select.value = rosterGradeView || select.value || 'p1'; rosterGradeView = select.value || 'p1'; }
-  const filtered = filteredRoster();
   const part = rosterViewPart();
   const groups = selectedSubjectId
-    ? subjects.filter(subject => subject.id === selectedSubjectId)
+    ? subjects.filter(subject => String(subject.id) === String(selectedSubjectId))
     : subjects;
   const tables = groups.map(subject => {
-    const pupils = filtered.filter(pupil => (subject.studentIds || []).includes(pupil.id));
+    const enrolledIds = new Set((subject.studentIds || []).map(String));
+    const pupils = roster
+      .filter(pupil => enrolledIds.has(String(pupil.id)))
+      .sort((a, b) => a.name.localeCompare(b.name, 'es'));
     if (!pupils.length) return '';
     const parameters = part ? combinedPartialParams(part, subject.id) : [];
     const weightTotal = part ? parameters.reduce((sum, param) => sum + Number(param.weight || 0), 0) : 0;
@@ -533,16 +676,19 @@ function renderRoster() {
       const details = part ? partialGrade(pupil, subject.id, part) : null;
       const cells = part ? parameters.map(param => {
         const grade = categoryGrade(pupil, subject.id, part, param);
-        return `<td class="${grade === null ? 'no-record' : ''}">${grade === null ? 'S/R' : `${grade.toFixed(2)} / 10`}</td>`;
+        const contribution = grade === null ? null : Number(param.weight || 0) * grade / 10;
+        const status = grade === null ? 'no-record' : `grade-cell ${rosterGradeStatus(grade)}`;
+        const title = grade === null ? '' : ` title="Aporte ponderado a la calificación del parcial: ${contribution.toFixed(2)} de 10" data-contribution="${contribution.toFixed(2)}"`;
+        return `<td class="${status}"${title}>${grade === null ? 'S/R' : `${grade.toFixed(2)} / 10<small class="grade-performance">${contribution.toFixed(2)} / 10</small>`}</td>`;
       }).join('') : '';
       const finalGrade = part ? details?.grade ?? null : subjectFinalGrade(pupil, subject);
       const coverage = part ? `${(details?.registeredWeight || 0).toFixed(1)}% / ${weightTotal.toFixed(1)}% registrado` : 'Promedio de parciales disponibles';
-      return `<tr><td><b>${esc(pupil.name)}</b></td><td><button type="button" class="avatar avatar-click ${selectGenderClass(pupil.gender)}" onclick="updateGender('${esc(pupil.id)}')" aria-label="Avatar de ${esc(pupil.name)}">${avatarEmoji(pupil.gender)}</button></td>${cells}<td class="${finalGrade === null ? 'no-record' : ''}">${finalGrade === null ? 'S/R' : `${finalGrade.toFixed(2)} / 10`}<small class="grade-coverage">${coverage}</small></td><td>${rosterActionButton('open', pupil)}</td><td class="roster-actions">${selectedSubjectId ? `<button class="btn btn-orange btn-sm" onclick="removeFromSubject('${esc(pupil.id)}')">Quitar materia</button>` : ''}${rosterActionButton('edit', pupil)}${rosterActionButton('delete', pupil)}</td></tr>`;
+      return `<tr><td><b>${esc(pupil.name)}</b></td><td><button type="button" class="avatar avatar-click ${selectGenderClass(pupil.gender)}" onclick="updateGender('${esc(pupil.id)}')" aria-label="Avatar de ${esc(pupil.name)}">${avatarEmoji(pupil.gender)}</button></td>${cells}<td class="${finalGrade === null ? 'no-record' : ''}">${finalGrade === null ? 'S/R' : `${finalGrade.toFixed(2)} / 10`}<small class="grade-coverage">${coverage}</small></td><td class="roster-expediente-cell">${rosterActionButton('open', pupil)}</td><td class="roster-actions">${selectedSubjectId ? rosterActionButton('remove-subject', pupil) : ''}${rosterActionButton('edit', pupil)}${rosterActionButton('delete', pupil)}</td></tr>`;
     }).join('');
     const weightLabel = part ? `Ponderación del parcial: ${parameters.map(param => `${param.name} ${Number(param.weight || 0)}%`).join(' + ') || 'Sin parámetros'} = ${weightTotal.toFixed(1)}%` : 'Calificación final del curso';
     return `<section class="subject-grade-group"><h4>${esc(subject.name)} · ${part ? esc(part.name) : 'Calificación final'}</h4><p class="param-hint">${weightLabel}</p><div class="table-wrap roster-table"><table class="grades-roster-table"><thead><tr><th>Alumno</th><th>Avatar</th>${headers}<th>${part ? 'Calificación del parcial' : 'Calificación final'}</th><th>Expediente</th><th>Acciones</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
   }).filter(Boolean).join('');
-  const generalPupils = groups.length ? [] : filtered;
+  const generalPupils = groups.length ? [] : roster;
   const general = generalPupils.length
     ? `<section class="subject-grade-group"><h4>General</h4><p class="empty">Asigna alumnos a una materia para mostrar sus parámetros y calificaciones por parcial.</p></section>`
     : '';
@@ -550,14 +696,15 @@ function renderRoster() {
   renderStudentOptions();
   renderSubjectMemberOptions();
   renderExamStudentControls();
+  renderRosterSearchResults();
   updateFilterSummary();
 }
 
 function openFile(id) {
   const pupil = roster.find(student => student.id === id);
   if (!pupil) return;
-  const bookTab = document.querySelector('.folder-tab[data-tab="book"]');
-  if (bookTab && !bookTab.classList.contains('active')) switchTab(bookTab);
+  const recordsTab = document.querySelector('.folder-tab[data-tab="records"]');
+  if (recordsTab && !recordsTab.classList.contains('active')) switchTab(recordsTab);
   selectedStudentId = id;
   $('studentFile').hidden = false;
   expandCollapsibleTarget($('studentFile'));
@@ -588,6 +735,7 @@ function openFile(id) {
   }).join('');
   $('recordList').innerHTML = historyGroups || '<div class="empty">Aún no hay actividades en las materias asignadas.</div>';
   $('recordStudent').value = id;
+  syncRecordStudentSearch(id);
   renderRecordSubjects();
   requestAnimationFrame(() => $('studentFile').scrollIntoView({ behavior: 'smooth', block: 'start' }));
 }
@@ -609,8 +757,8 @@ function editRecord(studentId, recordId) {
   const record = pupil?.records.find(item => item.id === recordId);
   if (!pupil || !record) return;
 
-  const bookTab = document.querySelector('.folder-tab[data-tab="book"]');
-  if (bookTab && !bookTab.classList.contains('active')) switchTab(bookTab);
+  const activityTab = document.querySelector('.folder-tab[data-tab="activity"]');
+  if (activityTab && !activityTab.classList.contains('active')) switchTab(activityTab);
   expandCollapsibleTarget(document.querySelector('.activity-layout'), document.querySelector('.section-bar .collapse-toggle'));
 
   editingRecordId = record.id;
@@ -625,6 +773,7 @@ function editRecord(studentId, recordId) {
     studentSelect.add(new Option(pupil.name, pupil.id));
   }
   studentSelect.value = pupil.id;
+  syncRecordStudentSearch(pupil.id);
   renderRecordSubjects(record.subjectId);
   $('recordPartial').value = selectedPartialId;
   const param = recordParams(currentPartial(), record.subjectId).find(item => item.id === record.categoryId);

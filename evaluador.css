@@ -302,15 +302,42 @@ input,select{border-radius:13px}.section-title{letter-spacing:-.01em}.card{borde
 @media(max-width:560px){.book-columns>.card{padding:15px}.new-student-row{grid-template-columns:50px minmax(0,1fr);gap:10px}.avatar-picker{width:46px;height:46px;flex-basis:46px;font-size:25px}.avatar-hint{margin-left:60px}.partial-controls{grid-template-columns:1fr;padding:10px}.partial-controls button{grid-column:auto}.file-heading{align-items:flex-start;flex-direction:column}.file-actions{justify-content:flex-start;width:100%}.file-actions .btn{flex:1}.record-item{grid-template-columns:1fr auto}.record-actions{grid-column:1/-1}.section-title{font-size:1.1rem}}
 @media print{
 body.printing-student-file{background:#fff!important;color:#17283b!important}
-body.printing-student-file>header,body.printing-student-file>main>*:not(#panel-book){display:none!important}
-body.printing-student-file #panel-book{display:block!important}
-body.printing-student-file #panel-book>:not(#studentFile){display:none!important}
+body.printing-student-file>header,body.printing-student-file>main>*:not(#panel-records){display:none!important}
+body.printing-student-file #panel-records{display:block!important}
+body.printing-student-file #panel-records>:not(#studentFile){display:none!important}
 body.printing-student-file #studentFile{display:block!important;position:absolute;inset:0 auto auto 0;width:100%;max-width:none;margin:0;padding:10mm;border:0;border-radius:0;box-shadow:none;background:#fff!important;color:#17283b!important}
 body.printing-student-file #studentFile *{visibility:visible;color:#17283b}
 body.printing-student-file #studentFile .no-print,body.printing-student-file #studentFile .file-actions{display:none!important}
 body.printing-student-file #studentFile .record-item,body.printing-student-file #studentFile .stat{break-inside:avoid;background:#fff;border-color:#c9d5e0}
 body.printing-student-file #studentFile .section-title{font-size:16pt}
 }
+
+/* Registro de actividades: pestaña completa con buscador y lienzo blueprint a todo el ancho. */
+.activity-page-title,.activity-page-intro{text-align:center}
+.activity-page-title{font-size:1.7rem;margin:22px 0 5px}
+.activity-page-intro{max-width:760px;margin:0 auto 16px}
+.activity-layout{width:100vw;max-width:none;margin:0 0 0 calc((100% - 100vw)/2);grid-template-columns:minmax(0,1fr) 0fr;}
+.activity-layout:has(.partial-info.is-open){max-width:none;grid-template-columns:minmax(0,1fr) minmax(260px,320px)}
+.activity-layout .activity-card{width:100%;max-width:none;min-width:0;padding:20px}
+.activity-layout .activity-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.activity-card .note-field{width:100%;max-width:100%;min-width:0;margin:12px 0 0}
+.activity-card .note-field input{width:100%;max-width:100%;min-width:0}
+.activity-card>.btn-group{width:100%;min-width:0;align-items:center}
+.activity-card>.btn-group .btn{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+#saveRecordButton{color:#fff!important}
+.record-student-search-field{position:relative;z-index:6;min-width:0}
+.record-student-search-field>input{width:100%;min-width:0}
+.record-student-suggestions{position:absolute;top:calc(100% - 1px);left:0;right:0;z-index:30;display:grid;max-height:260px;overflow:auto;border:2px solid #3288b7;border-radius:0 0 7px 7px;background:var(--surface);box-shadow:0 12px 24px #17384a30}
+.record-student-suggestion{display:flex;align-items:center;gap:10px;width:100%;padding:9px 11px;border:0;border-bottom:1px solid var(--line);background:var(--surface);color:var(--ink);text-align:left;font:700 .82rem Sora,sans-serif;cursor:pointer}
+.record-student-suggestion:hover,.record-student-suggestion:focus-visible{background:var(--primary-soft);outline:none}
+.record-student-suggestion .avatar{width:32px;height:32px;flex:0 0 32px;font-size:16px}
+.record-student-no-match{padding:12px;color:var(--muted);font-size:.78rem}
+[data-theme=dark] .record-student-suggestions{border-color:#42c8ff;box-shadow:0 12px 25px #0008}
+[data-theme=dark] .record-student-suggestion{border-bottom-color:#35495e;background:#17283a;color:#f8f8f2}
+[data-theme=dark] .record-student-suggestion:hover,[data-theme=dark] .record-student-suggestion:focus-visible{background:#293d52}
+[data-theme=dark] #saveRecordButton{color:#fff!important}
+@media(max-width:900px){.activity-layout .activity-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.activity-page-title{font-size:1.35rem}.activity-layout{width:100vw;margin-left:calc((100% - 100vw)/2);padding:36px 10px 14px}.activity-layout:has(.partial-info.is-open){grid-template-columns:minmax(0,1fr)}.activity-layout .activity-grid{grid-template-columns:minmax(0,1fr)}.activity-layout .activity-card{padding:14px}.activity-card>.btn-group{flex-direction:column;align-items:stretch}.activity-card>.btn-group .btn{width:100%}}
 
 /* Acciones de respaldo local y restauración entre navegadores. */
 .head-actions{gap:6px}.head-actions .backup-btn{font-size:.72rem;padding:8px 10px;white-space:nowrap}.head-actions #themeBtn{white-space:nowrap}
@@ -441,9 +468,170 @@ input,select,textarea,.btn,.param-row,.filter-grid .field,.subject-grid>.field,.
 .roster-action-open{border-color:#4d9dcc;background:linear-gradient(145deg,#f1faff,#d8eef9);color:#17668f}
 .roster-action-edit{border-color:#57a783;background:linear-gradient(145deg,#f3fff8,#d9f1e4);color:#267553}
 .roster-action-delete{border-color:#d58b91;background:linear-gradient(145deg,#fff8f8,#f8e2e4);color:#a53846}
+.roster-action-remove-subject{border-color:#bda3df;background:linear-gradient(145deg,#fcf9ff,#ece1fa);color:#7043a3}
 .roster-action-icon:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 [data-theme=dark] .roster-action-open{background:linear-gradient(145deg,#173a56,#102b42);border-color:#56c7f2;color:#a7e9ff}
 [data-theme=dark] .roster-action-edit{background:linear-gradient(145deg,#173c32,#102b25);border-color:#50fa7b;color:#aaffc0}
 [data-theme=dark] .roster-action-delete{background:linear-gradient(145deg,#482630,#321b25);border-color:#ff7080;color:#ffc0c7}
+[data-theme=dark] .roster-action-remove-subject{background:linear-gradient(145deg,#38284c,#2a203b);border-color:#bd93f9;color:#ead6ff}
 [data-theme=dark] .roster-action-icon{box-shadow:0 3px 8px #0005}
 @media(max-width:850px){.roster-action-icon{width:34px;height:34px;flex-basis:34px;padding:6px}.roster-action-icon svg{width:19px;height:19px}}
+
+.roster-student-lookup{display:grid;grid-template-columns:minmax(220px,.8fr) minmax(0,1.2fr);gap:8px 16px;align-items:center;margin:16px 0 18px;padding:16px;border:2px solid #8bb7d0;border-left:6px solid var(--primary);border-radius:8px;background:linear-gradient(135deg,#f0f8fd,#e3f0f8);box-shadow:inset 0 1px 0 #fff,0 5px 14px #234d6812}
+.roster-student-lookup>.field{grid-row:span 2}.roster-student-lookup>.field label{font-size:.72rem;font-weight:850;letter-spacing:.04em;text-transform:uppercase;color:var(--primary)}.roster-student-lookup input{min-height:44px;border:2px solid #8bb7d0;border-radius:7px;background:#fff;font:600 .86rem Sora,sans-serif}.roster-student-lookup input:focus{border-color:var(--primary);outline:3px solid #3984ae30}
+.roster-student-lookup>.param-hint{margin:0;font-size:.75rem}.roster-student-results{display:grid;gap:7px;max-height:240px;overflow:auto;overscroll-behavior:contain}.roster-search-empty{padding:12px 8px;font-size:.78rem}
+.roster-lookup-result{display:grid;grid-template-columns:40px minmax(130px,1fr) auto;align-items:center;gap:10px;padding:8px 10px;border:1px solid #c5d8e4;border-radius:7px;background:#ffffffc9;animation:rise-in .2s ease both}.roster-lookup-result .avatar{display:grid;place-items:center;width:36px;height:36px;margin:0;border-radius:50%;font-size:19px}.roster-lookup-person{display:grid;gap:2px;min-width:0}.roster-lookup-person>b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8rem}.roster-lookup-status{color:var(--muted);font-size:.67rem;font-weight:700}.roster-lookup-status.is-enrolled{color:#34805b}.roster-lookup-status.is-available{color:#216c98}.roster-lookup-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px}.roster-lookup-actions .btn{white-space:nowrap}.roster-open-file{border-color:#7eabc4;color:#225d7d;background:#f1f8fc}
+[data-theme=dark] .roster-student-lookup{background:linear-gradient(135deg,#122b43,#102c31);border-color:#427696;border-left-color:#8be9fd;box-shadow:inset 0 1px 0 #ffffff0a,0 5px 16px #0004}[data-theme=dark] .roster-student-lookup>.field label{color:#8be9fd}[data-theme=dark] .roster-student-lookup input{background:#101c2b;border-color:#55799e;color:#f5f9ff}[data-theme=dark] .roster-lookup-result{background:#18283a;border-color:#3d5b74}[data-theme=dark] .roster-lookup-status.is-enrolled{color:#7dff9c}[data-theme=dark] .roster-lookup-status.is-available{color:#8be9fd}[data-theme=dark] .roster-open-file{background:#173a56;border-color:#56c7f2;color:#a7e9ff}
+@media(max-width:700px){.roster-student-lookup{grid-template-columns:1fr;padding:12px}.roster-student-lookup>.field{grid-row:auto}.roster-lookup-result{grid-template-columns:38px minmax(0,1fr)}.roster-lookup-actions{grid-column:2;justify-content:flex-start}}
+
+/* Zona de edición: un panel central protagonista, con estética de mesa blueprint. */
+.section-bar.edit-zone-heading,.section-bar.edit-zone-heading.collapsible-heading{position:relative;display:grid;grid-template-columns:1fr;justify-items:center;gap:12px;width:min(100%,1160px);margin:42px auto 16px;padding:24px 24px 20px;border:2px solid #3288b7;border-top:7px solid #2675a3;border-radius:10px;background:radial-gradient(ellipse at 50% 0%,#ffffffd9,transparent 68%),linear-gradient(135deg,#dceefa,#eaf5fc 50%,#d5e9f6);box-shadow:0 14px 34px #164b6c29,inset 0 0 0 5px #ffffff95;text-align:center}
+.section-bar.edit-zone-heading.collapsible-heading{padding-bottom:20px;border-bottom:2px solid #3288b7;text-shadow:none}
+.edit-zone-title{display:grid;justify-items:center;gap:5px;width:100%;text-align:center}
+.edit-zone-kicker{display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border:1px solid #58a1c4;border-radius:4px;background:#cbe5f4;color:#185778;font:800 .7rem Inconsolata,monospace;letter-spacing:.14em}
+.edit-zone-kicker::before{width:8px;height:8px;border-radius:50%;background:#25a776;box-shadow:0 0 0 4px #25a77624;content:""}
+.edit-zone-title .section-title{justify-content:center;margin:4px 0 0;color:#123a55;font:800 clamp(1.45rem,2.5vw,2rem) Space Grotesk,sans-serif;letter-spacing:-.035em;text-shadow:0 2px 0 #ffffffa8}
+.edit-zone-title .section-title::before{display:none}
+.edit-zone-title>p{margin:0;color:#3f6881;font:600 .83rem Sora,sans-serif}
+.section-bar.edit-zone-heading .activity-toolbar{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.section-bar.edit-zone-heading>.collapse-toggle{position:absolute;top:12px;right:14px;margin:0}
+.activity-layout{padding:34px 20px 20px;border:3px solid #3288b7;border-radius:10px;background-color:#d9edf8;background-image:linear-gradient(#398bb51c 1px,transparent 1px),linear-gradient(90deg,#398bb51c 1px,transparent 1px),radial-gradient(ellipse at center,#f4faff 0%,#e1f0f9 78%);background-size:22px 22px,22px 22px,100% 100%;box-shadow:inset 0 0 0 7px #72b9dd24,inset 0 0 32px #3187b51d,0 15px 35px #184e6e24;animation:blueprint-drift 24s linear infinite}
+.activity-layout::before{top:9px;left:23px;color:#246487;font-size:.67rem;letter-spacing:.18em}
+.activity-layout::after{position:absolute;inset:9px;z-index:2;border:1px solid #3b8bb733;border-radius:5px;content:"";pointer-events:none}
+.activity-layout .activity-card{border:2px solid #5d9fc3;background:linear-gradient(145deg,#fffffffa,#eff8fd);box-shadow:0 12px 28px #154c6c26,inset 0 0 0 3px #deeff9}
+.activity-layout .activity-card .field{padding:9px;border:1px solid #d0e3ef;border-radius:6px;background:#f6fbfe}
+.activity-layout .activity-card label{color:#345f78}
+.activity-layout .activity-card input,.activity-layout .activity-card select{border-color:#8bb8d0;background:#fff}
+.activity-layout .partial-info{border:2px solid #50a28b;background:linear-gradient(155deg,#f4fcf8,#e0f2eb);box-shadow:0 12px 28px #154c6c1f}
+@keyframes blueprint-drift{to{background-position:22px 22px,22px 22px,0 0}}
+[data-theme=dark] .section-bar.edit-zone-heading,[data-theme=dark] .section-bar.edit-zone-heading.collapsible-heading{border-color:#57c9f1;border-top-color:#8be9fd;background:radial-gradient(ellipse at 50% 0%,#29445f,#151b2b 72%);box-shadow:0 16px 38px #0007,inset 0 0 0 5px #8be9fd12}
+[data-theme=dark] .section-bar.edit-zone-heading.collapsible-heading{border-bottom-color:#57c9f1}
+[data-theme=dark] .edit-zone-kicker{border-color:#4f91b2;background:#18394d;color:#a8eaff}
+[data-theme=dark] .edit-zone-kicker::before{background:#50fa7b;box-shadow:0 0 0 4px #50fa7b28}
+[data-theme=dark] .edit-zone-title .section-title{color:#f3f8ff;text-shadow:0 2px 12px #8be9fd42}
+[data-theme=dark] .edit-zone-title>p{color:#bdd3e4}
+[data-theme=dark] .activity-layout{border-color:#42c8ff;background-color:#091a2f;background-image:linear-gradient(#41b6e61e 1px,transparent 1px),linear-gradient(90deg,#41b6e61e 1px,transparent 1px),radial-gradient(ellipse at center,#153451 0%,#0a1a2d 78%);box-shadow:inset 0 0 0 7px #42c8ff1c,inset 0 0 38px #42c8ff1a,0 16px 38px #0007}
+[data-theme=dark] .activity-layout::before{color:#8be9fd}[data-theme=dark] .activity-layout::after{border-color:#8be9fd30}
+[data-theme=dark] .activity-layout .activity-card{border-color:#4a9ac0;background:linear-gradient(145deg,#162d46,#10243a);box-shadow:0 12px 30px #0006,inset 0 0 0 3px #8be9fd0d}
+[data-theme=dark] .activity-layout .activity-card .field{border-color:#385771;background:#152b41}[data-theme=dark] .activity-layout .activity-card label{color:#c7e3f4}[data-theme=dark] .activity-layout .activity-card input,[data-theme=dark] .activity-layout .activity-card select{border-color:#55799e;background:#091b30;color:#f5f9ff}
+[data-theme=dark] .activity-layout .partial-info{border-color:#50fa7b;background:linear-gradient(155deg,#153b36,#102b32);box-shadow:0 12px 30px #0006}
+@media(max-width:700px){.section-bar.edit-zone-heading,.section-bar.edit-zone-heading.collapsible-heading{padding:20px 14px 16px;margin-top:30px}.edit-zone-title .section-title{max-width:100%;font-size:1.42rem}.section-bar.edit-zone-heading>.collapse-toggle{top:8px;right:8px;width:32px;height:32px;padding:4px}.section-bar.edit-zone-heading>.collapse-toggle .collapse-label{display:none}.section-bar.edit-zone-heading .activity-toolbar{width:100%}.section-bar.edit-zone-heading .activity-toolbar .btn{flex:1;min-width:150px}.activity-layout{padding:32px 10px 12px}}
+[hidden]{display:none!important}
+
+/* Pestaña independiente para registrar alumnos nuevos y asignarlos a una materia. */
+.register-page-title,.register-page-intro{text-align:center}
+.register-page-title{font-size:1.65rem;margin:24px 0 8px}
+.register-page-intro{max-width:700px;margin:0 auto 18px}
+.new-pupil-card{max-width:980px;margin:0 auto 30px;padding:24px;background:linear-gradient(145deg,var(--surface),var(--primary-soft));border:2px solid var(--primary);box-shadow:0 14px 32px color-mix(in srgb,var(--primary) 16%,transparent)}
+.new-pupil-heading{display:flex;align-items:center;gap:13px;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid var(--line)}
+.new-pupil-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:10px;background:var(--green-soft);color:var(--green);font-size:1.4rem}
+.new-pupil-heading h3{margin:0;font-size:1.1rem;color:var(--ink)}
+.new-pupil-heading p{margin:3px 0 0;color:var(--muted);font-size:.8rem}
+.new-pupil-form{display:grid;grid-template-columns:58px minmax(180px,1.1fr) minmax(180px,1fr) auto;align-items:end;gap:14px}
+.new-pupil-form .avatar-picker{width:54px;height:54px;align-self:center}
+.new-pupil-form .field{min-width:0;margin:0}
+.new-pupil-form input,.new-pupil-form select{width:100%;min-height:46px}
+.register-pupil-submit{min-height:46px;white-space:normal;max-width:240px}
+.avatar-hint{margin:10px 0 0 72px;color:var(--muted);font-size:.75rem}
+.register-feedback{min-height:1.2em;margin:12px 0 0;text-align:center;color:var(--green);font-weight:700}
+.register-roster{max-width:1100px;margin:24px auto 30px}
+.register-roster>.section-title{font-size:1.25rem;color:var(--primary);margin-top:0}
+.register-roster>.section-title{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.roster-print-button{flex:0 0 auto;font-size:.76rem}
+.roster-subject-field{max-width:420px;margin:0 0 14px}
+.roster-subject-field select{width:100%;min-height:42px;padding:8px 10px;border:2px solid var(--line);border-radius:6px;background:var(--surface2);color:var(--ink);font:700 .82rem Sora,sans-serif}
+.grade-legend{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}
+.grade-legend span{display:inline-flex;align-items:center;min-height:28px;padding:4px 9px;border:1px solid currentColor;border-radius:5px;font-size:.68rem;font-weight:800}
+.grade-legend-low{color:#a32932;background:#ffe2e2}.grade-legend-warning{color:#845400;background:#fff0c2}.grade-legend-good{color:#17633b;background:#d9f5df}.grade-legend-perfect{color:#07522b;background:#91e7aa;box-shadow:0 0 0 2px #39a86655}
+.grades-roster-table td.grade-cell{font-weight:850;border:1px solid transparent;background-clip:padding-box}
+.grades-roster-table td.grade-status-low{color:#8b1d27;background:#ffe0e0;border-color:#d84a52;box-shadow:inset 0 0 0 1px #d84a52}
+.grades-roster-table td.grade-status-warning{color:#704900;background:#fff0c2;border-color:#d39a18}
+.grades-roster-table td.grade-status-good{color:#155c37;background:#d7f1dd;border-color:#4a9d63}
+.grades-roster-table td.grade-status-perfect{color:#064d27;background:#8ee2a3;border:2px solid #168343;box-shadow:inset 0 0 0 2px #ffffff80,0 0 0 2px #16834330;font-weight:900}
+[data-theme=dark] .grade-legend-low{color:#ffb3b8;background:#521f2a}[data-theme=dark] .grade-legend-warning{color:#ffe08a;background:#4b3b1c}[data-theme=dark] .grade-legend-good{color:#9ef0b4;background:#153c2c}[data-theme=dark] .grade-legend-perfect{color:#c6ffd2;background:#126337;box-shadow:0 0 0 2px #50fa7b55}
+[data-theme=dark] .grades-roster-table td.grade-status-low{color:#ffc4c8;background:#4b2029;border-color:#ff6673;box-shadow:inset 0 0 0 1px #ff6673}
+[data-theme=dark] .grades-roster-table td.grade-status-warning{color:#ffe5a0;background:#4a3b20;border-color:#e4b94e}
+[data-theme=dark] .grades-roster-table td.grade-status-good{color:#b3f5c1;background:#173d2b;border-color:#5bd17a}
+[data-theme=dark] .grades-roster-table td.grade-status-perfect{color:#e2ffea;background:#176b38;border:2px solid #62f28b;box-shadow:inset 0 0 0 2px #d0ffdc80,0 0 0 2px #62f28b55}
+[data-theme=dark] .register-roster{background:linear-gradient(145deg,#17243a,#1d3040);border-color:#6272a4}
+[data-theme=dark] .register-roster>.section-title{color:#bd93f9}
+[data-theme=dark] .new-pupil-card{background:linear-gradient(145deg,#202b40,#252d42);border-color:#6272a4;box-shadow:0 14px 32px #0005,inset 0 0 0 2px #bd93f914}
+[data-theme=dark] .new-pupil-heading{border-color:#41465c}
+[data-theme=dark] .new-pupil-icon{background:#304136;color:#a5f3b0}
+@media(max-width:850px){.new-pupil-form{grid-template-columns:58px minmax(0,1fr) minmax(0,1fr)}.register-pupil-submit{grid-column:2/-1;max-width:none}}
+@media(max-width:560px){.register-page-title{font-size:1.35rem}.new-pupil-card{padding:17px;margin-inline:4px}.new-pupil-form{grid-template-columns:52px minmax(0,1fr);gap:10px}.new-pupil-form>.field{grid-column:1/-1}.new-pupil-form .avatar-picker{grid-column:1;grid-row:1;width:48px;height:48px}.new-pupil-form>.field:nth-of-type(1){grid-column:2;grid-row:1}.register-pupil-submit{grid-column:1/-1}.avatar-hint{margin-left:0;text-align:center}.register-roster{margin:18px 4px}.register-roster>.section-title{align-items:flex-start;flex-direction:column}.roster-subject-field{max-width:none}.grade-legend{gap:5px}.grade-legend span{font-size:.61rem}}
+
+@page roster{size:A4 landscape;margin:9mm}
+@media print{
+  body.printing-roster>header,body.printing-roster>main>:not(#panel-register){display:none!important}
+  body.printing-roster #panel-register{display:block!important}
+  body.printing-roster #panel-register>:not(#rosterCard){display:none!important}
+  body.printing-roster #rosterCard{display:block!important;width:100%;max-width:none;margin:0;padding:0;border:0;box-shadow:none;background:#fff!important;color:#17283b!important;page:roster;break-inside:auto;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body.printing-roster #rosterCard.collapsible-target.is-collapsed>*:not(.collapsible-header-shell){display:block!important}
+  body.printing-roster #rosterCard *{visibility:visible}
+  body.printing-roster #rosterCard>.section-title{display:block;margin:0 0 8px;color:#17283b;font-size:16pt}
+  body.printing-roster #rosterCard>.section-title .collapse-toggle,body.printing-roster .roster-print-button,body.printing-roster .roster-subject-field,body.printing-roster .roster-view-controls,body.printing-roster .roster-student-lookup{display:none!important}
+  body.printing-roster .grade-legend{margin:4px 0 10px}
+  body.printing-roster .subject-grade-group{break-inside:auto;margin:0 0 12px}
+  body.printing-roster .subject-grade-group h4{break-after:avoid;color:#17283b}
+  body.printing-roster .table-wrap{overflow:visible}
+  body.printing-roster .grades-roster-table{width:100%;min-width:0;table-layout:auto;font-size:7.5pt}
+  body.printing-roster .grades-roster-table thead{display:table-header-group}
+  body.printing-roster .grades-roster-table th,body.printing-roster .grades-roster-table td{padding:4px 5px;white-space:normal;overflow-wrap:anywhere}
+  body.printing-roster .grades-roster-table tr{break-inside:avoid}
+  body.printing-roster .grades-roster-table td.grade-cell{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  body.printing-roster .grades-roster-table .avatar{width:25px;height:25px;font-size:12pt}
+  body.printing-roster .roster-action-icon{width:auto;height:auto;min-width:0;padding:2px 3px;border:0;background:transparent;color:#17283b;box-shadow:none;display:inline-flex;gap:2px;vertical-align:middle}
+  body.printing-roster .roster-action-icon svg{display:none}
+  body.printing-roster .roster-action-open::after{content:"Expediente"}
+  body.printing-roster .roster-action-edit::after{content:"Editar nombre"}
+  body.printing-roster .roster-action-delete::after{content:"Borrar"}
+  body.printing-roster .roster-action-remove-subject::after{content:"Quitar materia"}
+  body.printing-roster .roster-actions{min-width:140px}
+  body.printing-roster .btn{color:#17283b!important;border:1px solid #718096!important;background:#fff!important;font-size:6.5pt;padding:2px 4px;box-shadow:none}
+}
+/* Final layout overrides for the dedicated activity tab. */
+.activity-layout{width:calc(100% + 48px)!important;max-width:none!important;margin:0 0 0 -24px!important;grid-template-columns:minmax(0,1fr) 0fr!important}
+.activity-layout:has(.partial-info.is-open){max-width:none!important;grid-template-columns:minmax(0,1fr) minmax(260px,320px)!important}
+.activity-layout .activity-card{width:100%!important;max-width:none!important;min-width:0!important}
+.activity-layout .activity-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.activity-card .note-field,.activity-card .note-field input{width:100%;max-width:100%;min-width:0}
+.activity-card>.btn-group{width:100%;min-width:0;align-items:center}
+.activity-card>.btn-group .btn{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+#saveRecordButton{color:#fff!important}
+@media(max-width:900px){.activity-layout .activity-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.activity-layout{width:calc(100% + 28px)!important;margin-left:-14px!important;padding:36px 10px 14px}.activity-layout:has(.partial-info.is-open){grid-template-columns:minmax(0,1fr)!important}.activity-layout .activity-grid{grid-template-columns:minmax(0,1fr)}.activity-layout .activity-card{padding:14px}.activity-card>.btn-group{flex-direction:column;align-items:stretch}.activity-card>.btn-group .btn{width:100%}}
+/* Colores de contexto para el registro de actividad. */
+.activity-layout .activity-card .record-context-field{border:2px solid #d49443;background:linear-gradient(145deg,#fff4e4,#ffead0);box-shadow:inset 0 0 0 1px #ffffff90}
+.activity-layout .activity-card .record-context-field label{color:#8b4b17;font-weight:850}
+.activity-layout .activity-card .record-context-field input,.activity-layout .activity-card .record-context-field select{border-color:#d49443;background:#fffaf2}
+.activity-layout .activity-card .record-parameter-field{border:2px solid #2b83b8;background:linear-gradient(145deg,#e5f5ff,#cfeaff);box-shadow:inset 0 0 0 1px #ffffffa6,0 4px 12px #1b6c991c}
+.activity-layout .activity-card .record-parameter-field label{color:#14567b;font-weight:900}
+.activity-layout .activity-card .record-parameter-field select{border-color:#2382b9;background:#f5fbff;color:#103d5a;font-weight:800}
+.activity-layout .activity-card .record-parameter-field .category-icon-preview{color:#1475aa}
+[data-theme=dark] .activity-layout .activity-card .record-context-field{border-color:#e3a45d;background:linear-gradient(145deg,#3d3027,#35291f);box-shadow:inset 0 0 0 1px #ffd9ac12}
+[data-theme=dark] .activity-layout .activity-card .record-context-field label{color:#ffd09a}
+[data-theme=dark] .activity-layout .activity-card .record-context-field input,[data-theme=dark] .activity-layout .activity-card .record-context-field select{border-color:#bd8144;background:#211d1a;color:#fff1dd}
+[data-theme=dark] .activity-layout .activity-card .record-parameter-field{border-color:#42c8ff;background:linear-gradient(145deg,#123b59,#102f4b);box-shadow:inset 0 0 0 1px #8be9fd18,0 5px 14px #0004}
+[data-theme=dark] .activity-layout .activity-card .record-parameter-field label{color:#a8eaff}
+[data-theme=dark] .activity-layout .activity-card .record-parameter-field select{border-color:#42c8ff;background:#091b30;color:#f4fbff}
+[data-theme=dark] .activity-layout .activity-card .record-parameter-field .category-icon-preview{color:#8be9fd}
+.grades-roster-table td .grade-performance{display:block;margin-top:3px;font-size:.68rem;line-height:1.2;font-weight:750;letter-spacing:.01em;opacity:.88;white-space:nowrap}
+@media print{body.printing-roster .grades-roster-table td .grade-performance{font-size:6.5pt}}
+.roster-view-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex:1;flex-wrap:wrap}
+.roster-view-actions>span{font-size:.72rem;color:var(--muted)}
+.roster-metric-toggle{border-color:var(--primary);background:var(--primary-soft);color:var(--ink);font-size:.72rem;font-weight:850;white-space:nowrap}
+.roster-metric-toggle:hover{background:var(--primary);color:#fff}
+[data-theme=dark] .roster-metric-toggle{border-color:#6272a4;background:#343746;color:#f8f8f2}
+[data-theme=dark] .roster-metric-toggle:hover{border-color:#bd93f9;background:#bd93f9;color:#282a36}
+@media(max-width:560px){.roster-view-actions{justify-content:flex-start;flex-direction:column;align-items:stretch}.roster-metric-toggle{width:100%}}
+/* Table roster polish: compact purple removal action and single-line columns. */
+.btn-remove-subject{min-height:28px;padding:4px 7px;border:1px solid #7751a8;background:#7751a8;color:#fff;font-size:.63rem;line-height:1.1;font-weight:800;white-space:nowrap}
+.btn-remove-subject:hover{border-color:#5d388e;background:#5d388e;color:#fff}
+[data-theme=dark] .btn-remove-subject{border-color:#bd93f9;background:#bd93f9;color:#282a36}
+[data-theme=dark] .btn-remove-subject:hover{border-color:#d3b6ff;background:#d3b6ff;color:#282a36}
+.register-roster .grades-roster-table{width:max-content;min-width:100%;table-layout:auto}
+.register-roster .grades-roster-table th,.register-roster .grades-roster-table td{white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important}
+.register-roster .roster-expediente-cell,.register-roster .roster-action-open{min-width:86px;white-space:nowrap!important}
+.register-roster .roster-actions{white-space:nowrap!important;min-width:max-content}
+body.printing-roster .roster-action-open::after{white-space:nowrap}
