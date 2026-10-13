@@ -1,30 +1,356 @@
 <!doctype html>
 <html lang="es" data-theme="light">
+
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#eaf1f8">
-<title>EvalPro — Evaluador académico</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link rel="stylesheet" href="evaluador.css?v=46"></head>
-<body><header><div class="head"><div class="logo">Eval<span>Pro</span> <small>Evaluador académico</small></div><div class="head-actions"><button class="btn backup-btn" type="button" onclick="exportBackup()">⬇ Exportar datos</button><button class="btn backup-btn" type="button" onclick="document.getElementById('backupFileInput').click()">⬆ Cargar datos</button><input id="backupFileInput" type="file" accept=".json,application/json" hidden><button id="themeBtn" class="btn" type="button" onclick="toggleTheme()">🌙 Modo oscuro</button></div></div></header>
-<main><nav class="folder-tabs no-print" aria-label="Secciones de EvalPro"><button class="folder-tab active" data-tab="exam" onclick="switchTab(this)">📝 Examen</button><button class="folder-tab" data-tab="book" onclick="switchTab(this)">📘 Cuaderno y seguimiento</button><button class="folder-tab" data-tab="activity" onclick="switchTab(this)">🖊️ Registro de actividad</button><button class="folder-tab" data-tab="register" onclick="switchTab(this)">👤 Registrar alumnos</button><button class="folder-tab" data-tab="records" onclick="switchTab(this)">🗂️ Expedientes</button></nav><div id="panel-exam" class="tab-panel">
-<h2 class="section-title">Configuración del examen</h2><section class="card config-card no-print"><div class="grid"><div class="field"><label for="examConfigSubject">Materia que estás configurando</label><select id="examConfigSubject" onchange="selectExamConfigSubject(this.value)"></select></div><div class="field"><label for="examConfigPartial">Parcial que estás configurando</label><select id="examConfigPartial" onchange="selectExamConfigPartial(this.value)"></select></div><div class="field"><label for="pesoExamen">Peso del examen en el parcial (%)</label><input id="pesoExamen" type="number" min="0" max="100" step="1" value="30"></div></div><p class="param-hint">Cada materia y parcial guardan su propia configuración. El peso del examen forma parte del 100% del parcial y equivale a <b id="pesoPuntos">3</b> puntos de 10.</p><h3 class="section-title">Parámetros evaluados</h3><div id="params" class="param-list"></div><p id="weightHint" class="param-hint"></p><div class="btn-group"><button class="btn btn-orange" onclick="addParam()">＋ Añadir parámetro</button><button class="btn btn-primary" onclick="applyConfig()">Aplicar configuración</button><button class="btn" onclick="resetAll()">Limpiar tabla de examen</button></div></section>
-<h2 class="section-title no-print">Registrar calificación</h2><section class="card student-card no-print"><div class="student-grid exam-student-controls"><div class="field"><label for="examStudentMode">Acción</label><select id="examStudentMode" onchange="setExamStudentMode(this.value)"><option value="new">Registrar alumno nuevo</option><option value="existing">Calificar alumno existente</option></select></div><div class="field"><label for="examSubject">Materia</label><select id="examSubject" onchange="selectExamConfigSubject(this.value)"></select></div><div class="field"><label for="examPartial">Parcial</label><select id="examPartial" onchange="selectExamConfigPartial(this.value)"></select></div><div class="field" id="examNewStudentField"><label for="studentName">Nombre del alumno</label><input id="studentName" placeholder="Apellido, Nombre"></div><div class="field" id="examExistingStudentField" hidden><label for="existingExamStudent">Alumno registrado</label><select id="existingExamStudent" onchange="loadExistingExamStudent()"></select></div></div><div id="scoreInputs" class="scores-grid"></div><p id="examParametersSummary" class="exam-parameters-summary" aria-live="polite"></p><div class="field exam-grade"><label for="studentWeight">Calificación calculada del examen (/10)</label><input id="studentWeight" type="number" min="0" max="10" step="0.01" placeholder="Se calcula con los parámetros" readonly><small id="gradePreview" class="calculation-preview">Ingresa los puntajes de cada parámetro.</small></div><div class="btn-group"><button class="btn btn-green" onclick="addStudent()">＋ Guardar calificación</button></div></section>
-<section id="dashboard" hidden><h2 class="section-title">Resumen del grupo</h2><div class="dashboard-summary"><div id="stats" class="stats"></div><div class="charts"><div class="chart-box"><div class="chart-title">Calificación por alumno</div><canvas id="barChart"></canvas></div><div class="chart-box"><div class="chart-title">Promedio por parámetro</div><canvas id="doughnutChart"></canvas></div></div></div><h2 class="section-title">Resultados</h2><section class="card"><div class="table-wrap"><table><thead><tr><th>#</th><th>Alumno</th><th>Materia</th><th>Parcial</th><th>Examen /10</th><th>Aporte al parcial /10</th><th>Nota por componente</th><th class="no-print">Acción</th></tr></thead><tbody id="rows"></tbody></table></div><div class="btn-group no-print"><button class="btn" onclick="window.print()">Imprimir / Guardar PDF</button></div></section></div>
-<div id="panel-register" class="tab-panel" hidden><h2 class="section-title register-page-title">Registrar alumnos</h2><p class="param-hint register-page-intro">Crea el expediente básico de cada estudiante y asígnalo a la materia correspondiente.</p><section class="card new-pupil-card"><div class="new-pupil-heading"><span class="new-pupil-icon" aria-hidden="true">✦</span><div><h3>Nuevo registro</h3><p>La información quedará guardada en este navegador.</p></div></div><div class="new-pupil-form"><button id="newStudentAvatar" class="avatar avatar-picker avatar-neutral" type="button" onclick="cycleRegistrationAvatar()" aria-label="Cambiar avatar del alumno" title="Pulsa para cambiar el avatar">🧑‍🎓</button><div class="field"><label for="newStudentName">Nombre completo</label><input id="newStudentName" placeholder="Apellido, Nombre" autocomplete="name"></div><div class="field"><label for="newStudentSubject">Materia a asignar</label><select id="newStudentSubject"><option value="">Selecciona una materia</option></select></div><button type="button" class="btn btn-green register-pupil-submit" onclick="registerStudentToSubject()">＋ Guardar alumno y asignar materia</button></div><p class="avatar-hint">Pulsa el avatar para cambiar entre opciones.</p><p id="newStudentFeedback" class="param-hint register-feedback" aria-live="polite"></p></section><section id="rosterCard" class="card book-roster register-roster"><h3 class="section-title"><span>Alumnos registrados</span><button type="button" class="btn btn-primary roster-print-button" onclick="printRoster()">▣ Imprimir / Guardar PDF</button></h3><div class="field roster-subject-field"><label for="rosterSubject">Materia para filtrar o asignar</label><select id="rosterSubject" onchange="selectSubject(this.value)"></select></div><div class="roster-view-controls"><div class="field"><label for="rosterGradeView">Vista de calificaciones</label><select id="rosterGradeView" onchange="selectRosterGradeView(this.value)"><option value="p1">Parcial 1</option><option value="p2">Parcial 2</option><option value="p3">Parcial 3</option><option value="final">FINAL</option><option value="overall">CALIFICACIÓN FINAL</option></select></div><div class="roster-view-actions"><span>Las celdas sin calificación aparecen como S/R. El aporte de cada parámetro se expresa en la escala final de 0 a 10.</span></div></div><div class="grade-legend" aria-label="Leyenda de rendimiento"><span class="grade-legend-low">Reprobatorio · menos de 50%</span><span class="grade-legend-warning">50% a menos de 75%</span><span class="grade-legend-good">75% a menos de 100%</span><span class="grade-legend-perfect">100% · máximo</span></div><div class="roster-student-lookup"><div class="field"><label for="rosterStudentSearch">Buscar alumno guardado</label><input id="rosterStudentSearch" type="search" placeholder="Escribe el nombre del alumno…" autocomplete="off" oninput="renderRosterSearchResults()"></div><p class="param-hint">Busca un alumno registrado para abrir su expediente o agregarlo a la materia activa.</p><div id="rosterStudentResults" class="roster-student-results" aria-live="polite"><div class="empty">Escribe un nombre para buscar alumnos guardados.</div></div></div><div id="rosterList" class="roster-list"></div></section></div><div id="panel-book" class="tab-panel" hidden>
-<h2 class="section-title">Cuaderno y seguimiento del semestre</h2><p class="param-hint page-intro">Registra alumnos y conserva su historial de tareas, exámenes, trabajos y participación. En cada materia y parcial, el peso del examen más las actividades debe sumar 100%.</p>
-<section class="card subject-manager"><h3 class="section-title">Materias y grupos</h3><p class="param-hint">Crea materias y asigna alumnos existentes. Un alumno puede pertenecer a varias materias.</p><div class="subject-grid"><div class="field"><label for="activeSubject">Materia activa / filtro</label><select id="activeSubject" onchange="selectSubject(this.value)"></select></div><div class="field"><label for="newSubjectName">Crear materia</label><input id="newSubjectName" placeholder="Ej. Física I"></div><div class="field subject-action"><label>&nbsp;</label><button class="btn btn-primary" onclick="createSubject()">＋ Crear materia</button></div><div class="field"><label for="subjectMember">Agregar alumno registrado</label><select id="subjectMember"></select></div><div class="field subject-action"><label>&nbsp;</label><button class="btn btn-green" onclick="assignMemberToSubject()">＋ Asignar a materia</button></div></div></section>
-<div class="book-columns">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0d6990">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="EvalPro">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>EvalPro — Evaluador académico</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="evaluador.css?v=49">
+    <link rel="icon" href="icons/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/evalpro-icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.webmanifest">
+</head>
 
-<section id="bookConfig" class="card book-config"><h3 class="section-title">Parámetros por materia y parcial</h3><p class="param-hint">Los pesos de los parámetros configurados, incluido el examen si lo nombraste así, deben sumar 100% por parcial.</p><div class="partial-controls"><div class="field"><label for="configSubject">Materia que estás configurando</label><select id="configSubject" onchange="selectConfigSubject(this.value)"></select></div><div class="field"><label for="partialSelector">Parcial que estás configurando</label><select id="partialSelector" onchange="selectPartial(this.value)"></select></div><div class="field"><label for="newPartialName">Crear parcial</label><input id="newPartialName" placeholder="Ej. Parcial 2"></div><button class="btn btn-primary" type="button" onclick="createPartial()">＋ Crear parcial</button></div><div id="bookParams" class="param-list"></div><div class="btn-group"><button class="btn btn-orange" onclick="addBookParam()">＋ Agregar parámetro</button><button class="btn btn-primary" onclick="saveBookParams()">Guardar parámetros</button></div><p id="bookWeightHint" class="param-hint" aria-live="polite" role="status"></p></section>
-</div>
+<body>
+    <header>
+        <div class="head">
+            <div class="logo">Eval<span>Pro</span> <small>Evaluador académico</small></div>
+            <div class="head-actions"><button class="btn backup-btn" type="button" onclick="exportBackup()" aria-label="Exportar datos" title="Exportar datos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/></svg><span>Exportar</span></button><button class="btn backup-btn" type="button" onclick="document.getElementById('backupFileInput').click()" aria-label="Cargar datos" title="Cargar datos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V9m0 0 4 4m-4-4-4 4M5 7V4h14v3"/></svg><span>Cargar</span></button><input id="backupFileInput" type="file" accept=".json,application/json" hidden><button id="themeBtn" class="btn theme-icon-button" type="button" onclick="toggleTheme()" aria-label="Cambiar tema" title="Cambiar tema"></button><button id="mobileMenuBtn" class="btn mobile-menu-button" type="button" onclick="toggleMobileMenu()" aria-label="Abrir menú de secciones" aria-expanded="false" aria-controls="sectionNav"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="6" r="1.2"/><circle cx="5" cy="12" r="1.2"/><circle cx="5" cy="18" r="1.2"/><path d="M10 6h9M10 12h9M10 18h9"/></svg></button></div>
+        </div>
+    </header>
+    <main>
+        <nav id="sectionNav" class="folder-tabs no-print" aria-label="Secciones de EvalPro"><button class="folder-tab active"
+                data-tab="exam" onclick="switchTab(this)">📝 Examen</button><button class="folder-tab" data-tab="book"
+                onclick="switchTab(this)">📘 Cuaderno y seguimiento</button><button class="folder-tab"
+                data-tab="activity" onclick="switchTab(this)">🖊️ Registro de actividad</button><button
+                class="folder-tab" data-tab="register" onclick="switchTab(this)">👤 Registrar alumnos</button><button
+                class="folder-tab" data-tab="records" onclick="switchTab(this)">🗂️ Expedientes</button></nav>
+        <div id="panel-exam" class="tab-panel">
+            <h2 class="section-title">Configuración del examen</h2>
+            <section class="card config-card no-print">
+                <div class="grid">
+                    <div class="field"><label for="examConfigSubject">Materia que estás configurando</label><select
+                            id="examConfigSubject" onchange="selectExamConfigSubject(this.value)"></select></div>
+                    <div class="field"><label for="examConfigPartial">Parcial que estás configurando</label><select
+                            id="examConfigPartial" onchange="selectExamConfigPartial(this.value)"></select></div>
+                    <div class="field"><label for="pesoExamen">Peso del examen en el parcial (%)</label><input
+                            id="pesoExamen" type="number" min="0" max="100" step="1" value="30"></div>
+                </div>
+                <p class="param-hint">Cada materia y parcial guardan su propia configuración. El peso del examen forma
+                    parte del 100% del parcial y equivale a <b id="pesoPuntos">3</b> puntos de 10.</p>
+                <h3 class="section-title">Parámetros evaluados</h3>
+                <div id="params" class="param-list"></div>
+                <p id="weightHint" class="param-hint"></p>
+                <div class="btn-group"><button class="btn btn-orange" onclick="addParam()">＋ Añadir
+                        parámetro</button><button class="btn btn-primary" onclick="applyConfig()">Aplicar
+                        configuración</button><button class="btn" onclick="resetAll()">Limpiar tabla de examen</button>
+                </div>
+            </section>
+            <h2 class="section-title no-print">Registrar calificación</h2>
+            <section class="card student-card no-print">
+                <div class="student-grid exam-student-controls">
+                    <div class="field"><label for="examStudentMode">Acción</label><select id="examStudentMode"
+                            onchange="setExamStudentMode(this.value)">
+                            <option value="new">Registrar alumno nuevo</option>
+                            <option value="existing">Calificar alumno existente</option>
+                        </select></div>
+                    <div class="field"><label for="examSubject">Materia</label><select id="examSubject"
+                            onchange="selectExamConfigSubject(this.value)"></select></div>
+                    <div class="field"><label for="examPartial">Parcial</label><select id="examPartial"
+                            onchange="selectExamConfigPartial(this.value)"></select></div>
+                    <div class="field" id="examNewStudentField"><label for="studentName">Nombre del alumno</label><input
+                            id="studentName" placeholder="Apellido, Nombre"></div>
+                    <div class="field" id="examExistingStudentField" hidden><label for="existingExamStudent">Alumno
+                            registrado</label><select id="existingExamStudent"
+                            onchange="loadExistingExamStudent()"></select></div>
+                </div>
+                <div id="scoreInputs" class="scores-grid"></div>
+                <p id="examParametersSummary" class="exam-parameters-summary" aria-live="polite"></p>
+                <div class="field exam-grade"><label for="studentWeight">Calificación calculada del examen
+                        (/10)</label><input id="studentWeight" type="number" min="0" max="10" step="0.01"
+                        placeholder="Se calcula con los parámetros" readonly><small id="gradePreview"
+                        class="calculation-preview">Ingresa los puntajes de cada parámetro.</small></div>
+                <div class="btn-group"><button class="btn btn-green" onclick="addStudent()">＋ Guardar
+                        calificación</button></div>
+            </section>
+            <section id="dashboard" hidden>
+                <h2 class="section-title">Resumen del grupo</h2>
+                <div class="dashboard-summary">
+                    <div id="stats" class="stats"></div>
+                    <div class="charts">
+                        <div class="chart-box">
+                            <div class="chart-title">Calificación por alumno</div><canvas id="barChart"></canvas>
+                        </div>
+                        <div class="chart-box">
+                            <div class="chart-title">Promedio por parámetro</div><canvas id="doughnutChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <h2 class="section-title">Resultados</h2>
+                <section class="card">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Alumno</th>
+                                    <th>Materia</th>
+                                    <th>Parcial</th>
+                                    <th>Examen /10</th>
+                                    <th>Aporte al parcial /10</th>
+                                    <th>Nota por componente</th>
+                                    <th class="no-print">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rows"></tbody>
+                        </table>
+                    </div>
+                    <div class="btn-group no-print"><button class="btn" onclick="window.print()">Imprimir / Guardar
+                            PDF</button></div>
+                </section>
+        </div>
+        <div id="panel-register" class="tab-panel" hidden>
+            <h2 class="section-title register-page-title">Registrar alumnos</h2>
+            <p class="param-hint register-page-intro">Crea el expediente básico de cada estudiante y asígnalo a la
+                materia correspondiente.</p>
+            <section class="card new-pupil-card">
+                <div class="new-pupil-heading"><span class="new-pupil-icon" aria-hidden="true">✦</span>
+                    <div>
+                        <h3>Nuevo registro</h3>
+                        <p>La información quedará guardada en este navegador.</p>
+                    </div>
+                </div>
+                <div class="new-pupil-form"><button id="newStudentAvatar" class="avatar avatar-picker avatar-neutral"
+                        type="button" onclick="cycleRegistrationAvatar()" aria-label="Cambiar avatar del alumno"
+                        title="Pulsa para cambiar el avatar">🧑‍🎓</button>
+                    <div class="field"><label for="newStudentName">Nombre completo</label><input id="newStudentName"
+                            placeholder="Apellido, Nombre" autocomplete="name"></div>
+                    <div class="field"><label for="newStudentSubject">Materia a asignar</label><select
+                            id="newStudentSubject">
+                            <option value="">Selecciona una materia</option>
+                        </select></div><button type="button" class="btn btn-green register-pupil-submit"
+                        onclick="registerStudentToSubject()">＋ Guardar alumno y asignar materia</button>
+                </div>
+                <p class="avatar-hint">Pulsa el avatar para cambiar entre opciones.</p>
+                <p id="newStudentFeedback" class="param-hint register-feedback" aria-live="polite"></p>
+            </section>
+            <section id="rosterCard" class="card book-roster register-roster">
+                <h3 class="section-title"><span>Alumnos registrados</span><button type="button"
+                        class="btn btn-primary roster-print-button" onclick="printRoster()">▣ Imprimir / Guardar
+                        PDF</button></h3>
+                <div class="field roster-subject-field"><label for="rosterSubject">Materia para filtrar o
+                        asignar</label><select id="rosterSubject" onchange="selectSubject(this.value)"></select></div>
+                <div class="roster-view-controls">
+                    <div class="field"><label for="rosterGradeView">Vista de calificaciones</label><select
+                            id="rosterGradeView" onchange="selectRosterGradeView(this.value)">
+                            <option value="p1">Parcial 1</option>
+                            <option value="p2">Parcial 2</option>
+                            <option value="p3">Parcial 3</option>
+                            <option value="final">FINAL</option>
+                            <option value="overall">CALIFICACIÓN FINAL</option>
+                        </select></div>
+                    <div class="roster-view-actions"><span>Las celdas sin calificación aparecen como S/R. El aporte de
+                            cada parámetro se expresa en la escala final de 0 a 10.</span></div>
+                </div>
+                <div class="grade-legend" aria-label="Leyenda de rendimiento"><span
+                        class="grade-legend-low">Reprobatorio · menos de 50%</span><span
+                        class="grade-legend-warning">50% a menos de 75%</span><span class="grade-legend-good">75% a
+                        menos de 100%</span><span class="grade-legend-perfect">100% · máximo</span></div>
+                <div class="roster-student-lookup">
+                    <div class="field"><label for="rosterStudentSearch">Buscar alumno guardado</label><input
+                            id="rosterStudentSearch" type="search" placeholder="Escribe el nombre del alumno…"
+                            autocomplete="off" oninput="renderRosterSearchResults()"></div>
+                    <p class="param-hint">Busca un alumno registrado para abrir su expediente o agregarlo a la materia
+                        activa.</p>
+                    <div id="rosterStudentResults" class="roster-student-results" aria-live="polite">
+                        <div class="empty">Escribe un nombre para buscar alumnos guardados.</div>
+                    </div>
+                </div>
+                <div id="rosterList" class="roster-list"></div>
+            </section>
+        </div>
+        <div id="panel-book" class="tab-panel" hidden>
+            <h2 class="section-title">Cuaderno y seguimiento del semestre</h2>
+            <p class="param-hint page-intro">Registra alumnos y conserva su historial de tareas, exámenes, trabajos y
+                participación. En cada materia y parcial, el peso del examen más las actividades debe sumar 100%.</p>
+            <section class="card subject-manager">
+                <h3 class="section-title">Materias y grupos</h3>
+                <p class="param-hint">Crea materias y asigna alumnos existentes. Un alumno puede pertenecer a varias
+                    materias.</p>
+                <div class="subject-grid">
+                    <div class="field"><label for="activeSubject">Materia activa / filtro</label><select
+                            id="activeSubject" onchange="selectSubject(this.value)"></select></div>
+                    <div class="field"><label for="newSubjectName">Crear materia</label><input id="newSubjectName"
+                            placeholder="Ej. Física I"></div>
+                    <div class="field subject-action"><label>&nbsp;</label><button class="btn btn-primary"
+                            onclick="createSubject()">＋ Crear materia</button></div>
+                    <div class="field"><label for="subjectMember">Agregar alumno registrado</label><select
+                            id="subjectMember"></select></div>
+                    <div class="field subject-action"><label>&nbsp;</label><button class="btn btn-green"
+                            onclick="assignMemberToSubject()">＋ Asignar a materia</button></div>
+                </div>
+            </section>
+            <div class="book-columns">
+
+                <section id="bookConfig" class="card book-config">
+                    <h3 class="section-title">Parámetros por materia y parcial</h3>
+                    <p class="param-hint">Los pesos de los parámetros configurados, incluido el examen si lo nombraste
+                        así, deben sumar 100% por parcial.</p>
+                    <div class="partial-controls">
+                        <div class="field"><label for="configSubject">Materia que estás configurando</label><select
+                                id="configSubject" onchange="selectConfigSubject(this.value)"></select></div>
+                        <div class="field"><label for="partialSelector">Parcial que estás configurando</label><select
+                                id="partialSelector" onchange="selectPartial(this.value)"></select></div>
+                        <div class="field"><label for="newPartialName">Crear parcial</label><input id="newPartialName"
+                                placeholder="Ej. Parcial 2"></div><button class="btn btn-primary" type="button"
+                            onclick="createPartial()">＋ Crear parcial</button>
+                    </div>
+                    <div id="bookParams" class="param-list"></div>
+                    <div class="btn-group"><button class="btn btn-orange" onclick="addBookParam()">＋ Agregar
+                            parámetro</button><button class="btn btn-primary" onclick="saveBookParams()">Guardar
+                            parámetros</button></div>
+                    <p id="bookWeightHint" class="param-hint" aria-live="polite" role="status"></p>
+                </section>
+            </div>
 
 
-</div><div id="panel-activity" class="tab-panel" hidden><h2 class="section-title activity-page-title">Registro de actividades y calificaciones</h2><p class="param-hint activity-page-intro">Selecciona un alumno, su materia y parcial para registrar o editar su seguimiento.</p><div class="section-bar edit-zone-heading"><div class="edit-zone-title"><span class="edit-zone-kicker">ZONA DE EDICIÓN · PARCIAL ACTIVO</span><h2 class="section-title">Registrar actividad o calificación</h2><p>Configura parámetros, captura actividades y ajusta calificaciones del alumno.</p></div><div class="activity-toolbar"><button class="btn btn-orange" onclick="editBookParams()">⚙ Editar parámetros</button><button id="togglePartialInfo" class="btn" type="button" aria-expanded="false" onclick="togglePartialInfo()">Mostrar parámetros de evaluación de la materia</button></div></div><div class="activity-layout"><section class="card activity-card"><div class="activity-grid"><div class="field record-student-search-field record-context-field"><label for="recordStudentSearch">Buscar alumno</label><input id="recordStudentSearch" type="search" placeholder="Escribe una letra para buscar…" autocomplete="off" oninput="renderRecordStudentSuggestions(this.value)" onfocus="renderRecordStudentSuggestions(this.value)"><div id="recordStudentSearchResults" class="record-student-suggestions" hidden></div><select id="recordStudent" onchange="refreshRecordSubjects()" hidden aria-hidden="true"></select></div><div class="field record-context-field"><label for="recordSubject">Materia</label><select id="recordSubject" onchange="selectRecordSubject(this.value)"></select></div><div class="field record-context-field"><label for="recordPartial">Parcial</label><select id="recordPartial" onchange="selectRecordPartial(this.value)"></select></div><div class="field record-parameter-field"><label for="recordCategory">Tipo / parámetro</label><div class="category-select-row"><span id="categoryIcon" class="category-icon-preview"></span><select id="recordCategory" onchange="refreshRecordParameterInfo()"></select></div></div><div class="field"><label for="recordTitle">Actividad</label><input id="recordTitle" placeholder="Ej. Tarea 3, examen parcial"></div><div class="field"><label for="recordDate">Fecha</label><input id="recordDate" type="date"></div><div class="field" id="recordScoreField"><label for="recordScore">Calificación del parámetro (% del parcial)</label><div class="percent-entry"><input id="recordScore" type="number" min="0" max="100" step="0.01" placeholder="Ej. 15"><span>% del parcial</span></div><small id="paramGradeLimit" class="calculation-preview">Se calcula según el peso del parámetro.</small></div><div class="field" id="recordMaxField"><label for="recordMax">Puntaje máximo</label><input id="recordMax" type="number" min="0.01" step="any" value="10"></div><div class="field task-count-field" id="recordTaskCounts" hidden><label>Control de tareas</label><div class="task-count-inputs"><div class="field"><label for="tasksDelivered">Tareas entregadas</label><input id="tasksDelivered" type="number" min="0" step="1" placeholder="0" aria-label="Número de tareas entregadas"></div><div class="field"><label for="tasksTotal">Tareas totales</label><input id="tasksTotal" type="number" min="1" step="1" placeholder="0" aria-label="Número total de tareas"></div></div><small id="taskGradePreview" class="calculation-preview">Ingresa entregadas y totales.</small></div></div><div class="field note-field"><label for="recordNote">Nota / observación (opcional)</label><input id="recordNote" placeholder="Entrega completa, requiere revisión…"></div><div class="btn-group"><button id="saveRecordButton" class="btn btn-green" onclick="addRecord()">＋ Guardar en expediente</button><button id="cancelRecordButton" class="btn" type="button" onclick="cancelRecordEdit()" hidden>Cancelar edición</button></div></section><aside id="partialInfo" class="partial-info" aria-live="polite"></aside></div></div><div id="panel-records" class="tab-panel" hidden><h2 class="section-title">Expedientes</h2><section class="card global-filters no-print" aria-label="Buscar y filtrar alumnos"><div class="filter-heading"><h2 class="section-title">Buscar alumnos</h2><span id="filterSummary" class="filter-summary">Todos los alumnos</span></div><div class="filter-grid"><div class="field search-field"><label for="globalSearch">Nombre del alumno</label><input id="globalSearch" type="search" placeholder="Buscar por nombre…" autocomplete="off"></div><div class="field"><label for="globalSubject">Materia</label><select id="globalSubject"><option value="">Todas las materias</option></select></div><div class="field"><label for="globalStatus">Resultado</label><select id="globalStatus"><option value="all">Todos</option><option value="passed">Aprobados (6 o más)</option><option value="failed">Reprobados (menos de 6)</option><option value="ungraded">Sin calificación</option></select></div><div class="field"><label for="globalSort">Ordenar por</label><select id="globalSort"><option value="name">Nombre (A–Z)</option><option value="grade-desc">Mayor calificación</option><option value="grade-asc">Menor calificación</option><option value="records">Más registros</option></select></div><div class="filter-actions"><button class="btn" type="button" onclick="clearFilters()">Limpiar filtros</button></div></div></section><section id="globalStudentResults" class="card global-student-results no-print" hidden aria-live="polite"></section><section id="studentFile" class="card file-card" hidden><div class="file-heading"><div class="file-title"><span id="fileAvatar" class="avatar avatar-large">🧑‍🎓</span><div><h3 id="fileName" class="section-title"></h3><p id="fileSummary" class="param-hint"></p></div></div><div class="file-actions"><button class="btn btn-primary" onclick="printStudentFile()">▣ Guardar / imprimir PDF</button><button class="btn" onclick="clearSelectedStudent()">Cerrar expediente</button></div></div><div id="fileStats" class="stats"></div><h3 class="section-title">Historial del alumno</h3><div id="recordList" class="record-list"></div></section></div></main><div id="toast" class="toast"></div>
-<script src="evaluador.js?v=18" defer></script><script src="filtros.js?v=9" defer></script><script src="parciales.js?v=13" defer></script><script src="calificaciones.js?v=15" defer></script><script src="backup.js?v=2" defer></script></body></html>
+        </div>
+        <div id="panel-activity" class="tab-panel" hidden>
+            <h2 class="section-title activity-page-title">Registro de actividades y calificaciones</h2>
+            <p class="param-hint activity-page-intro">Selecciona un alumno, su materia y parcial para registrar o editar
+                su seguimiento.</p>
+            <div class="section-bar edit-zone-heading">
+                <div class="edit-zone-title"><span class="edit-zone-kicker">ZONA DE EDICIÓN · PARCIAL ACTIVO</span>
+                    <h2 class="section-title">Registrar actividad o calificación</h2>
+                    <p>Configura parámetros, captura actividades y ajusta calificaciones del alumno.</p>
+                </div>
+                <div class="activity-toolbar"><button class="btn btn-orange" onclick="editBookParams()">⚙ Editar
+                        parámetros</button><button id="togglePartialInfo" class="btn" type="button"
+                        aria-expanded="false" onclick="togglePartialInfo()">Mostrar parámetros de evaluación de la
+                        materia</button></div>
+            </div>
+            <div class="activity-layout">
+                <section class="card activity-card">
+                    <div class="activity-grid">
+                        <div class="field record-student-search-field record-context-field"><label
+                                for="recordStudentSearch">Buscar alumno</label><input id="recordStudentSearch"
+                                type="search" placeholder="Escribe una letra para buscar…" autocomplete="off"
+                                oninput="renderRecordStudentSuggestions(this.value)"
+                                onfocus="renderRecordStudentSuggestions(this.value)">
+                            <div id="recordStudentSearchResults" class="record-student-suggestions" hidden></div><select
+                                id="recordStudent" onchange="refreshRecordSubjects()" hidden
+                                aria-hidden="true"></select>
+                        </div>
+                        <div class="field record-context-field"><label for="recordSubject">Materia</label><select
+                                id="recordSubject" onchange="selectRecordSubject(this.value)"></select></div>
+                        <div class="field record-context-field"><label for="recordPartial">Parcial</label><select
+                                id="recordPartial" onchange="selectRecordPartial(this.value)"></select></div>
+                        <div class="field record-parameter-field"><label for="recordCategory">Tipo / parámetro</label>
+                            <div class="category-select-row"><span id="categoryIcon"
+                                    class="category-icon-preview"></span><select id="recordCategory"
+                                    onchange="refreshRecordParameterInfo()"></select></div>
+                        </div>
+                        <div class="field"><label for="recordTitle">Actividad</label><input id="recordTitle"
+                                placeholder="Ej. Tarea 3, examen parcial"></div>
+                        <div class="field"><label for="recordDate">Fecha</label><input id="recordDate" type="date">
+                        </div>
+                        <div class="field" id="recordScoreField"><label for="recordScore">Calificación del parámetro (%
+                                del parcial)</label>
+                            <div class="percent-entry"><input id="recordScore" type="number" min="0" max="100"
+                                    step="0.01" placeholder="Ej. 15"><span>% del parcial</span></div><small
+                                id="paramGradeLimit" class="calculation-preview">Se calcula según el peso del
+                                parámetro.</small>
+                        </div>
+                        <div class="field" id="recordMaxField"><label for="recordMax">Puntaje máximo</label><input
+                                id="recordMax" type="number" min="0.01" step="any" value="10"></div>
+                        <div class="field task-count-field" id="recordTaskCounts" hidden><label>Control de
+                                tareas</label>
+                            <div class="task-count-inputs">
+                                <div class="field"><label for="tasksDelivered">Tareas entregadas</label><input
+                                        id="tasksDelivered" type="number" min="0" step="1" placeholder="0"
+                                        aria-label="Número de tareas entregadas"></div>
+                                <div class="field"><label for="tasksTotal">Tareas totales</label><input id="tasksTotal"
+                                        type="number" min="1" step="1" placeholder="0"
+                                        aria-label="Número total de tareas"></div>
+                            </div><small id="taskGradePreview" class="calculation-preview">Ingresa entregadas y
+                                totales.</small>
+                        </div>
+                    </div>
+                    <div class="field note-field"><label for="recordNote">Nota / observación (opcional)</label><input
+                            id="recordNote" placeholder="Entrega completa, requiere revisión…"></div>
+                    <div class="btn-group"><button id="saveRecordButton" class="btn btn-green" onclick="addRecord()">＋
+                            Guardar en expediente</button><button id="cancelRecordButton" class="btn" type="button"
+                            onclick="cancelRecordEdit()" hidden>Cancelar edición</button></div>
+                </section>
+                <aside id="partialInfo" class="partial-info" aria-live="polite"></aside>
+            </div>
+        </div>
+        <div id="panel-records" class="tab-panel" hidden>
+            <h2 class="section-title">Expedientes</h2>
+            <section class="card global-filters no-print" aria-label="Buscar y filtrar alumnos">
+                <div class="filter-heading">
+                    <h2 class="section-title">Buscar alumnos</h2><span id="filterSummary" class="filter-summary">Todos
+                        los alumnos</span>
+                </div>
+                <div class="filter-grid">
+                    <div class="field search-field"><label for="globalSearch">Nombre del alumno</label><input
+                            id="globalSearch" type="search" placeholder="Buscar por nombre…" autocomplete="off"></div>
+                    <div class="field"><label for="globalSubject">Materia</label><select id="globalSubject">
+                            <option value="">Todas las materias</option>
+                        </select></div>
+                    <div class="field"><label for="globalStatus">Resultado</label><select id="globalStatus">
+                            <option value="all">Todos</option>
+                            <option value="passed">Aprobados (6 o más)</option>
+                            <option value="failed">Reprobados (menos de 6)</option>
+                            <option value="ungraded">Sin calificación</option>
+                        </select></div>
+                    <div class="field"><label for="globalSort">Ordenar por</label><select id="globalSort">
+                            <option value="name">Nombre (A–Z)</option>
+                            <option value="grade-desc">Mayor calificación</option>
+                            <option value="grade-asc">Menor calificación</option>
+                            <option value="records">Más registros</option>
+                        </select></div>
+                    <div class="filter-actions"><button class="btn" type="button" onclick="clearFilters()">Limpiar
+                            filtros</button></div>
+                </div>
+            </section>
+            <section id="globalStudentResults" class="card global-student-results no-print" hidden aria-live="polite">
+            </section>
+            <section id="studentFile" class="card file-card" hidden>
+                <div class="file-heading">
+                    <div class="file-title"><span id="fileAvatar" class="avatar avatar-large">🧑‍🎓</span>
+                        <div>
+                            <h3 id="fileName" class="section-title"></h3>
+                            <p id="fileSummary" class="param-hint"></p>
+                        </div>
+                    </div>
+                    <div class="file-actions"><button class="btn btn-primary" onclick="printStudentFile()">▣ Guardar /
+                            imprimir PDF</button><button class="btn" onclick="clearSelectedStudent()">Cerrar
+                            expediente</button></div>
+                </div>
+                <div id="fileStats" class="stats"></div>
+                <h3 class="section-title">Historial del alumno</h3>
+                <div id="recordList" class="record-list"></div>
+            </section>
+        </div>
+    </main>
+    <div id="toast" class="toast"></div>
+    <script src="evaluador.js?v=21" defer></script>
+    <script src="filtros.js?v=10" defer></script>
+    <script src="parciales.js?v=14" defer></script>
+    <script src="calificaciones.js?v=16" defer></script>
+    <script src="backup.js?v=2" defer></script>
+</body>
 
-
-
-
+</html>

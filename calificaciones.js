@@ -747,9 +747,7 @@ function expandCollapsibleTarget(target, externalButton = null) {
   if (!button) return;
   button.setAttribute('aria-expanded', 'true');
   const label = button.querySelector('.collapse-label');
-  const chevron = button.querySelector('.collapse-chevron');
   if (label) label.textContent = 'Minimizar';
-  if (chevron) chevron.textContent = '⌄';
 }
 
 function editRecord(studentId, recordId) {

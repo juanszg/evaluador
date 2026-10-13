@@ -1,0 +1,33 @@
+{
+  "id": "./",
+  "name": "EvalPro — Evaluador académico",
+  "short_name": "EvalPro",
+  "description": "Evaluador académico y organizador de alumnos.",
+  "lang": "es-MX",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0d6990",
+  "theme_color": "#0d6990",
+  "icons": [
+    {
+      "src": "icons/evalpro-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/evalpro-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/evalpro-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
