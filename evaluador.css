@@ -6238,5 +6238,51 @@ body.printing-roster .roster-action-open::after {
 /* Evita que el header de esta tarjeta herede el sticky del encabezado global. */
 .task-manager-card>header.task-manager-heading{position:static;top:auto;z-index:auto}
 .task-manager-roster{width:60%;margin:0 auto}
-.task-manager-history-wrap{width:80%;max-width:1500px;margin-left:auto;margin-right:auto}
+.task-manager-history-wrap{width:100%;max-width:none;margin-left:auto;margin-right:auto}
 @media(max-width:760px){.task-manager-roster,.task-manager-history-wrap{width:100%}}
+.task-history-table-wrap{width:100%;max-width:none}
+.task-history-column-head,.task-history-student{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:130px}
+.task-history-student{min-width:0}
+.task-history-column-head>span,.task-history-student>b{min-width:0;overflow-wrap:anywhere}
+.task-history-table thead th small{display:block;margin-top:3px;color:#6c8390;font-size:.62rem;font-weight:600}
+.task-delete-icon{display:inline-grid;place-items:center;flex:none;width:28px;height:28px;padding:0;border:1px solid #cb5558;border-radius:6px;background:#fff0f0;color:#b6242e;cursor:pointer;transition:transform .16s,background .16s,color .16s}
+.task-delete-icon:hover{transform:translateY(-1px);background:#c8323c;color:#fff}
+.task-delete-icon svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.task-delete-column{width:26px;height:26px}
+.task-history-table .task-history-average{white-space:nowrap}
+[data-theme=dark] .task-history-table thead th small{color:#b5c9d9}
+[data-theme=dark] .task-delete-icon{border-color:#ff737f;background:#3b2029;color:#ff9ea8}
+[data-theme=dark] .task-delete-icon:hover{background:#bc3445;color:#fff}
+@media(max-width:760px){.task-manager-roster{width:100%}.task-history-table{min-width:max(100%,760px)}}
+
+/* Historial en flex con tabla de ancho intrínseco tipo hoja de cálculo. */
+.task-manager-history{display:flex;width:100%;justify-content:center;align-items:stretch}
+.task-history-table-wrap{display:block;flex:1 1 auto;width:100%;min-width:0;max-width:none;overflow:auto}
+.task-history-table{display:table;width:max-content;min-width:100%;max-width:none;table-layout:auto;border-collapse:collapse}
+.task-history-table th,.task-history-table td{min-width:0;white-space:nowrap}
+.task-history-table th:first-child{min-width:160px}
+.task-history-table td{vertical-align:middle}
+@media(max-width:760px){.task-manager-history{display:flex}.task-history-table-wrap{width:100%}.task-history-table{width:max-content;min-width:760px}}
+
+/* Mobile layout: center the group task module and make its grade matrix swipeable. */
+@media(max-width:760px){
+  .task-manager-card{box-sizing:border-box;width:100%;max-width:100%;margin:24px auto 30px;padding:16px 12px}
+  .task-manager-heading{box-sizing:border-box;width:100%;margin:0 auto 4px;padding:16px 6px;text-align:center}
+  .task-manager-heading>div{width:100%;margin:0 auto}
+  .task-manager-history-wrap{box-sizing:border-box;width:100%;min-width:0;margin:18px auto 0;padding:14px 0 0}
+  .task-manager-history{display:flex;flex-direction:column;width:100%;min-width:0;gap:8px}
+  .task-history-table-wrap{display:block;box-sizing:border-box;flex:0 0 auto;align-self:stretch;width:100%;min-width:0;max-width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x;scrollbar-width:thin}
+  .task-history-table-wrap::before{content:"Desliza la tabla para ver todas las tareas y calificaciones →";display:block;padding:8px 10px;color:#315d70;background:#e4f2f7;border-bottom:1px solid #c9dce4;font-size:.68rem;font-weight:700;text-align:center;white-space:normal}
+  .task-history-table{display:table;width:max-content;min-width:760px;max-width:none;table-layout:auto}
+  .task-history-table th,.task-history-table td{padding:8px 10px;white-space:nowrap}
+  .task-history-table th:first-child{min-width:140px;max-width:180px}
+}
+[data-theme=dark] .task-history-table-wrap::before{color:#d8edfb;background:#18334a;border-color:#35526b}
+
+/* Filtro compacto para ordenar el registro de alumnos. */
+.register-roster .roster-view-controls{align-items:end;gap:10px}
+.register-roster .roster-sort-field{flex:0 1 240px;max-width:240px}
+.register-roster .roster-sort-field label{font-size:.68rem;color:var(--muted)}
+.register-roster .roster-sort-field select{min-height:36px;padding:7px 9px;border-width:1px;font-size:.75rem}
+[data-theme=dark] .register-roster .roster-sort-field label{color:var(--muted)}
+@media(max-width:560px){.register-roster .roster-sort-field{flex:1 1 auto;max-width:none}}

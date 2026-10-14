@@ -334,7 +334,7 @@ function applyConfig() {
   if (!Number.isFinite(pct) || pct < 0 || pct > 100) return toast('El examen debe pesar entre 0 y 100% del parcial.');
   persistExamConfigForSubject();
   writeStore('evalpro-exam-params-v1', params);
-  writeStore('evalpro-exam-settings-v1', { subjectId, partialId: part.id, materia: subject.name, parcial: part.name, pct });
+  writeStore('evalpro-exam-settings-v1', { subjectId: subject.id, partialId: part.id, materia: subject.name, parcial: part.name, pct });
   students = students.map(result => result.subjectId === subjectId && result.partialId === part.id
     ? { ...result, examPct: pct, contribution: (Number(result.exam) || 0) * pct / 100 }
     : result);
@@ -666,9 +666,10 @@ function renderRoster() {
     : subjects;
   const tables = groups.map(subject => {
     const enrolledIds = new Set((subject.studentIds || []).map(String));
-    const pupils = roster
-      .filter(pupil => enrolledIds.has(String(pupil.id)))
-      .sort((a, b) => a.name.localeCompare(b.name, 'es'));
+    const enrolledPupils = roster.filter(pupil => enrolledIds.has(String(pupil.id)));
+    const pupils = typeof sortRosterTable === 'function'
+      ? sortRosterTable(enrolledPupils)
+      : enrolledPupils.sort((a, b) => a.name.localeCompare(b.name, 'es'));
     if (!pupils.length) return '';
     const parameters = part ? combinedPartialParams(part, subject.id) : [];
     const weightTotal = part ? parameters.reduce((sum, param) => sum + Number(param.weight || 0), 0) : 0;

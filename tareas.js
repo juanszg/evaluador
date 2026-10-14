@@ -131,7 +131,7 @@ function taskBatchesFor(subjectId, partialId, categoryId) {
     if (!batches.has(key)) batches.set(key, { id: key, record, records: [] });
     batches.get(key).records.push({ student, record });
   }
-  return [...batches.values()].sort((a, b) => String(a.record.date || '').localeCompare(String(b.record.date || '')) || String(a.record.title || '').localeCompare(String(b.record.title || '')));
+  return [...batches.values()].sort((a, b) => (Number(a.record.taskCreatedAt) || Date.parse(a.record.date) || 0) - (Number(b.record.taskCreatedAt) || Date.parse(b.record.date) || 0) || String(a.record.title || '').localeCompare(String(b.record.title || '')));
 }
 
 function renderTaskManagerHistory() {
@@ -142,15 +142,49 @@ function renderTaskManagerHistory() {
   const categoryId = $('taskManagerParameter')?.value;
   const batches = taskBatchesFor(subjectId, partialId, categoryId);
   const members = roster.filter(student => (subjects.find(subject => subject.id === subjectId)?.studentIds || []).includes(student.id)).sort((a, b) => a.name.localeCompare(b.name, 'es'));
-  history.innerHTML = batches.length ? `<div class="task-history-table-wrap"><table class="task-history-table"><thead><tr><th>Alumno</th>${batches.map(batch => `<th title="${esc(batch.record.date || '')}">${esc(batch.record.title || 'Tarea')}</th>`).join('')}<th>Promedio</th></tr></thead><tbody>${members.map(student => {
+  history.innerHTML = members.length ? `<div class="task-history-table-wrap"><table class="task-history-table"><thead><tr><th>Alumno</th>${batches.map((batch, index) => `<th title="${esc(batch.record.date || '')}"><span class="task-history-column-head"><span>${esc(batch.record.title || 'Tarea')}</span>${index === batches.length - 1 ? `<button type="button" class="task-delete-icon task-delete-column" title="Eliminar la última actividad de todo el grupo" aria-label="Eliminar la última actividad ${esc(batch.record.title || '')} de todos los alumnos" onclick="deleteTaskBatch('${esc(batch.id)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m3 4v5m6-5v5"/></svg></button>` : ''}</span><small>${esc(batch.record.date || '')}</small></th>`).join('')}<th>Promedio</th></tr></thead><tbody>${members.map(student => {
     const cells = batches.map(batch => {
       const entry = batch.records.find(item => item.student.id === student.id)?.record;
-      return `<td class="${entry && Number(entry.tasksDelivered) > 0 ? 'task-history-done' : 'task-history-missing'}" title="${entry ? esc(entry.note || '') : 'Sin registro'}">${entry ? `${Number(entry.tasksDelivered) || 0}/${Number(entry.tasksTotal) || 1}` : '—'}</td>`;
+      return `<td class="${entry && Number(entry.tasksDelivered) > 0 ? 'task-history-done' : 'task-history-missing'}" title="${entry ? esc(entry.note || '') : 'Sin registro'}">${entry ? `${Number(entry.tasksDelivered) || 0}/${Number(entry.tasksTotal) || 1}` : 'S/R'}</td>`;
     }).join('');
     const param = academicPartials.find(part => part.id === partialId) && getPartParams(academicPartials.find(part => part.id === partialId), subjectId).find(item => item.id === categoryId);
     const grade = param ? categoryGrade(student, subjectId, academicPartials.find(part => part.id === partialId), param) : null;
-    return `<tr><th scope="row">${esc(student.name)}</th>${cells}<td class="task-history-average">${grade === null ? '—' : `${grade.toFixed(2)} / 10`}</td></tr>`;
-  }).join('')}</tbody></table></div>` : '<div class="empty">Las tareas que agregues para esta materia, parcial y parámetro aparecerán aquí como columnas.</div>';
+    const studentHasTasks = batches.some(batch => batch.records.some(item => item.student.id === student.id));
+    const rowAction = studentHasTasks ? `<button type="button" class="task-delete-icon" title="Eliminar la última actividad de ${esc(student.name)}" aria-label="Eliminar la última actividad registrada de ${esc(student.name)}" onclick="deleteLatestStudentTask('${esc(student.id)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m3 4v5m6-5v5"/></svg></button>` : '';
+    return `<tr><th scope="row"><span class="task-history-student"><b>${esc(student.name)}</b>${rowAction}</span></th>${cells}<td class="task-history-average">${grade === null ? 'S/R' : `${grade.toFixed(2)} / 10`}</td></tr>`;
+  }).join('')}</tbody></table></div>` : '<div class="empty">No hay alumnos inscritos en esta materia.</div>';
+}
+
+function deleteLatestStudentTask(studentId) {
+  const subjectId = $('taskManagerSubject')?.value;
+  const partialId = $('taskManagerPartial')?.value;
+  const categoryId = $('taskManagerParameter')?.value;
+  const student = roster.find(item => String(item.id) === String(studentId));
+  const latestBatch = taskBatchesFor(subjectId, partialId, categoryId).at(-1);
+  const entry = latestBatch?.records.find(item => String(item.student.id) === String(studentId));
+  if (!student || !entry) return toast('Este alumno no tiene una actividad que se pueda quitar.');
+  if (!confirm(`¿Eliminar “${entry.record.title}” del registro de ${student.name}? Las demás tareas del alumno se conservarán.`)) return;
+  student.records = (student.records || []).filter(record => record.id !== entry.record.id);
+  writeStore('evalpro-roster-v1', roster);
+  renderTaskManager();
+  renderRoster();
+  toast(`Se quitó “${entry.record.title}” del registro de ${student.name}.`);
+}
+
+function deleteTaskBatch(batchId) {
+  const subjectId = $('taskManagerSubject')?.value;
+  const partialId = $('taskManagerPartial')?.value;
+  const categoryId = $('taskManagerParameter')?.value;
+  const batch = taskBatchesFor(subjectId, partialId, categoryId).find(item => String(item.id) === String(batchId));
+  if (!batch) return toast('No se encontró esa columna de actividad.');
+  const title = batch.record.title || 'Actividad';
+  if (!confirm(`¿Eliminar “${title}” de todos los alumnos de esta materia y parcial? Se borrará toda la columna y sus calificaciones.`)) return;
+  const recordIds = new Set(batch.records.map(item => `${item.student.id}::${item.record.id}`));
+  for (const student of roster) student.records = (student.records || []).filter(record => !recordIds.has(`${student.id}::${record.id}`));
+  writeStore('evalpro-roster-v1', roster);
+  renderTaskManager();
+  renderRoster();
+  toast(`Se eliminó “${title}” de todos los alumnos.`);
 }
 
 function renderTaskParameterCount() {
@@ -199,7 +233,7 @@ function saveGroupTask() {
     const note = row.querySelector('.task-observation-input').value.trim();
     student.records = student.records || [];
     student.records.push({
-      id: makeId(), taskBatchId: batchId, partialId: part.id, subjectId: subject.id,
+      id: makeId(), taskBatchId: batchId, taskCreatedAt: Date.now(), partialId: part.id, subjectId: subject.id,
       subjectName: subject.name, categoryId: param.id, categoryName: param.name,
       title, date, score: delivered / total * 10, max: 10,
       tasksDelivered: delivered, tasksTotal: total, note
