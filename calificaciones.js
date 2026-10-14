@@ -506,6 +506,7 @@ function selectRecordStudent(studentId) {
   $('recordStudentSearch').value = option.textContent;
   $('recordStudentSearchResults').hidden = true;
   refreshRecordSubjects();
+  if (typeof renderTaskParameterCount === 'function') renderTaskParameterCount();
 }
 
 function syncRecordStudentSearch(studentId) {
@@ -698,6 +699,104 @@ function renderRoster() {
   renderExamStudentControls();
   renderRosterSearchResults();
   updateFilterSummary();
+  if (typeof renderProfile === 'function') renderProfile();
+  if (typeof renderTaskManager === 'function') renderTaskManager();
+}
+
+function renderFileEvaluations(pupil, memberships) {
+  const target = $('fileEvaluation');
+  if (!target) return;
+  if (!memberships.length) {
+    target.innerHTML = '<div class="empty">Este alumno no está inscrito en una materia. Asígnalo a una para ver sus parámetros y calificaciones.</div>';
+    return;
+  }
+  target.innerHTML = memberships.map(subject => {
+    const partials = academicPartials.map(part => {
+      const parameters = combinedPartialParams(part, subject.id);
+      const details = partialGrade(pupil, subject.id, part);
+      const rows = parameters.map(param => {
+        const grade = categoryGrade(pupil, subject.id, part, param);
+        const isExam = param.kind === 'exam' || param.id === '__exam__';
+        const records = isExam
+          ? (pupil.records || []).filter(record => record.subjectId === subject.id && record.partialId === part.id && record.categoryId === '__exam__')
+          : (pupil.records || []).filter(record => record.subjectId === subject.id && record.partialId === part.id && record.categoryId === param.id);
+        const latest = [...records].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))[0];
+        const value = grade === null ? '<span class="file-evaluation-sr">S/R</span>' : `<span class="file-evaluation-grade">${grade.toFixed(2)} / 10</span>`;
+        const icon = kind => kind === 'edit'
+          ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 5.5 4 4M4 20l4.2-.9L19 8.3a2.1 2.1 0 0 0-3-3L5.2 16.1 4 20Z"/></svg>'
+          : kind === 'add'
+            ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>'
+            : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h8l4 4V20H5V3.5h2Z"/><path d="M14 3.5V8h5M8.5 14l2.2 2.2 4.8-5"/></svg>';
+        const editButton = isExam
+          ? `<button type="button" class="btn btn-sm btn-file-evaluation file-action-${grade === null ? 'register' : 'edit'}" aria-label="${grade === null ? 'Registrar examen' : 'Editar examen'} de ${esc(param.name)}" title="${grade === null ? 'Registrar examen' : 'Editar examen'}" onclick="openParameterEvaluation('${esc(pupil.id)}','${esc(subject.id)}','${esc(part.id)}','${esc(param.id)}')">${icon(grade === null ? 'register' : 'edit')}</button>`
+          : latest
+            ? `<div class="file-evaluation-actions"><button type="button" class="btn btn-sm btn-file-evaluation file-action-edit" aria-label="Editar registro de ${esc(param.name)}" title="Editar registro" onclick="openParameterEvaluation('${esc(pupil.id)}','${esc(subject.id)}','${esc(part.id)}','${esc(param.id)}','${esc(latest.id)}')">${icon('edit')}</button><button type="button" class="btn btn-sm btn-file-evaluation-secondary file-action-add" aria-label="Agregar otra calificación de ${esc(param.name)}" title="Agregar calificación" onclick="openParameterEvaluation('${esc(pupil.id)}','${esc(subject.id)}','${esc(part.id)}','${esc(param.id)}')">${icon('add')}</button></div>`
+            : `<button type="button" class="btn btn-sm btn-file-evaluation file-action-register" aria-label="Registrar calificación de ${esc(param.name)}" title="Registrar calificación" onclick="openParameterEvaluation('${esc(pupil.id)}','${esc(subject.id)}','${esc(part.id)}','${esc(param.id)}')">${icon('register')}</button>`;
+        return `<article class="file-evaluation-row"><div class="file-evaluation-param">${categorySvg(param.id, param.name)}<span><b>${esc(param.name)}</b><small>Ponderación: ${Number(param.weight || 0).toFixed(1)}%${records.length ? ` · ${records.length} registro(s)` : ''}</small></span></div><div class="file-evaluation-value">${value}</div><div class="file-evaluation-action no-print">${editButton}</div></article>`;
+      }).join('');
+      const registeredCount = parameters.filter(param => categoryGrade(pupil, subject.id, part, param) !== null).length;
+      return `<section class="file-evaluation-partial"><header><h5>${esc(part.name)}</h5><span>${details ? `${details.grade.toFixed(2)} / 10` : 'S/R'} · ${registeredCount}/${parameters.length} parámetros con registro</span></header><div class="file-evaluation-rows">${rows || '<p class="empty">Este parcial aún no tiene parámetros configurados.</p>'}</div></section>`;
+    }).join('');
+    return `<section class="file-evaluation-subject"><h4>${esc(subject.name)}</h4>${partials}</section>`;
+  }).join('');
+}
+
+function switchStudentFileTab(tab) {
+  const showGrades = tab === 'grades';
+  const overview = $('filePanelOverview');
+  const grades = $('filePanelGrades');
+  const overviewButton = $('fileTabOverview');
+  const gradesButton = $('fileTabGrades');
+  if (!overview || !grades || !overviewButton || !gradesButton) return;
+  overview.hidden = showGrades;
+  grades.hidden = !showGrades;
+  overviewButton.classList.toggle('active', !showGrades);
+  gradesButton.classList.toggle('active', showGrades);
+  overviewButton.setAttribute('aria-selected', String(!showGrades));
+  gradesButton.setAttribute('aria-selected', String(showGrades));
+}
+
+function openParameterEvaluation(studentId, subjectId, partialId, paramId, recordId = '') {
+  const subject = subjects.find(item => item.id === subjectId);
+  const part = academicPartials.find(item => item.id === partialId);
+  const pupil = roster.find(item => item.id === studentId);
+  const param = subject && part ? combinedPartialParams(part, subject.id).find(item => item.id === paramId) : null;
+  if (!subject || !part || !pupil || !param) return toast('No se encontró la materia, parcial o parámetro seleccionado.');
+  if (param.kind === 'exam' || param.id === '__exam__') {
+    const examTab = document.querySelector('.folder-tab[data-tab="exam"]');
+    if (examTab && !examTab.classList.contains('active')) switchTab(examTab);
+    $('examStudentMode').value = 'existing';
+    setExamStudentMode('existing');
+    selectExamConfigSubject(subject.id);
+    selectExamConfigPartial(part.id);
+    $('examSubject').value = subject.id;
+    $('examPartial').value = part.id;
+    renderExamStudentOptions();
+    $('existingExamStudent').value = studentId;
+    loadExistingExamStudent();
+    requestAnimationFrame(() => document.querySelector('.student-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+    return;
+  }
+
+  if (recordId) return editRecord(studentId, recordId);
+  const activityTab = document.querySelector('.folder-tab[data-tab="activity"]');
+  if (activityTab && !activityTab.classList.contains('active')) switchTab(activityTab);
+  selectedStudentId = studentId;
+  selectedPartialId = part.id;
+  renderPartialSelectors();
+  const studentSelect = $('recordStudent');
+  if (![...studentSelect.options].some(option => option.value === studentId)) studentSelect.add(new Option(pupil.name, studentId));
+  studentSelect.value = studentId;
+  syncRecordStudentSearch(studentId);
+  renderRecordSubjects(subject.id);
+  selectRecordPartial(part.id);
+  $('recordCategory').value = param.id;
+  clearRecordForm();
+  $('recordTitle').value = `${param.name} · ${part.name}`;
+  updateCategoryIcon();
+  syncTaskEntry();
+  refreshRecordParameterInfo();
+  requestAnimationFrame(() => document.querySelector('.activity-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
 }
 
 function openFile(id) {
@@ -707,6 +806,7 @@ function openFile(id) {
   if (recordsTab && !recordsTab.classList.contains('active')) switchTab(recordsTab);
   selectedStudentId = id;
   $('studentFile').hidden = false;
+  switchStudentFileTab('overview');
   expandCollapsibleTarget($('studentFile'));
   $('fileAvatar').className = `avatar avatar-large ${selectGenderClass(pupil.gender)}`;
   $('fileAvatar').textContent = avatarEmoji(pupil.gender);
@@ -719,6 +819,7 @@ function openFile(id) {
     const weights = combinedPartialParams(part, subject.id).reduce((sum, param) => sum + Number(param.weight || 0), 0);
     return `<div class="stat partial-stat"><strong>${details ? details.grade.toFixed(2) : 'S/R'}</strong><span>${esc(subject.name)} · ${esc(part.name)} · ${details ? `${details.registeredWeight.toFixed(1)}% de ${weights.toFixed(1)}% evaluado` : 'Sin registros'}</span></div>`;
   })).join('');
+  renderFileEvaluations(pupil, memberships);
   const historyGroups = memberships.map(subject => {
     const records = (pupil.records || []).filter(record => record.subjectId === subject.id).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
     if (!records.length) return '';

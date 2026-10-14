@@ -15,7 +15,7 @@
         href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="evaluador.css?v=49">
+    <link rel="stylesheet" href="evaluador.css?v=60">
     <link rel="icon" href="icons/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/evalpro-icon-192.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
@@ -30,13 +30,29 @@
         </div>
     </header>
     <main>
-        <nav id="sectionNav" class="folder-tabs no-print" aria-label="Secciones de EvalPro"><button class="folder-tab active"
+        <nav id="sectionNav" class="folder-tabs no-print" aria-label="Secciones de EvalPro"><button class="folder-tab active profile-tab"
+                data-tab="profile" onclick="switchTab(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="19.5" cy="5" r="1"/><circle cx="4.5" cy="6" r=".7"/></svg> Mi perfil</button><button class="folder-tab"
                 data-tab="exam" onclick="switchTab(this)">📝 Examen</button><button class="folder-tab" data-tab="book"
                 onclick="switchTab(this)">📘 Cuaderno y seguimiento</button><button class="folder-tab"
                 data-tab="activity" onclick="switchTab(this)">🖊️ Registro de actividad</button><button
                 class="folder-tab" data-tab="register" onclick="switchTab(this)">👤 Registrar alumnos</button><button
                 class="folder-tab" data-tab="records" onclick="switchTab(this)">🗂️ Expedientes</button></nav>
-        <div id="panel-exam" class="tab-panel">
+        <div id="panel-profile" class="tab-panel">
+            <div class="profile-page">
+                <section class="profile-hero">
+                    <div class="profile-hero-copy"><span class="profile-eyebrow">PANEL DOCENTE · CICLO ESCOLAR</span><h2>Mi perfil</h2><p>Un vistazo al avance de tus grupos, materias y actividades del semestre.</p></div>
+                    <div class="profile-save-actions"><span id="profileLastSaved" class="profile-save-status">Aún no hay copias guardadas</span><button class="btn btn-green profile-save-button" type="button" onclick="saveBackupSnapshot()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h12l4 4v14H3V3z"/><path d="M7 3v6h10V3M7 21v-7h10v7"/><circle cx="12" cy="17.5" r="1.1"/></svg>Guardar datos</button></div>
+                </section>
+                <div class="profile-bento">
+                    <section class="profile-panel profile-panel-overview"><div class="profile-panel-heading"><div><span class="profile-panel-kicker">RESUMEN DEL SEMESTRE</span><h3>Panorama general</h3></div><span class="profile-panel-mark" aria-hidden="true">◎</span></div><div id="profileStats" class="profile-stats-grid"></div></section>
+                    <section class="profile-panel profile-panel-subjects"><div class="profile-panel-heading"><div><span class="profile-panel-kicker">TUS GRUPOS</span><h3>Materias que impartes</h3></div><span class="profile-panel-mark" aria-hidden="true">▤</span></div><div id="profileSubjects" class="profile-subject-grid"></div></section>
+                    <section class="profile-panel profile-panel-tasks"><div class="profile-panel-heading"><div><span class="profile-panel-kicker">SEGUIMIENTO</span><h3>Tareas por materia</h3></div><span class="profile-panel-mark" aria-hidden="true">✓</span></div><div id="profileTasks" class="profile-task-list"></div></section>
+                    <section class="profile-panel profile-panel-partials"><div class="profile-panel-heading"><div><span class="profile-panel-kicker">EVALUACIÓN</span><h3>Avance por parcial</h3></div><span class="profile-panel-mark" aria-hidden="true">◷</span></div><div id="profilePartials" class="profile-partial-grid"></div></section>
+                    <section class="profile-panel profile-panel-backups"><div class="profile-panel-heading"><div><span class="profile-panel-kicker">PROTEGE TU INFORMACIÓN</span><h3>Historial de guardados</h3></div><span id="backupHistoryCount" class="backup-history-count">0 copias</span></div><p class="profile-panel-description">Cada guardado conserva un punto de restauración en este navegador y descarga una copia JSON para que también la guardes fuera del dispositivo.</p><div id="backupHistory" class="backup-history-list"></div></section>
+                </div>
+            </div>
+        </div>
+        <div id="panel-exam" class="tab-panel" hidden>
             <h2 class="section-title">Configuración del examen</h2>
             <section class="card config-card no-print">
                 <div class="grid">
@@ -225,6 +241,30 @@
             </div>
 
 
+            <section id="taskManager" class="card task-manager-card">
+                <header class="task-manager-heading">
+                    <div><span class="task-manager-kicker">REGISTRO GRUPAL</span><h3 class="section-title">Tareas, cuaderno y trabajos</h3><p class="param-hint">Crea actividades para toda la materia, registra quién las entrega y consulta el promedio acumulado del parcial.</p></div>
+                    <span class="task-manager-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3.5h8l4 4V20H5V3.5h2Z"/><path d="M14 3.5V8h5M8 13h8M8 16.5h8"/></svg></span>
+                </header>
+                <div class="task-manager-controls">
+                    <div class="field"><label for="taskManagerSubject">Materia</label><select id="taskManagerSubject" onchange="renderTaskManager()"></select></div>
+                    <div class="field"><label for="taskManagerPartial">Parcial</label><select id="taskManagerPartial" onchange="renderTaskManager()"></select></div>
+                    <div class="field"><label for="taskManagerParameter">Parámetro de tareas</label><select id="taskManagerParameter" onchange="renderTaskManager()"></select></div>
+                    <div class="field"><label for="taskManagerTitle">Nombre de la actividad</label><input id="taskManagerTitle" placeholder="Ej. Ejercicio de vectores"></div>
+                    <div class="field"><label for="taskManagerDate">Fecha</label><input id="taskManagerDate" type="date"></div>
+                </div>
+                <div class="task-param-actions"><button type="button" class="btn btn-sm" onclick="toggleTaskParameterCreator()">＋ Crear parámetro aquí</button><button type="button" class="btn btn-sm task-config-link" onclick="openTaskParameterConfig()">Ir a configuración de parámetros</button></div>
+                <div id="taskParameterCreator" class="task-parameter-creator" hidden>
+                    <div class="field"><label for="taskNewCategory">Tipo de parámetro</label><select id="taskNewCategory"><option value="Tareas">Tareas</option><option value="Cuaderno">Cuaderno</option><option value="Trabajos">Trabajos</option></select></div>
+                    <div class="field"><label for="taskNewWeight">Porcentaje del parcial</label><input id="taskNewWeight" type="number" min="0" max="100" step="0.1" value="0"></div>
+                    <button type="button" class="btn btn-primary" onclick="createTaskAssessmentParam()">Crear parámetro</button>
+                </div>
+                <div id="taskManagerWeightInfo" class="task-manager-weight" aria-live="polite"></div>
+                <div id="taskManagerRoster" class="task-manager-roster"></div>
+                <div class="task-manager-footer"><span id="taskManagerSummary" class="param-hint">Selecciona materia, parcial y parámetro para comenzar.</span><button id="saveGroupTaskButton" class="btn btn-green" type="button" onclick="saveGroupTask()">＋ Agregar tarea</button></div>
+                <section class="task-manager-history-wrap"><h4 id="taskManagerHistoryTitle">Tareas registradas</h4><div id="taskManagerHistory" class="task-manager-history"></div></section>
+            </section>
+
         </div>
         <div id="panel-activity" class="tab-panel" hidden>
             <h2 class="section-title activity-page-title">Registro de actividades y calificaciones</h2>
@@ -253,13 +293,14 @@
                                 aria-hidden="true"></select>
                         </div>
                         <div class="field record-context-field"><label for="recordSubject">Materia</label><select
-                                id="recordSubject" onchange="selectRecordSubject(this.value)"></select></div>
+                                id="recordSubject" onchange="selectRecordSubject(this.value); renderTaskParameterCount()"></select></div>
                         <div class="field record-context-field"><label for="recordPartial">Parcial</label><select
-                                id="recordPartial" onchange="selectRecordPartial(this.value)"></select></div>
+                                id="recordPartial" onchange="selectRecordPartial(this.value); renderTaskParameterCount()"></select></div>
                         <div class="field record-parameter-field"><label for="recordCategory">Tipo / parámetro</label>
                             <div class="category-select-row"><span id="categoryIcon"
                                     class="category-icon-preview"></span><select id="recordCategory"
-                                    onchange="refreshRecordParameterInfo()"></select></div>
+                                    onchange="refreshRecordParameterInfo(); renderTaskParameterCount()"></select></div>
+                            <aside id="taskParameterCount" class="task-activity-config" hidden aria-live="polite"></aside>
                         </div>
                         <div class="field"><label for="recordTitle">Actividad</label><input id="recordTitle"
                                 placeholder="Ej. Tarea 3, examen parcial"></div>
@@ -339,18 +380,32 @@
                             imprimir PDF</button><button class="btn" onclick="clearSelectedStudent()">Cerrar
                             expediente</button></div>
                 </div>
-                <div id="fileStats" class="stats"></div>
-                <h3 class="section-title">Historial del alumno</h3>
-                <div id="recordList" class="record-list"></div>
+                <div class="file-folder-tabs no-print" role="tablist" aria-label="Secciones del expediente">
+                    <button id="fileTabOverview" class="file-folder-tab active" type="button" role="tab" aria-selected="true" aria-controls="filePanelOverview" onclick="switchStudentFileTab('overview')">Resumen e historial</button>
+                    <button id="fileTabGrades" class="file-folder-tab" type="button" role="tab" aria-selected="false" aria-controls="filePanelGrades" onclick="switchStudentFileTab('grades')">Calificaciones</button>
+                </div>
+                <section id="filePanelOverview" class="file-folder-panel" role="tabpanel" aria-labelledby="fileTabOverview">
+                    <h3 class="section-title">Historial del alumno</h3>
+                    <div id="recordList" class="record-list"></div>
+                </section>
+                <section id="filePanelGrades" class="file-folder-panel" role="tabpanel" aria-labelledby="fileTabGrades" hidden>
+                    <div id="fileStats" class="stats"></div>
+                    <section class="file-evaluation-section" aria-labelledby="fileEvaluationTitle">
+                        <h3 id="fileEvaluationTitle" class="section-title">Calificaciones, por materia y parcial</h3>
+                        <p class="param-hint">Los parámetros pendientes aparecen como S/R. Desde aquí puedes registrar o editar cada calificación.</p>
+                        <div id="fileEvaluation" class="file-evaluation-list"></div>
+                    </section>
+                </section>
             </section>
         </div>
     </main>
     <div id="toast" class="toast"></div>
     <script src="evaluador.js?v=21" defer></script>
-    <script src="filtros.js?v=10" defer></script>
+    <script src="filtros.js?v=11" defer></script>
     <script src="parciales.js?v=14" defer></script>
-    <script src="calificaciones.js?v=16" defer></script>
-    <script src="backup.js?v=2" defer></script>
+    <script src="calificaciones.js?v=22" defer></script>
+    <script src="tareas.js?v=3" defer></script>
+    <script src="backup.js?v=3" defer></script>
 </body>
 
 </html>
