@@ -15,7 +15,7 @@
         href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="evaluador.css?v=64">
+    <link rel="stylesheet" href="evaluador.css?v=66">
     <link rel="icon" href="icons/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/evalpro-icon-192.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
@@ -407,12 +407,46 @@
         </div>
     </main>
     <div id="toast" class="toast"></div>
+    <div id="helpGuide" class="help-guide no-print">
+        <section id="helpGuidePanel" class="help-guide-panel" role="dialog" aria-modal="false"
+            aria-labelledby="helpGuideTitle" hidden>
+            <header class="help-guide-header">
+                <span class="help-guide-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.2 9a3.9 3.9 0 1 1 6.7 2.7c-1.2 1-2.2 1.6-2.2 3.3"/><circle cx="12" cy="18" r=".8"/><circle cx="12" cy="12" r="10"/></svg></span>
+                <div><strong id="helpGuideTitle">Guía EvalPro</strong><small>Te ayudo a encontrar cada función</small></div>
+                <button class="help-guide-close" type="button" aria-label="Cerrar guía" title="Cerrar guía" onclick="toggleHelpGuide(false)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+            </header>
+            <div id="helpGuideMessages" class="help-guide-messages" role="log" aria-live="polite" aria-relevant="additions text">
+                <div class="help-guide-message is-assistant"><p>¡Hola! Puedo llevarte a la sección que necesitas o resolver dudas comunes.</p></div>
+                <div class="help-guide-message is-assistant"><p>¿Qué deseas hacer?</p></div>
+                <div class="help-guide-quick-actions">
+                    <button type="button" data-guide-action="student">Crear alumno</button>
+                    <button type="button" data-guide-action="subject">Crear materia</button>
+                    <button type="button" data-guide-action="grade">Agregar calificación</button>
+                    <button type="button" data-guide-action="edit-student">Editar alumno</button>
+                    <button type="button" data-guide-action="view-subject">Ver materia</button>
+                    <button type="button" data-guide-action="group-tasks">Registrar tareas grupales</button>
+                    <button type="button" data-guide-action="file">Buscar expediente</button>
+                    <button type="button" data-guide-action="backup">Guardar o cargar datos</button>
+                </div>
+            </div>
+            <form id="helpGuideForm" class="help-guide-form">
+                <label class="visually-hidden" for="helpGuideInput">Escribe tu duda sobre EvalPro</label>
+                <input id="helpGuideInput" type="text" placeholder="Escribe tu duda…" autocomplete="off">
+                <button type="submit" aria-label="Enviar duda" title="Enviar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 5 16 7-16 7 3-7-3-7Z"/><path d="M7 12h13"/></svg></button>
+            </form>
+        </section>
+        <button id="helpGuideToggle" class="help-guide-toggle" type="button" aria-label="Abrir guía de ayuda"
+            aria-expanded="false" aria-controls="helpGuidePanel" title="Ayuda y guía interactiva" onclick="toggleHelpGuide()">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><path d="M9.7 9a2.4 2.4 0 1 1 4.1 1.7c-.9.8-1.8 1.2-1.8 2.6"/><circle cx="12" cy="16.8" r=".7"/></svg>
+        </button>
+    </div>
     <script src="evaluador.js?v=22" defer></script>
     <script src="filtros.js?v=12" defer></script>
     <script src="parciales.js?v=14" defer></script>
     <script src="calificaciones.js?v=24" defer></script>
     <script src="tareas.js?v=4" defer></script>
     <script src="backup.js?v=3" defer></script>
+    <script src="guia.js?v=2" defer></script>
 </body>
 
 </html>

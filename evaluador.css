@@ -6286,3 +6286,59 @@ body.printing-roster .roster-action-open::after {
 .register-roster .roster-sort-field select{min-height:36px;padding:7px 9px;border-width:1px;font-size:.75rem}
 [data-theme=dark] .register-roster .roster-sort-field label{color:var(--muted)}
 @media(max-width:560px){.register-roster .roster-sort-field{flex:1 1 auto;max-width:none}}
+[hidden] { display: none !important; }
+
+/* Guía interactiva flotante */
+.help-guide { position: fixed; z-index: 1200; right: max(20px, env(safe-area-inset-right)); bottom: max(20px, env(safe-area-inset-bottom)); font-family: 'Space Grotesk', sans-serif; }
+.help-guide-toggle { display: grid; place-items: center; width: 58px; height: 58px; border: 2px solid #fff; border-radius: 50%; background: linear-gradient(145deg, #087da7, #07577f); color: #fff; box-shadow: 0 8px 24px #07577f55, 0 0 0 4px #1685b220; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
+.help-guide-toggle:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 12px 28px #07577f66, 0 0 0 6px #1685b22b; }
+.help-guide-toggle:focus-visible, .help-guide-close:focus-visible, .help-guide-form button:focus-visible, .help-guide-quick-actions button:focus-visible { outline: 3px solid #50fa7b; outline-offset: 3px; }
+.help-guide-toggle svg { width: 27px; height: 27px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.help-guide-panel { position: absolute; right: 0; bottom: 72px; display: flex; flex-direction: column; width: min(380px, calc(100vw - 28px)); max-height: min(620px, calc(100dvh - 118px)); overflow: hidden; border: 2px solid #3788aa; border-radius: 16px; background: #f4faff; color: #18364b; box-shadow: 0 18px 52px #102b4260; animation: help-guide-in .2s ease-out; }
+.help-guide-panel[hidden] { display: none; }
+.help-guide-header { position: static; top: auto; z-index: auto; display: flex; align-items: center; gap: 11px; padding: 13px 15px; border-bottom: 1px solid #bad5e3; background: linear-gradient(115deg, #d9f3ff, #e9f5ff 58%, #dff5e9); }
+.help-guide-avatar { display: grid; flex: 0 0 40px; place-items: center; width: 40px; height: 40px; border: 1px solid #8bbbd0; border-radius: 12px; background: #fff; color: #087da7; }
+.help-guide-avatar svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.help-guide-header>div { display: grid; gap: 2px; min-width: 0; }
+.help-guide-header strong { color: #123d58; font-size: .98rem; }
+.help-guide-header small { color: #587386; font-size: .72rem; }
+.help-guide-close { display: grid; flex: 0 0 34px; place-items: center; width: 34px; height: 34px; margin-left: auto; border: 1px solid #aac8d8; border-radius: 10px; background: #fff; color: #345a70; cursor: pointer; }
+.help-guide-close:hover { background: #e5f5fb; }
+.help-guide-close svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.help-guide-messages { display: flex; flex-direction: column; gap: 9px; min-height: 130px; padding: 13px; overflow-y: auto; overscroll-behavior: contain; }
+.help-guide-message { max-width: 92%; padding: 10px 12px; border: 1px solid #c7deea; border-radius: 12px 12px 12px 3px; background: #fff; color: #25465b; box-shadow: 0 2px 6px #12354c0d; }
+.help-guide-message p { margin: 0; font-size: .79rem; line-height: 1.5; overflow-wrap: anywhere; }
+.help-guide-message.is-user { align-self: flex-end; border-color: #9bc5d9; border-radius: 12px 12px 3px 12px; background: #e2f4fc; color: #174a68; }
+.help-guide-quick-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+.help-guide-quick-actions button { min-height: 36px; padding: 7px 9px; border: 1px solid #9fc4d5; border-radius: 9px; background: #eaf6fb; color: #14516f; font: 650 .72rem/1.25 'Space Grotesk', sans-serif; text-align: left; cursor: pointer; transition: border-color .15s ease, background .15s ease, transform .15s ease; }
+.help-guide-quick-actions button:hover { transform: translateY(-1px); border-color: #238bb1; background: #d6eff9; }
+.help-guide-form { display: flex; gap: 8px; padding: 10px; border-top: 1px solid #bad5e3; background: #edf6fa; }
+.help-guide-form input { flex: 1; min-width: 0; height: 42px; padding: 0 12px; border: 1px solid #a8c9d9; border-radius: 10px; background: #fff; color: #18364b; font: 500 .8rem 'Space Grotesk', sans-serif; }
+.help-guide-form input:focus { border-color: #1685b2; outline: 3px solid #1685b222; }
+.help-guide-form button { display: grid; flex: 0 0 42px; place-items: center; width: 42px; height: 42px; border: 1px solid #087da7; border-radius: 10px; background: #087da7; color: #fff; cursor: pointer; }
+.help-guide-form button:hover { background: #05658d; }
+.help-guide-form button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes help-guide-in { from { opacity: 0; transform: translateY(9px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+[data-theme=dark] .help-guide-toggle { border-color: #8be9fd; background: linear-gradient(145deg, #0c415b, #132b45); color: #8be9fd; box-shadow: 0 8px 25px #0008, 0 0 0 4px #8be9fd24; }
+[data-theme=dark] .help-guide-panel { border-color: #4a9abc; background: #0d2033; color: #e1effa; box-shadow: 0 18px 52px #000a; }
+[data-theme=dark] .help-guide-header { border-color: #34536a; background: linear-gradient(115deg, #12334a, #152a46 58%, #143a34); }
+[data-theme=dark] .help-guide-avatar { border-color: #4b87a3; background: #102b40; color: #8be9fd; }
+[data-theme=dark] .help-guide-header strong { color: #e3f5ff; }
+[data-theme=dark] .help-guide-header small { color: #b3c8d9; }
+[data-theme=dark] .help-guide-close { border-color: #46657d; background: #172e44; color: #d8e9f7; }
+[data-theme=dark] .help-guide-close:hover { background: #21445d; }
+[data-theme=dark] .help-guide-message { border-color: #36546d; background: #142b40; color: #d9eaf6; }
+[data-theme=dark] .help-guide-message.is-user { border-color: #327b99; background: #12384b; color: #b8efff; }
+[data-theme=dark] .help-guide-quick-actions button { border-color: #426782; background: #17344b; color: #c5e8fa; }
+[data-theme=dark] .help-guide-quick-actions button:hover { border-color: #64d5ff; background: #1a465b; }
+[data-theme=dark] .help-guide-form { border-color: #34536a; background: #10263a; }
+[data-theme=dark] .help-guide-form input { border-color: #496a83; background: #0c1b2b; color: #eef6fd; }
+[data-theme=dark] .help-guide-form button { border-color: #50bce5; background: #087da7; color: #fff; }
+@media (max-width: 520px) {
+  .help-guide { right: max(13px, env(safe-area-inset-right)); bottom: max(14px, env(safe-area-inset-bottom)); }
+  .help-guide-toggle { width: 54px; height: 54px; }
+  .help-guide-panel { position: fixed; right: max(12px, env(safe-area-inset-right)); bottom: max(78px, calc(env(safe-area-inset-bottom) + 70px)); width: min(390px, calc(100vw - 24px)); max-height: min(72dvh, 620px); }
+  .help-guide-messages { padding: 11px; }
+  .help-guide-quick-actions button { min-height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) { .help-guide-toggle, .help-guide-quick-actions button { transition: none; } .help-guide-panel { animation: none; } }
