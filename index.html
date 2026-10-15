@@ -15,7 +15,7 @@
         href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="evaluador.css?v=68">
+    <link rel="stylesheet" href="evaluador.css?v=76">
     <link rel="icon" href="icons/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/evalpro-icon-192.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
@@ -26,7 +26,8 @@
     <header>
         <div class="head">
             <div class="logo">Eval<span>Pro</span> <small>Evaluador académico</small></div>
-            <div class="head-actions"><button class="btn backup-btn" type="button" onclick="exportBackup()" aria-label="Exportar datos" title="Exportar datos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/></svg><span>Exportar</span></button><button class="btn backup-btn" type="button" onclick="document.getElementById('backupFileInput').click()" aria-label="Cargar datos" title="Cargar datos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V9m0 0 4 4m-4-4-4 4M5 7V4h14v3"/></svg><span>Cargar</span></button><input id="backupFileInput" type="file" accept=".json,application/json" hidden><button id="themeBtn" class="btn theme-icon-button" type="button" onclick="toggleTheme()" aria-label="Cambiar tema" title="Cambiar tema"></button><button id="mobileMenuBtn" class="btn mobile-menu-button" type="button" onclick="toggleMobileMenu()" aria-label="Abrir menú de secciones" aria-expanded="false" aria-controls="sectionNav"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="6" r="1.2"/><circle cx="5" cy="12" r="1.2"/><circle cx="5" cy="18" r="1.2"/><path d="M10 6h9M10 12h9M10 18h9"/></svg></button></div>
+            <div id="activeSubjectHeader" class="header-active-subject" aria-live="polite" title="Materia activa"><span class="header-subject-dot" aria-hidden="true"></span><span id="activeSubjectName">Todas las materias</span></div>
+            <div class="head-actions"><button class="btn backup-btn" type="button" onclick="exportBackup()" aria-label="Exportar datos" title="Exportar datos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/></svg><span>Exportar</span></button><button class="btn backup-btn" type="button" onclick="document.getElementById('backupFileInput').click()" aria-label="Cargar datos" title="Cargar datos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h13l3 3v15H4zM8 3v6h8V3M8 21v-6h8v6M15 3v4"/></svg><span>Cargar</span></button><input id="backupFileInput" type="file" accept=".json,application/json" hidden><button id="themeBtn" class="btn theme-icon-button" type="button" onclick="toggleTheme()" aria-label="Cambiar tema" title="Cambiar tema"></button><button id="mobileMenuBtn" class="btn mobile-menu-button" type="button" onclick="toggleMobileMenu()" aria-label="Abrir menú de secciones" aria-expanded="false" aria-controls="sectionNav"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="6" r="1.2"/><circle cx="5" cy="12" r="1.2"/><circle cx="5" cy="18" r="1.2"/><path d="M10 6h9M10 12h9M10 18h9"/></svg></button></div>
         </div>
     </header>
     <main>
@@ -57,7 +58,7 @@
             <section class="card config-card no-print">
                 <div class="grid">
                     <div class="field"><label for="examConfigSubject">Materia que estás configurando</label><select
-                            id="examConfigSubject" onchange="selectExamConfigSubject(this.value)"></select></div>
+                            id="examConfigSubject" onchange="selectExamConfigSubject(this.value); applySubjectTheme(this.value)"></select></div>
                     <div class="field"><label for="examConfigPartial">Parcial que estás configurando</label><select
                             id="examConfigPartial" onchange="selectExamConfigPartial(this.value)"></select></div>
                     <div class="field"><label for="pesoExamen">Peso del examen en el parcial (%)</label><input
@@ -82,7 +83,7 @@
                             <option value="existing">Calificar alumno existente</option>
                         </select></div>
                     <div class="field"><label for="examSubject">Materia</label><select id="examSubject"
-                            onchange="selectExamConfigSubject(this.value)"></select></div>
+                            onchange="selectExamConfigSubject(this.value); applySubjectTheme(this.value)"></select></div>
                     <div class="field"><label for="examPartial">Parcial</label><select id="examPartial"
                             onchange="selectExamConfigPartial(this.value)"></select></div>
                     <div class="field" id="examNewStudentField"><label for="studentName">Nombre del alumno</label><input
@@ -214,13 +215,17 @@
                 <div class="subject-grid">
                     <div class="field"><label for="activeSubject">Materia activa / filtro</label><select
                             id="activeSubject" onchange="selectSubject(this.value)"></select></div>
+                    <div id="subjectThemeColorField" class="field subject-color-field"><label>Color de la materia activa</label>
+                        <div id="subjectThemeSwatches" class="subject-color-swatches" data-pending-color="" role="group" aria-label="Color de la materia activa"></div>
+                        <button id="applySubjectColor" class="btn btn-primary subject-color-apply" type="button" onclick="applySelectedSubjectColor()" disabled>Aplicar selección</button>
+                    </div>
                     <div class="field"><label for="newSubjectName">Crear materia</label><input id="newSubjectName"
                             placeholder="Ej. Física I"></div>
-                    <div class="field subject-action"><label>&nbsp;</label><button class="btn btn-primary"
+                    <div id="createSubjectAction" class="field subject-action"><label>&nbsp;</label><button class="btn btn-primary"
                             onclick="createSubject()">＋ Crear materia</button></div>
-                    <div class="field"><label for="subjectMember">Agregar alumno registrado</label><select
+                    <div id="subjectMemberField" class="field"><label for="subjectMember">Agregar alumno registrado</label><select
                             id="subjectMember"></select></div>
-                    <div class="field subject-action"><label>&nbsp;</label><button class="btn btn-green"
+                    <div id="assignMemberAction" class="field subject-action"><label>&nbsp;</label><button class="btn btn-green"
                             onclick="assignMemberToSubject()">＋ Asignar a materia</button></div>
                 </div>
             </section>
@@ -232,7 +237,7 @@
                         así, deben sumar 100% por parcial.</p>
                     <div class="partial-controls">
                         <div class="field"><label for="configSubject">Materia que estás configurando</label><select
-                                id="configSubject" onchange="selectConfigSubject(this.value)"></select></div>
+                                id="configSubject" onchange="selectConfigSubject(this.value); applySubjectTheme(this.value)"></select></div>
                         <div class="field"><label for="partialSelector">Parcial que estás configurando</label><select
                                 id="partialSelector" onchange="selectPartial(this.value)"></select></div>
                         <div class="field"><label for="newPartialName">Crear parcial</label><input id="newPartialName"
@@ -254,7 +259,7 @@
                     <span class="task-manager-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3.5h8l4 4V20H5V3.5h2Z"/><path d="M14 3.5V8h5M8 13h8M8 16.5h8"/></svg></span>
                 </header>
                 <div class="task-manager-controls">
-                    <div class="field"><label for="taskManagerSubject">Materia</label><select id="taskManagerSubject" onchange="renderTaskManager()"></select></div>
+                    <div class="field"><label for="taskManagerSubject">Materia</label><select id="taskManagerSubject" onchange="renderTaskManager(); applySubjectTheme(this.value)"></select></div>
                     <div class="field"><label for="taskManagerPartial">Parcial</label><select id="taskManagerPartial" onchange="renderTaskManager()"></select></div>
                     <div class="field"><label for="taskManagerParameter">Parámetro de tareas</label><select id="taskManagerParameter" onchange="renderTaskManager()"></select></div>
                     <div class="field"><label for="taskManagerTitle">Nombre de la actividad</label><input id="taskManagerTitle" placeholder="Ej. Ejercicio de vectores"></div>
@@ -300,7 +305,7 @@
                                 aria-hidden="true"></select>
                         </div>
                         <div class="field record-context-field"><label for="recordSubject">Materia</label><select
-                                id="recordSubject" onchange="selectRecordSubject(this.value); renderTaskParameterCount()"></select></div>
+                                id="recordSubject" onchange="selectRecordSubject(this.value); applySubjectTheme(this.value); renderTaskParameterCount()"></select></div>
                         <div class="field record-context-field"><label for="recordPartial">Parcial</label><select
                                 id="recordPartial" onchange="selectRecordPartial(this.value); renderTaskParameterCount()"></select></div>
                         <div class="field record-parameter-field"><label for="recordCategory">Tipo / parámetro</label>
@@ -411,7 +416,7 @@
         <section id="helpGuidePanel" class="help-guide-panel" role="dialog" aria-modal="false"
             aria-labelledby="helpGuideTitle" hidden>
             <header class="help-guide-header">
-                <span class="help-guide-avatar" aria-hidden="true"><img src="icons/guia-robot.png" alt=""></span>
+                <span class="help-guide-avatar" aria-hidden="true"><img src="icons/guia-robot-144.png" alt="" width="34" height="34"></span>
                 <div><strong id="helpGuideTitle">Guía EvalPro</strong><small>Te ayudo a encontrar cada función</small></div>
                 <button class="help-guide-close" type="button" aria-label="Cerrar guía" title="Cerrar guía" onclick="toggleHelpGuide(false)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
             </header>
@@ -430,23 +435,22 @@
                 </div>
             </div>
             <form id="helpGuideForm" class="help-guide-form">
-                <label class="visually-hidden" for="helpGuideInput">Escribe tu duda sobre EvalPro</label>
-                <input id="helpGuideInput" type="text" placeholder="Escribe tu duda…" autocomplete="off">
+                <input id="helpGuideInput" type="text" placeholder="Escribe tu duda" aria-label="Escribe tu duda" autocomplete="off">
                 <button type="submit" aria-label="Enviar duda" title="Enviar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 5 16 7-16 7 3-7-3-7Z"/><path d="M7 12h13"/></svg></button>
             </form>
         </section>
         <button id="helpGuideToggle" class="help-guide-toggle" type="button" aria-label="Abrir guía de ayuda"
             aria-expanded="false" aria-controls="helpGuidePanel" title="Ayuda y guía interactiva" onclick="toggleHelpGuide()">
-            <img src="icons/guia-robot.png" alt="" aria-hidden="true">
+            <img src="icons/guia-robot-144.png" alt="" aria-hidden="true" width="43" height="43">
         </button>
     </div>
-    <script src="evaluador.js?v=22" defer></script>
-    <script src="filtros.js?v=12" defer></script>
+    <script src="evaluador.js?v=27" defer></script>
+    <script src="filtros.js?v=14" defer></script>
     <script src="parciales.js?v=14" defer></script>
-    <script src="calificaciones.js?v=24" defer></script>
+    <script src="calificaciones.js?v=26" defer></script>
     <script src="tareas.js?v=4" defer></script>
     <script src="backup.js?v=3" defer></script>
-    <script src="guia.js?v=3" defer></script>
+    <script src="guia.js?v=6" defer></script>
 </body>
 
 </html>

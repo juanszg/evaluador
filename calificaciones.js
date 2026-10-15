@@ -928,11 +928,13 @@ function createSubject() {
   const name = $('newSubjectName').value.trim();
   if (!name) return toast('Escribe el nombre de la materia.');
   if (subjects.some(subject => normalizeName(subject.name) === normalizeName(name))) return toast('Ya existe una materia con ese nombre.');
-  const subject = { id: makeId(), name, studentIds: [] };
+  const subject = { id: makeId(), name, studentIds: [], themeColor: '' };
   subjects.push(subject);
   writeStore('evalpro-subjects-v1', subjects);
   selectedSubjectId = subject.id;
   selectedConfigSubjectId = subject.id;
+  syncSubjectThemeColorPicker(subject.id);
+  applySubjectTheme(subject.id);
   $('newSubjectName').value = '';
   renderSubjects();
   renderConfigSubjects();
@@ -943,6 +945,7 @@ function createSubject() {
   loadExamConfigForSubject(subject.id, examConfigPartialId);
   renderRoster();
   toast(`Materia ${name} creada`);
+  alert(`Se guardó la materia ${name}. Ahora puedes elegir su color en “Color de la materia activa”.`);
 }
 
 renderExamStudentControls();

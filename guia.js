@@ -32,7 +32,6 @@
         const open = typeof force === 'boolean' ? force : box.hidden;
         box.hidden = !open;
         document.getElementById('helpGuideToggle')?.setAttribute('aria-expanded', String(open));
-        if (open) input()?.focus({ preventScroll: true });
     };
 
     function addMessage(text, who = 'assistant', choices = []) {
@@ -41,10 +40,23 @@
         const bubble = document.createElement('div');
         bubble.className = `help-guide-message is-${who}`;
         const p = document.createElement('p');
-        p.textContent = text;
+        const animated = who === 'assistant' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (who === 'assistant') {
+            const visualText = document.createElement('span');
+            visualText.className = 'help-guide-typing-text';
+            visualText.setAttribute('aria-hidden', 'true');
+            const accessibleText = document.createElement('span');
+            accessibleText.className = 'help-guide-sr-only';
+            accessibleText.textContent = text;
+            p.append(visualText, accessibleText);
+            if (animated) bubble.classList.add('is-typing');
+        } else {
+            p.textContent = text;
+        }
         bubble.appendChild(p);
         log.appendChild(bubble);
-        if (choices.length) {
+        const appendChoices = () => {
+            if (!choices.length || !bubble.isConnected) return;
             const group = document.createElement('div');
             group.className = 'help-guide-quick-actions help-guide-followups';
             choices.forEach(choice => {
@@ -55,9 +67,38 @@
                 group.appendChild(button);
             });
             log.appendChild(group);
-        }
+        };
         while (log.children.length > 28) log.removeChild(log.children[0]);
-        if (!panel()?.hidden) scrollGuideToLatest();
+        if (animated) {
+            const visualText = bubble.querySelector('.help-guide-typing-text');
+            const chars = [...text];
+            let position = 0;
+            const typeNext = () => {
+                if (!bubble.isConnected) return;
+                position += 1;
+                visualText.textContent = chars.slice(0, position).join('');
+                if (position % 3 === 0 || position >= chars.length) log.scrollTop = log.scrollHeight;
+                if (position < chars.length) {
+                    const char = chars[position - 1];
+                    const pause = /[.!?¿,:;]/.test(char) ? 78 : 16;
+                    window.setTimeout(typeNext, pause);
+                } else {
+                    bubble.classList.remove('is-typing');
+                    appendChoices();
+                    if (!panel()?.hidden) scrollGuideToLatest();
+                }
+            };
+            if (!chars.length) {
+                bubble.classList.remove('is-typing');
+                appendChoices();
+            } else {
+                window.setTimeout(typeNext, 110);
+            }
+        } else {
+            if (who === 'assistant') bubble.querySelector('.help-guide-typing-text').textContent = text;
+            appendChoices();
+            if (!panel()?.hidden) scrollGuideToLatest();
+        }
     }
 
     function navigate(action) {
@@ -70,6 +111,7 @@
             return;
         }
         if (item.tab) {
+            document.getElementById(`panel-${item.tab}`)?.classList.add('guide-nav-static');
             const tab = document.querySelector(`.folder-tab[data-tab="${item.tab}"]`);
             if (tab) tab.click();
         }
@@ -77,6 +119,13 @@
         requestAnimationFrame(() => requestAnimationFrame(() => {
             const target = document.querySelector(item.target);
             if (target) {
+                const targetSection = target.closest('.card, .profile-panel');
+                if (targetSection) {
+                    targetSection.classList.remove('guide-route-target');
+                    void targetSection.offsetWidth;
+                    targetSection.classList.add('guide-route-target');
+                    window.setTimeout(() => targetSection.classList.remove('guide-route-target'), 1500);
+                }
                 target.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 const focusTarget = document.querySelector(item.focus || item.target);
                 if (focusTarget && typeof focusTarget.focus === 'function') {
