@@ -6294,6 +6294,8 @@ body.printing-roster .roster-action-open::after {
 .help-guide-toggle:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 12px 28px #07577f66, 0 0 0 6px #1685b22b; }
 .help-guide-toggle:focus-visible, .help-guide-close:focus-visible, .help-guide-form button:focus-visible, .help-guide-quick-actions button:focus-visible { outline: 3px solid #50fa7b; outline-offset: 3px; }
 .help-guide-toggle svg { width: 27px; height: 27px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.help-guide-toggle img { width: 47px; height: 47px; object-fit: contain; }
+.help-guide-avatar img { width: 34px; height: 34px; object-fit: contain; }
 .help-guide-panel { position: absolute; right: 0; bottom: 72px; display: flex; flex-direction: column; width: min(380px, calc(100vw - 28px)); max-height: min(620px, calc(100dvh - 118px)); overflow: hidden; border: 2px solid #3788aa; border-radius: 16px; background: #f4faff; color: #18364b; box-shadow: 0 18px 52px #102b4260; animation: help-guide-in .2s ease-out; }
 .help-guide-panel[hidden] { display: none; }
 .help-guide-header { position: static; top: auto; z-index: auto; display: flex; align-items: center; gap: 11px; padding: 13px 15px; border-bottom: 1px solid #bad5e3; background: linear-gradient(115deg, #d9f3ff, #e9f5ff 58%, #dff5e9); }

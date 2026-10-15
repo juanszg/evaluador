@@ -15,7 +15,7 @@
         href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="evaluador.css?v=66">
+    <link rel="stylesheet" href="evaluador.css?v=68">
     <link rel="icon" href="icons/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/evalpro-icon-192.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
@@ -411,7 +411,7 @@
         <section id="helpGuidePanel" class="help-guide-panel" role="dialog" aria-modal="false"
             aria-labelledby="helpGuideTitle" hidden>
             <header class="help-guide-header">
-                <span class="help-guide-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.2 9a3.9 3.9 0 1 1 6.7 2.7c-1.2 1-2.2 1.6-2.2 3.3"/><circle cx="12" cy="18" r=".8"/><circle cx="12" cy="12" r="10"/></svg></span>
+                <span class="help-guide-avatar" aria-hidden="true"><img src="icons/guia-robot.png" alt=""></span>
                 <div><strong id="helpGuideTitle">Guía EvalPro</strong><small>Te ayudo a encontrar cada función</small></div>
                 <button class="help-guide-close" type="button" aria-label="Cerrar guía" title="Cerrar guía" onclick="toggleHelpGuide(false)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
             </header>
@@ -437,7 +437,7 @@
         </section>
         <button id="helpGuideToggle" class="help-guide-toggle" type="button" aria-label="Abrir guía de ayuda"
             aria-expanded="false" aria-controls="helpGuidePanel" title="Ayuda y guía interactiva" onclick="toggleHelpGuide()">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><path d="M9.7 9a2.4 2.4 0 1 1 4.1 1.7c-.9.8-1.8 1.2-1.8 2.6"/><circle cx="12" cy="16.8" r=".7"/></svg>
+            <img src="icons/guia-robot.png" alt="" aria-hidden="true">
         </button>
     </div>
     <script src="evaluador.js?v=22" defer></script>
@@ -446,7 +446,7 @@
     <script src="calificaciones.js?v=24" defer></script>
     <script src="tareas.js?v=4" defer></script>
     <script src="backup.js?v=3" defer></script>
-    <script src="guia.js?v=2" defer></script>
+    <script src="guia.js?v=3" defer></script>
 </body>
 
 </html>

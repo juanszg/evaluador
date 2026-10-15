@@ -19,6 +19,13 @@
     const messages = () => document.getElementById('helpGuideMessages');
     const input = () => document.getElementById('helpGuideInput');
 
+    function scrollGuideToLatest() {
+        requestAnimationFrame(() => {
+            const log = messages();
+            if (log) log.scrollTo({ top: log.scrollHeight, behavior: 'smooth' });
+        });
+    }
+
     window.toggleHelpGuide = function (force) {
         const box = panel();
         if (!box) return;
@@ -50,22 +57,23 @@
             log.appendChild(group);
         }
         while (log.children.length > 28) log.removeChild(log.children[0]);
-        log.scrollTop = log.scrollHeight;
+        if (!panel()?.hidden) scrollGuideToLatest();
     }
 
     function navigate(action) {
         const item = actions[action];
         if (!item) return;
+        if (!item.tab && !item.target) {
+            if (panel()?.hidden) window.toggleHelpGuide(true);
+            addMessage(item.message, 'assistant', item.choices || []);
+            scrollGuideToLatest();
+            return;
+        }
         if (item.tab) {
             const tab = document.querySelector(`.folder-tab[data-tab="${item.tab}"]`);
             if (tab) tab.click();
         }
         window.toggleHelpGuide(false);
-        if (!item.target) {
-            addMessage(item.message, 'assistant', item.choices || []);
-            window.toggleHelpGuide(true);
-            return;
-        }
         requestAnimationFrame(() => requestAnimationFrame(() => {
             const target = document.querySelector(item.target);
             if (target) {
