@@ -15,7 +15,7 @@
         href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="evaluador.css?v=76">
+    <link rel="stylesheet" href="evaluador.css?v=78">
     <link rel="icon" href="icons/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/evalpro-icon-192.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
@@ -46,7 +46,7 @@
                 </section>
                 <div class="profile-bento">
                     <section class="profile-panel profile-panel-overview"><div class="profile-panel-heading"><div><span class="profile-panel-kicker">RESUMEN DEL SEMESTRE</span><h3>Panorama general</h3></div><span class="profile-panel-mark" aria-hidden="true">◎</span></div><div id="profileStats" class="profile-stats-grid"></div></section>
-                    <section class="profile-panel profile-panel-subjects"><div class="profile-panel-heading"><div><span class="profile-panel-kicker">TUS GRUPOS</span><h3>Materias que impartes</h3></div><span class="profile-panel-mark" aria-hidden="true">▤</span></div><div id="profileSubjects" class="profile-subject-grid"></div></section>
+                    <section class="profile-panel profile-panel-subjects"><div class="profile-panel-heading"><div><span class="profile-panel-kicker">TUS GRUPOS</span><h3>Materias que impartes</h3></div><span class="profile-panel-mark" aria-hidden="true">▤</span></div><div id="profileSubjects" class="profile-subject-grid"></div><div class="profile-subject-charts"><article class="profile-chart-card"><h4>Promedio final por materia</h4><div class="profile-chart-frame"><canvas id="profileSubjectBarChart" role="img" aria-label="Gráfica de barras con el promedio final de cada materia"></canvas><p id="profileSubjectChartEmpty" class="profile-chart-empty" hidden>Las materias aparecerán aquí cuando tengan calificaciones.</p></div></article><article class="profile-chart-card"><h4>Estado de las inscripciones</h4><div class="profile-chart-frame"><canvas id="profileEnrollmentPieChart" role="img" aria-label="Gráfica de pastel con alumnos aprobados, reprobados y sin registro"></canvas><p id="profileEnrollmentChartEmpty" class="profile-chart-empty" hidden>Asigna alumnos a tus materias para ver esta gráfica.</p></div></article></div></section>
                     <section class="profile-panel profile-panel-tasks"><div class="profile-panel-heading"><div><span class="profile-panel-kicker">SEGUIMIENTO</span><h3>Tareas por materia</h3></div><span class="profile-panel-mark" aria-hidden="true">✓</span></div><div id="profileTasks" class="profile-task-list"></div></section>
                     <section class="profile-panel profile-panel-partials"><div class="profile-panel-heading"><div><span class="profile-panel-kicker">EVALUACIÓN</span><h3>Avance por parcial</h3></div><span class="profile-panel-mark" aria-hidden="true">◷</span></div><div id="profilePartials" class="profile-partial-grid"></div></section>
                     <section class="profile-panel profile-panel-backups"><div class="profile-panel-heading"><div><span class="profile-panel-kicker">PROTEGE TU INFORMACIÓN</span><h3>Historial de guardados</h3></div><span id="backupHistoryCount" class="backup-history-count">0 copias</span></div><p class="profile-panel-description">Cada guardado conserva un punto de restauración en este navegador y descarga una copia JSON para que también la guardes fuera del dispositivo.</p><div id="backupHistory" class="backup-history-list"></div></section>
@@ -449,8 +449,8 @@
     <script src="parciales.js?v=14" defer></script>
     <script src="calificaciones.js?v=26" defer></script>
     <script src="tareas.js?v=4" defer></script>
-    <script src="backup.js?v=3" defer></script>
-    <script src="guia.js?v=6" defer></script>
+    <script src="backup.js?v=4" defer></script>
+    <script src="guia.js?v=9" defer></script>
 </body>
 
 </html>

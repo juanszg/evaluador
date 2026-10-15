@@ -1,4 +1,6 @@
 // Respaldo portable de los datos locales de EvalPro.
+let profileSubjectBarChart = null;
+let profileEnrollmentPieChart = null;
 const BACKUP_KEYS = {
   roster: 'evalpro-roster-v1',
   subjects: 'evalpro-subjects-v1',
@@ -205,6 +207,70 @@ function validateBackup(backup) {
   return data;
 }
 
+function drawProfileSubjectCharts(subjectMetrics, enrolledPairs) {
+  const barCanvas = document.getElementById('profileSubjectBarChart');
+  const pieCanvas = document.getElementById('profileEnrollmentPieChart');
+  if (!barCanvas || !pieCanvas) return;
+  profileSubjectBarChart?.destroy();
+  profileEnrollmentPieChart?.destroy();
+  profileSubjectBarChart = profileEnrollmentPieChart = null;
+  const hasGrades = subjectMetrics.some(item => Number.isFinite(item.average));
+  const hasEnrollments = enrolledPairs.length > 0;
+  const barEmpty = document.getElementById('profileSubjectChartEmpty');
+  const pieEmpty = document.getElementById('profileEnrollmentChartEmpty');
+  barCanvas.hidden = !hasGrades;
+  pieCanvas.hidden = !hasEnrollments;
+  if (barEmpty) barEmpty.hidden = hasGrades;
+  if (pieEmpty) pieEmpty.hidden = hasEnrollments;
+  if (!window.Chart) return;
+  const css = getComputedStyle(document.documentElement);
+  const ink = css.getPropertyValue('--ink').trim() || '#25475b';
+  const surface = css.getPropertyValue('--surface').trim() || '#fff';
+  const colorForSubject = { purple: '#8757b1', yellow: '#d3a91d', orange: '#df7a32', green: '#258652', gray: '#748092', red: '#c84c57' };
+  if (hasGrades) {
+    profileSubjectBarChart = new Chart(barCanvas, {
+      type: 'bar',
+      data: {
+        labels: subjectMetrics.map(item => item.subject.name),
+        datasets: [{
+          label: 'Promedio / 10',
+          data: subjectMetrics.map(item => Number.isFinite(item.average) ? Number(item.average.toFixed(2)) : null),
+          backgroundColor: subjectMetrics.map(item => colorForSubject[item.subject.themeColor] || css.getPropertyValue('--primary').trim() || '#1685b2'),
+          borderRadius: 5,
+          maxBarThickness: 48
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: context => ` ${context.parsed.y.toFixed(2)} / 10` } } },
+        scales: {
+          y: { beginAtZero: true, max: 10, ticks: { color: ink, stepSize: 2 }, grid: { color: `${ink}18` } },
+          x: { ticks: { color: ink, maxRotation: 35, minRotation: 0, autoSkip: true }, grid: { display: false } }
+        }
+      }
+    });
+  }
+  if (hasEnrollments) {
+    const approved = enrolledPairs.filter(item => Number.isFinite(item.grade) && item.grade >= 6).length;
+    const failed = enrolledPairs.filter(item => Number.isFinite(item.grade) && item.grade < 6).length;
+    const pending = enrolledPairs.length - approved - failed;
+    profileEnrollmentPieChart = new Chart(pieCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Aprobados', 'Reprobados', 'Sin registro'],
+        datasets: [{ data: [approved, failed, pending], backgroundColor: ['#25a66a', '#d65360', '#e0b33b'], borderColor: surface, borderWidth: 3, hoverOffset: 5 }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '62%',
+        plugins: { legend: { position: 'bottom', labels: { color: ink, padding: 14, usePointStyle: true, pointStyle: 'circle' } } }
+      }
+    });
+  }
+}
+
 function renderProfile() {
   const statsBox = document.getElementById('profileStats');
   if (!statsBox) return;
@@ -260,6 +326,7 @@ function renderProfile() {
     const percent = average === null ? 0 : Math.min(100, Math.max(0, average * 10));
     return `<article class="profile-subject-card"><div class="profile-subject-heading"><h4>${esc(subject.name)}</h4><span>${members.length} ${members.length === 1 ? 'alumno' : 'alumnos'}</span></div><div class="profile-subject-grade"><b>${average === null ? 'S/R' : average.toFixed(2)}</b><span>promedio / 10</span></div><div class="profile-progress"><span style="width:${percent}%"></span></div><div class="profile-subject-foot"><span class="is-approved">${passed} aprobados</span><span class="is-failed">${failed} reprobados</span><span>${pending} S/R</span></div></article>`;
   }).join('') : '<div class="profile-empty">Aún no has creado materias.</div>';
+  drawProfileSubjectCharts(subjectMetrics, enrolledPairs);
 
   const taskBox = document.getElementById('profileTasks');
   if (taskBox) taskBox.innerHTML = subjectMetrics.length ? subjectMetrics.map(({ subject, members, taskRows, taskDone, taskTotal, works, participation, exams }) => {

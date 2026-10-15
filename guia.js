@@ -6,7 +6,7 @@
         'exam-grade': { tab: 'exam', target: '#examStudentMode', message: 'En “Examen”, elige si vas a registrar un alumno nuevo o calificar a uno existente. Selecciona materia y parcial; captura los aciertos o puntajes y guarda.' },
         'activity-grade': { tab: 'activity', target: '#recordStudentSearch', message: 'En “Registro de actividad”, busca al alumno inscrito, selecciona materia, parcial y parámetro. Captura su calificación y guarda el registro.' },
         'edit-student': { tab: 'register', target: '#rosterCard', focus: '#rosterSubject', message: 'En “Registrar alumnos”, filtra la materia y localiza al alumno en la lista. Usa el icono de edición para corregir su nombre; el expediente permite editar o agregar calificaciones.' },
-        'view-subject': { tab: 'book', target: '#bookConfig', focus: '#activeSubject', message: 'Ve a “Cuaderno y seguimiento” y selecciona la materia. Ahí puedes ver el grupo, sus tareas y la configuración de evaluación por parcial.' },
+        'view-subject': { message: '¿Qué quieres hacer?', choices: [{ label: 'Ver la tabla', action: 'view-subject-table' }, { label: 'Configurar parámetros', action: 'view-subject-config' }] },
         'group-tasks': { tab: 'book', target: '#taskManager', focus: '#taskManagerSubject', message: 'En “Cuaderno y seguimiento”, abre “Registro grupal”. Selecciona materia, parcial y parámetro; agrega la tarea y registra la entrega del grupo.' },
         file: { tab: 'records', target: '#globalSearch', message: 'En “Expedientes”, escribe el nombre en el buscador. Selecciona el resultado para abrir su historial y calificaciones por materia.' },
         backup: { tab: 'profile', target: '.profile-panel-backups', focus: '.profile-save-button', message: 'En “Mi perfil” puedes crear una copia con “Guardar datos”. Para llevarla a otro navegador, usa “Exportar”; para recuperarla, “Cargar” y selecciona el archivo JSON.' },
@@ -18,6 +18,70 @@
     const panel = () => document.getElementById('helpGuidePanel');
     const messages = () => document.getElementById('helpGuideMessages');
     const input = () => document.getElementById('helpGuideInput');
+    const guidedSubjectChoices = new Map();
+    let guidedChoiceCounter = 0;
+
+    function addGuidedChoice(label, route) {
+        const action = `guided-subject-${++guidedChoiceCounter}`;
+        guidedSubjectChoices.set(action, route);
+        return { label, action };
+    }
+
+    function askForSubject(intent) {
+        if (!Array.isArray(subjects) || !subjects.length) {
+            addMessage('Todavía no hay materias guardadas. Crea una materia y después podrás consultarla aquí.', 'assistant', [
+                { label: 'Crear materia', action: 'subject' }
+            ]);
+            return;
+        }
+        addMessage('¿Qué materia quieres ver?', 'assistant', subjects.map(subject => addGuidedChoice(subject.name, { stage: 'subject', subjectId: subject.id, intent })));
+    }
+
+    function askForPartial(subjectId, intent) {
+        const subject = subjects.find(item => String(item.id) === String(subjectId));
+        if (!subject) return addMessage('No encontré esa materia. Vuelve a elegirla para continuar.');
+        const partials = Array.isArray(academicPartials) ? academicPartials : [];
+        if (partials.length <= 1) {
+            openSubjectRoute(subject, partials[0] || null, intent);
+            return;
+        }
+        addMessage(`¿Qué parcial de ${subject.name} quieres consultar?`, 'assistant', partials.map(part => addGuidedChoice(part.name, { stage: 'partial', subjectId: subject.id, partialId: part.id, intent })));
+    }
+
+    function openSubjectRoute(subject, part, intent) {
+        const isConfig = intent === 'config';
+        const tabName = isConfig ? 'book' : 'register';
+        const targetSelector = isConfig ? '#bookConfig' : '#rosterCard';
+        const tab = document.querySelector(`.folder-tab[data-tab="${tabName}"]`);
+        if (tab) tab.click();
+        if (isConfig) {
+            const subjectSelect = document.getElementById('configSubject');
+            if (subjectSelect) subjectSelect.value = subject.id;
+            if (typeof selectConfigSubject === 'function') selectConfigSubject(subject.id);
+            if (part && typeof selectPartial === 'function') selectPartial(part.id);
+        } else {
+            if (typeof selectSubject === 'function') selectSubject(subject.id);
+            const index = part ? academicPartials.findIndex(item => String(item.id) === String(part.id)) : 0;
+            const view = part && normalize(part.name) === 'final' ? 'final' : (['p1', 'p2', 'p3'][index] || (index === 3 ? 'final' : 'overall'));
+            const gradeView = document.getElementById('rosterGradeView');
+            if (gradeView) gradeView.value = view;
+            if (typeof selectRosterGradeView === 'function') selectRosterGradeView(view);
+        }
+        window.toggleHelpGuide(false);
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            const target = document.querySelector(targetSelector);
+            if (target) {
+                target.classList.remove('guide-route-target');
+                void target.offsetWidth;
+                target.classList.add('guide-route-target');
+                window.setTimeout(() => target.classList.remove('guide-route-target'), 1500);
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            if (typeof window.toast === 'function') window.toast(isConfig
+                ? `Parámetros de ${subject.name}${part ? ` · ${part.name}` : ''}`
+                : `Tabla de ${subject.name}${part ? ` · ${part.name}` : ''}`);
+        }));
+    }
 
     function scrollGuideToLatest() {
         requestAnimationFrame(() => {
@@ -26,10 +90,34 @@
         });
     }
 
+    function resetGuideConversation() {
+        const log = messages();
+        if (!log) return;
+        guidedSubjectChoices.clear();
+        guidedChoiceCounter = 0;
+        log.innerHTML = `
+            <div class="help-guide-message is-assistant"><p>¡Hola! Puedo llevarte a la sección que necesitas o resolver dudas comunes.</p></div>
+            <div class="help-guide-message is-assistant"><p>¿Qué deseas hacer?</p></div>
+            <div class="help-guide-quick-actions">
+                <button type="button" data-guide-action="student">Crear alumno</button>
+                <button type="button" data-guide-action="subject">Crear materia</button>
+                <button type="button" data-guide-action="grade">Agregar calificación</button>
+                <button type="button" data-guide-action="edit-student">Editar alumno</button>
+                <button type="button" data-guide-action="view-subject">Ver materia</button>
+                <button type="button" data-guide-action="group-tasks">Registrar tareas grupales</button>
+                <button type="button" data-guide-action="file">Buscar expediente</button>
+                <button type="button" data-guide-action="backup">Guardar o cargar datos</button>
+            </div>`;
+        const field = input();
+        if (field) field.value = '';
+        log.scrollTop = 0;
+    }
+
     window.toggleHelpGuide = function (force) {
         const box = panel();
         if (!box) return;
         const open = typeof force === 'boolean' ? force : box.hidden;
+        if (open && box.hidden) resetGuideConversation();
         box.hidden = !open;
         document.getElementById('helpGuideToggle')?.setAttribute('aria-expanded', String(open));
     };
@@ -102,6 +190,22 @@
     }
 
     function navigate(action) {
+        if (action === 'view-subject-table' || action === 'view-subject-config') {
+            askForSubject(action === 'view-subject-config' ? 'config' : 'table');
+            return;
+        }
+        const guidedRoute = guidedSubjectChoices.get(action);
+        if (guidedRoute) {
+            guidedSubjectChoices.delete(action);
+            if (guidedRoute.stage === 'subject') {
+                askForPartial(guidedRoute.subjectId, guidedRoute.intent);
+            } else {
+                const subject = subjects.find(item => String(item.id) === String(guidedRoute.subjectId));
+                const part = academicPartials.find(item => String(item.id) === String(guidedRoute.partialId));
+                if (subject) openSubjectRoute(subject, part || null, guidedRoute.intent);
+            }
+            return;
+        }
         const item = actions[action];
         if (!item) return;
         if (!item.tab && !item.target) {

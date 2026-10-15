@@ -6481,6 +6481,47 @@ html[data-subject-theme] .folder-tabs { border-bottom-color: var(--primary); }
 #helpGuideForm input { display: block; flex: 1 1 0%; width: 1%; min-width: 0; }
 #helpGuideForm button { flex: 0 0 42px; width: 42px; min-width: 42px; }
 
+/* El expediente debe ajustarse al viewport; solo las tablas internas desplazan. */
+#studentFile.file-card { box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; overflow-x: clip; }
+#studentFile, #studentFile * { box-sizing: border-box; }
+#studentFile .file-title, #studentFile .file-title>div, #studentFile .file-evaluation-subject,
+#studentFile .file-evaluation-partial, #studentFile .file-evaluation-row, #studentFile .file-evaluation-param { min-width: 0; max-width: 100%; }
+#studentFile .file-evaluation-row { grid-template-columns: minmax(0,1fr) minmax(58px,auto) minmax(0,auto); }
+#studentFile .file-evaluation-actions { max-width: 100%; flex-wrap: wrap; }
+#studentFile .file-evaluation-actions .btn { max-width: 100%; white-space: normal; }
+#studentFile .table-wrap { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+@media (max-width: 600px) {
+  #studentFile, #studentFile * { min-width: 0; }
+  #studentFile.file-card { width: 100%; padding: 12px; margin-top: 30px; border-radius: 4px 9px 9px 9px; }
+  #studentFile .file-heading { width: 100%; align-items: stretch; gap: 10px; padding: 2px 0 12px; }
+  #studentFile .file-title { width: 100%; align-items: flex-start; gap: 9px; }
+  #studentFile .file-title .section-title { font-size: 1rem; line-height: 1.25; overflow-wrap: anywhere; }
+  #studentFile #fileSummary { font-size: .7rem; line-height: 1.4; overflow-wrap: anywhere; }
+  #studentFile .file-actions { display: flex; width: 100%; justify-content: stretch; gap: 6px; }
+  #studentFile .file-actions .btn { flex: 1 1 130px; min-width: 0; padding: 8px 7px; font-size: .68rem; white-space: normal; }
+  #studentFile .file-folder-tabs { display: flex; width: 100%; gap: 5px; }
+  #studentFile .file-folder-tab { flex: 1 1 0; min-width: 0; padding: 8px 5px; font-size: .68rem; white-space: normal; }
+  #studentFile .file-folder-panel, #studentFile .file-evaluation-section, #studentFile .file-evaluation-subject { width: 100%; max-width: 100%; padding: 10px; }
+  #studentFile .file-evaluation-row { grid-template-columns: minmax(0,1fr) auto; gap: 7px; padding: 8px; }
+  #studentFile .file-evaluation-value { grid-column: 2; grid-row: 1; }
+  #studentFile .file-evaluation-action { grid-column: 1/-1; justify-content: flex-start; }
+  #studentFile .file-evaluation-actions { justify-content: flex-start; gap: 5px; }
+  #studentFile .file-evaluation-actions .btn { flex: 0 1 auto; padding: 6px 7px; font-size: .63rem; }
+  #studentFile .file-stats, #studentFile .stats { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
+  #studentFile .stat { min-width: 0; padding: 9px; overflow-wrap: anywhere; }
+  #studentFile .record-item { grid-template-columns: minmax(0,1fr); gap: 7px; }
+  #studentFile .record-main { min-width: 0; overflow-wrap: anywhere; }
+  #studentFile .record-score { justify-self: start; }
+  #studentFile .record-actions { flex-wrap: wrap; }
+  #studentFile .table-wrap { width: 100%; }
+}
+
+/* En vertical, la tabla de alumnos aprovecha casi todo el ancho disponible. */
+@media (max-width: 600px) and (orientation: portrait) {
+  #panel-register .register-roster { width: 95vw; max-width: none; margin-left: calc(50% - 47.5vw); margin-right: calc(50% - 47.5vw); }
+  #panel-register .register-roster .roster-list, #panel-register .register-roster .table-wrap { width: 100%; max-width: 100%; }
+}
+
 /* Materia seleccionada centrada en el encabezado. */
 header .head { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,auto) minmax(0,1fr); justify-content: initial; min-height: 64px; }
 header .logo { grid-column: 1; justify-self: start; margin: 0; text-align: left; }
@@ -6502,3 +6543,13 @@ header .head-actions { grid-column: 3; justify-self: end; position: static; }
   header .header-active-subject { grid-area: subject; max-width: 100%; padding: 5px 10px; font-size: .7rem; }
   header .head-actions { grid-area: actions; }
 }
+
+.profile-subject-charts { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; margin-top: 14px; }
+.profile-chart-card { min-width: 0; padding: 12px; border: 1px solid #c5dce8; border-radius: 8px; background: color-mix(in srgb, var(--surface) 88%, var(--primary-soft)); }
+.profile-chart-card h4 { margin: 0 0 8px; color: var(--primary); font-size: .74rem; font-weight: 850; }
+.profile-chart-frame { position: relative; width: 100%; height: 215px; min-width: 0; }
+.profile-chart-frame canvas { display: block; width: 100% !important; height: 100% !important; }
+.profile-chart-frame canvas[hidden] { display: none !important; }
+.profile-chart-empty { display: grid; place-items: center; height: 100%; margin: 0; padding: 12px; color: var(--muted); font-size: .72rem; text-align: center; }
+[data-theme="dark"] .profile-chart-card { border-color: #35526d; background: #102438; }
+@media (max-width: 640px) { .profile-subject-charts { grid-template-columns: minmax(0,1fr); } .profile-chart-frame { height: 205px; } }
