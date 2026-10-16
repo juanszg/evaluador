@@ -15,7 +15,7 @@
         href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="evaluador.css?v=78">
+    <link rel="stylesheet" href="evaluador.css?v=80">
     <link rel="icon" href="icons/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/evalpro-icon-192.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
@@ -41,7 +41,7 @@
         <div id="panel-profile" class="tab-panel">
             <div class="profile-page">
                 <section class="profile-hero">
-                    <div class="profile-hero-copy"><span class="profile-eyebrow">PANEL DOCENTE · CICLO ESCOLAR</span><h2>Mi perfil</h2><p>Un vistazo al avance de tus grupos, materias y actividades del semestre.</p></div>
+                    <div class="profile-hero-copy"><span class="profile-eyebrow">PANEL DOCENTE · CICLO ESCOLAR</span><div class="profile-title-row"><h2 id="teacherNameTitle">Mi perfil</h2><button id="teacherSettingsToggle" class="teacher-settings-toggle" type="button" aria-label="Configuración del perfil" title="Configuración del perfil" aria-expanded="false" aria-controls="teacherProfileSettings" onclick="toggleTeacherSettings()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.4a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z"/><path d="m19.4 13.5 1.1.9-1.1 1.9-1.4-.5a7.8 7.8 0 0 1-1.4.8l-.2 1.5h-2.2l-.4-1.4a7.8 7.8 0 0 1-1.6 0l-.7 1.2-2-1 .4-1.5a7.8 7.8 0 0 1-1.1-1.2l-1.5.1-.7-2.1 1.2-.8a7.8 7.8 0 0 1-.1-1.6l-1.3-.7.8-2.1 1.5.2a7.8 7.8 0 0 1 1.2-1.2l-.1-1.5 2.1-.7.8 1.2a7.8 7.8 0 0 1 1.6-.1l.7-1.3 2.1.8-.2 1.5a7.8 7.8 0 0 1 1.2 1.2l1.5-.1.7 2.1-1.2.8a7.8 7.8 0 0 1 .1 1.6Z"/></svg></button></div><p id="profileWelcomeMessage" class="profile-welcome-message" aria-live="polite">¡Bienvenido! Un vistazo al avance de tus grupos, materias y actividades del semestre.</p><div id="teacherProfileSettings" class="teacher-profile-settings" hidden><strong>Configuración del perfil</strong><form id="teacherProfileForm" class="teacher-profile-form"><label for="teacherNameInput">Nombre de docente</label><div class="teacher-profile-controls"><input id="teacherNameInput" type="text" maxlength="70" autocomplete="name" placeholder="Escribe tu nombre"><button class="btn btn-primary" type="submit">Guardar nombre</button></div></form></div></div>
                     <div class="profile-save-actions"><span id="profileLastSaved" class="profile-save-status">Aún no hay copias guardadas</span><button class="btn btn-green profile-save-button" type="button" onclick="saveBackupSnapshot()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h12l4 4v14H3V3z"/><path d="M7 3v6h10V3M7 21v-7h10v7"/><circle cx="12" cy="17.5" r="1.1"/></svg>Guardar datos</button></div>
                 </section>
                 <div class="profile-bento">
@@ -449,7 +449,7 @@
     <script src="parciales.js?v=14" defer></script>
     <script src="calificaciones.js?v=26" defer></script>
     <script src="tareas.js?v=4" defer></script>
-    <script src="backup.js?v=4" defer></script>
+    <script src="backup.js?v=6" defer></script>
     <script src="guia.js?v=9" defer></script>
 </body>
 

@@ -10,6 +10,7 @@ const BACKUP_KEYS = {
   examSettings: 'evalpro-exam-settings-v1',
   examSubjectConfigs: 'evalpro-exam-subject-configs-v1',
   examStudents: 'evalpro-exam-students-v1',
+  teacherProfile: 'evalpro-teacher-profile-v1',
   theme: 'evalpro-theme'
 };
 const BACKUP_HISTORY_KEY = 'evalpro-backup-history-v1';
@@ -29,9 +30,62 @@ function readBackupData() {
   data.examSettings ??= { materia: 'Física', pct: 30 };
   data.examSubjectConfigs ??= {};
   data.examStudents ??= [];
+  data.teacherProfile ??= { name: '' };
   data.theme = data.theme === 'dark' ? 'dark' : 'light';
   return data;
 }
+
+function renderTeacherWelcome() {
+  const message = document.getElementById('profileWelcomeMessage');
+  const input = document.getElementById('teacherNameInput');
+  const title = document.getElementById('teacherNameTitle');
+  if (!message) return;
+  let profile = { name: '' };
+  try {
+    profile = JSON.parse(localStorage.getItem(BACKUP_KEYS.teacherProfile) || '{"name":""}') || profile;
+  } catch { /* Usa el saludo genérico si el perfil guardado está dañado. */ }
+  const name = typeof profile.name === 'string' ? profile.name.trim() : '';
+  if (input && input !== document.activeElement && input.value !== name) input.value = name;
+  if (title) title.textContent = name || 'Mi perfil';
+  const hour = new Date().getHours();
+  const period = hour < 12 ? 'morning' : hour < 19 ? 'afternoon' : 'evening';
+  const phrases = {
+    morning: ['Que tengas una mañana llena de buenos avances.', '¡Que hoy tus clases estén llenas de grandes ideas!', 'Comienza el día viendo cómo avanzan tus grupos.'],
+    afternoon: ['Espero que tu tarde vaya muy bien. Aquí está el avance de tus grupos.', '¡Ánimo con tus clases de hoy! Tus grupos te esperan.', 'Revisa cómo van tus materias y continúa con buen ritmo.'],
+    evening: ['Cierra el día revisando el progreso de tus grupos.', '¡Buenas noches! Tus registros quedan listos para cuando los necesites.', 'Un vistazo a tus materias para terminar bien el día.']
+  };
+  const day = Math.floor(Date.now() / 86400000);
+  const phrase = phrases[period][day % phrases[period].length];
+  const greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
+  message.textContent = `${greeting}${name ? `, ${name}` : ''}. ${phrase}`;
+}
+
+window.toggleTeacherSettings = function () {
+  const settings = document.getElementById('teacherProfileSettings');
+  const toggle = document.getElementById('teacherSettingsToggle');
+  if (!settings || !toggle) return;
+  settings.hidden = !settings.hidden;
+  toggle.setAttribute('aria-expanded', String(!settings.hidden));
+  if (!settings.hidden) document.getElementById('teacherNameInput')?.focus({ preventScroll: true });
+};
+
+document.getElementById('teacherProfileForm')?.addEventListener('submit', event => {
+  event.preventDefault();
+  const input = document.getElementById('teacherNameInput');
+  const name = input?.value.trim() || '';
+  try {
+    localStorage.setItem(BACKUP_KEYS.teacherProfile, JSON.stringify({ name }));
+    renderTeacherWelcome();
+    const settings = document.getElementById('teacherProfileSettings');
+    const toggle = document.getElementById('teacherSettingsToggle');
+    if (settings) settings.hidden = true;
+    toggle?.setAttribute('aria-expanded', 'false');
+    toast(name ? 'Nombre de docente guardado.' : 'Se quitó el nombre de docente.');
+  } catch (error) {
+    console.error('No se pudo guardar el perfil docente:', error);
+    toast('No se pudo guardar el nombre. Revisa el espacio del navegador.');
+  }
+});
 
 function buildBackupEnvelope(data = readBackupData(), exportedAt = new Date().toISOString()) {
   return { app: 'EvalPro', schemaVersion: 1, exportedAt, data };
@@ -204,6 +258,9 @@ function validateBackup(backup) {
   if (data.theme !== undefined && !['light', 'dark'].includes(data.theme)) {
     throw new Error('El tema visual del respaldo no es válido.');
   }
+  if (data.teacherProfile !== undefined && (!data.teacherProfile || typeof data.teacherProfile !== 'object' || Array.isArray(data.teacherProfile) || typeof data.teacherProfile.name !== 'string')) {
+    throw new Error('El perfil docente del respaldo tiene un formato inválido.');
+  }
   return data;
 }
 
@@ -272,6 +329,7 @@ function drawProfileSubjectCharts(subjectMetrics, enrolledPairs) {
 }
 
 function renderProfile() {
+  renderTeacherWelcome();
   const statsBox = document.getElementById('profileStats');
   if (!statsBox) return;
   const enrolledPairs = subjects.flatMap(subject => roster
@@ -401,3 +459,4 @@ document.getElementById('backupFileInput')?.addEventListener('change', event => 
   event.target.value = '';
 });
 renderProfile();
+window.setInterval(renderTeacherWelcome, 60 * 1000);
