@@ -720,7 +720,7 @@ function renderFileEvaluations(pupil, memberships) {
         const isExam = param.kind === 'exam' || param.id === '__exam__';
         const records = isExam
           ? (pupil.records || []).filter(record => record.subjectId === subject.id && record.partialId === part.id && record.categoryId === '__exam__')
-          : (pupil.records || []).filter(record => record.subjectId === subject.id && record.partialId === part.id && record.categoryId === param.id);
+          : (pupil.records || []).filter(record => !record.taskRemoved && record.subjectId === subject.id && record.partialId === part.id && record.categoryId === param.id);
         const latest = [...records].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))[0];
         const value = grade === null ? '<span class="file-evaluation-sr">S/R</span>' : `<span class="file-evaluation-grade">${grade.toFixed(2)} / 10</span>`;
         const icon = kind => kind === 'edit'
@@ -822,7 +822,7 @@ function openFile(id) {
   })).join('');
   renderFileEvaluations(pupil, memberships);
   const historyGroups = memberships.map(subject => {
-    const records = (pupil.records || []).filter(record => record.subjectId === subject.id).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+    const records = (pupil.records || []).filter(record => !record.taskRemoved && record.subjectId === subject.id).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
     if (!records.length) return '';
     const entries = records.map(record => {
       const part = academicPartials.find(item => item.id === record.partialId);

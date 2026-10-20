@@ -145,11 +145,12 @@ function renderTaskManagerHistory() {
   history.innerHTML = members.length ? `<div class="task-history-table-wrap"><table class="task-history-table"><thead><tr><th>Alumno</th>${batches.map((batch, index) => `<th title="${esc(batch.record.date || '')}"><span class="task-history-column-head"><span>${esc(batch.record.title || 'Tarea')}</span>${index === batches.length - 1 ? `<button type="button" class="task-delete-icon task-delete-column" title="Eliminar la última actividad de todo el grupo" aria-label="Eliminar la última actividad ${esc(batch.record.title || '')} de todos los alumnos" onclick="deleteTaskBatch('${esc(batch.id)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m3 4v5m6-5v5"/></svg></button>` : ''}</span><small>${esc(batch.record.date || '')}</small></th>`).join('')}<th>Promedio</th></tr></thead><tbody>${members.map(student => {
     const cells = batches.map(batch => {
       const entry = batch.records.find(item => item.student.id === student.id)?.record;
-      return `<td class="${entry && Number(entry.tasksDelivered) > 0 ? 'task-history-done' : 'task-history-missing'}" title="${entry ? esc(entry.note || '') : 'Sin registro'}">${entry ? `${Number(entry.tasksDelivered) || 0}/${Number(entry.tasksTotal) || 1}` : 'S/R'}</td>`;
+      const activeEntry = entry && !entry.taskRemoved ? entry : null;
+      return `<td class="${activeEntry && Number(activeEntry.tasksDelivered) > 0 ? 'task-history-done' : 'task-history-missing'}" title="${activeEntry ? esc(activeEntry.note || '') : 'Sin registro'}">${activeEntry ? `${Number(activeEntry.tasksDelivered) || 0}/${Number(activeEntry.tasksTotal) || 1}` : 'S/R'}</td>`;
     }).join('');
     const param = academicPartials.find(part => part.id === partialId) && getPartParams(academicPartials.find(part => part.id === partialId), subjectId).find(item => item.id === categoryId);
     const grade = param ? categoryGrade(student, subjectId, academicPartials.find(part => part.id === partialId), param) : null;
-    const studentHasTasks = batches.some(batch => batch.records.some(item => item.student.id === student.id));
+    const studentHasTasks = batches.some(batch => batch.records.some(item => item.student.id === student.id && !item.record.taskRemoved));
     const rowAction = studentHasTasks ? `<button type="button" class="task-delete-icon" title="Eliminar la última actividad de ${esc(student.name)}" aria-label="Eliminar la última actividad registrada de ${esc(student.name)}" onclick="deleteLatestStudentTask('${esc(student.id)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m3 4v5m6-5v5"/></svg></button>` : '';
     return `<tr><th scope="row"><span class="task-history-student"><b>${esc(student.name)}</b>${rowAction}</span></th>${cells}<td class="task-history-average">${grade === null ? 'S/R' : `${grade.toFixed(2)} / 10`}</td></tr>`;
   }).join('')}</tbody></table></div>` : '<div class="empty">No hay alumnos inscritos en esta materia.</div>';
@@ -160,14 +161,16 @@ function deleteLatestStudentTask(studentId) {
   const partialId = $('taskManagerPartial')?.value;
   const categoryId = $('taskManagerParameter')?.value;
   const student = roster.find(item => String(item.id) === String(studentId));
-  const latestBatch = taskBatchesFor(subjectId, partialId, categoryId).at(-1);
-  const entry = latestBatch?.records.find(item => String(item.student.id) === String(studentId));
+  const latestBatch = taskBatchesFor(subjectId, partialId, categoryId).reverse()
+    .find(batch => batch.records.some(item => String(item.student.id) === String(studentId) && !item.record.taskRemoved));
+  const entry = latestBatch?.records.find(item => String(item.student.id) === String(studentId) && !item.record.taskRemoved);
   if (!student || !entry) return toast('Este alumno no tiene una actividad que se pueda quitar.');
   if (!confirm(`¿Eliminar “${entry.record.title}” del registro de ${student.name}? Las demás tareas del alumno se conservarán.`)) return;
-  student.records = (student.records || []).filter(record => record.id !== entry.record.id);
+  Object.assign(entry.record, { taskRemoved: true, tasksDelivered: 0, tasksTotal: 1, score: 0, max: 0 });
   writeStore('evalpro-roster-v1', roster);
   renderTaskManager();
   renderRoster();
+  if (typeof refreshGroupActivityEditor === 'function') refreshGroupActivityEditor();
   toast(`Se quitó “${entry.record.title}” del registro de ${student.name}.`);
 }
 
@@ -184,6 +187,7 @@ function deleteTaskBatch(batchId) {
   writeStore('evalpro-roster-v1', roster);
   renderTaskManager();
   renderRoster();
+  if (typeof refreshGroupActivityEditor === 'function') refreshGroupActivityEditor();
   toast(`Se eliminó “${title}” de todos los alumnos.`);
 }
 
@@ -244,11 +248,144 @@ function saveGroupTask() {
   $('taskManagerTitle').value = '';
   renderTaskManager();
   renderRoster();
+  if (typeof refreshGroupActivityEditor === 'function') refreshGroupActivityEditor();
   toast(`“${title}” guardada para ${records.length} alumnos. El promedio del parámetro se actualizó.`);
+}
+
+function refreshGroupActivityEditor() {
+  const editor = $('groupActivityEditor');
+  const body = $('groupActivityTableBody');
+  const help = $('groupActivityHelp');
+  if (!editor || !body) return;
+  const studentId = $('recordStudent')?.value;
+  const subjectId = $('recordSubject')?.value;
+  const partialId = $('recordPartial')?.value;
+  const student = roster.find(item => String(item.id) === String(studentId));
+  const part = academicPartials.find(item => item.id === partialId);
+  if (!student || !subjectId || !part) {
+    editor.hidden = true;
+    body.replaceChildren();
+    return;
+  }
+  const title = $('groupActivityTitle');
+  if (title) title.textContent = `Actividades grupales · ${student.name}`;
+  const batches = recordParams(part, subjectId).filter(isTaskManagerParam)
+    .flatMap(param => taskBatchesFor(subjectId, partialId, param.id)
+      .map(batch => ({ ...batch, groupCategoryId: param.id, groupCategoryName: param.name })));
+  editor.hidden = false;
+  if (!batches.length) {
+    body.innerHTML = '<tr><td class="group-activity-empty" colspan="6">Todavía no hay actividades grupales registradas para esta materia y parcial.</td></tr>';
+    if (help) help.textContent = 'Cuando registres actividades grupales en Cuaderno y seguimiento, aparecerán aquí para llevar el control individual del alumno.';
+    return;
+  }
+  if (help) help.textContent = 'Se muestran sus actividades grupales de Tareas, Cuaderno y Trabajos para esta materia y parcial. Cada fila conserva el título original y los cambios afectan solo a este alumno.';
+  body.innerHTML = batches.map(batch => {
+    const record = batch.records.find(item => String(item.student.id) === String(student.id))?.record;
+    const activeRecord = record && !record.taskRemoved ? record : null;
+    const delivered = Boolean(activeRecord && Number(activeRecord.tasksDelivered) > 0);
+    const batchId = esc(batch.id);
+    const categoryId = esc(batch.groupCategoryId);
+    const state = activeRecord ? (delivered ? 'Entregada' : 'Pendiente') : 'Sin registro';
+    return `<tr data-group-activity-row="${batchId}" data-group-activity-category="${categoryId}">
+      <td class="group-activity-name"><b>${esc(batch.record.title || 'Actividad')}</b></td>
+      <td>${esc(batch.groupCategoryName)}</td>
+      <td>${esc(batch.record.date || '—')}</td>
+      <td><label class="group-activity-complete"><input class="group-activity-delivered" type="checkbox" ${delivered ? 'checked' : ''}><span class="group-activity-check" aria-hidden="true">✓</span><span class="group-activity-state">${state}</span></label></td>
+      <td><input class="group-activity-note" type="text" maxlength="240" value="${esc(activeRecord?.note || '')}" placeholder="Observación opcional" aria-label="Observación de ${esc(batch.record.title || 'actividad')} para ${esc(student.name)}"></td>
+      <td class="group-activity-actions"><button class="btn btn-sm group-activity-save" type="button" data-group-save title="${activeRecord ? 'Guardar cambios de esta actividad' : 'Agregar esta actividad al alumno'}">${activeRecord ? 'Guardar' : '＋ Agregar'}</button><button class="btn btn-sm btn-danger group-activity-remove" type="button" data-group-remove ${activeRecord ? '' : 'disabled'} aria-label="Quitar ${esc(batch.record.title || 'actividad')} del registro de ${esc(student.name)}" title="Quitar actividad de este alumno"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m3 4v5m6-5v5"/></svg></button></td>
+    </tr>`;
+  }).join('');
+  body.querySelectorAll('[data-group-save]').forEach(button => button.addEventListener('click', () => saveIndividualGroupActivity(button.closest('[data-group-activity-row]'))));
+  body.querySelectorAll('[data-group-remove]').forEach(button => button.addEventListener('click', () => deleteIndividualGroupActivity(button.closest('[data-group-activity-row]'))));
+}
+
+function saveIndividualGroupActivity(row) {
+  const student = roster.find(item => String(item.id) === String($('recordStudent')?.value));
+  const subjectId = $('recordSubject')?.value;
+  const partialId = $('recordPartial')?.value;
+  const categoryId = row?.dataset.groupActivityCategory;
+  const batchId = row?.dataset.groupActivityRow;
+  const batch = taskBatchesFor(subjectId, partialId, categoryId).find(item => String(item.id) === String(batchId));
+  if (!student || !batch) return toast('Selecciona un alumno y una actividad grupal válida.');
+  const stored = batch.records.find(item => String(item.student.id) === String(student.id))?.record;
+  const delivered = row.querySelector('.group-activity-delivered')?.checked ? 1 : 0;
+  const note = row.querySelector('.group-activity-note')?.value.trim() || '';
+  if (stored) {
+    Object.assign(stored, { taskRemoved: false, tasksDelivered: delivered, tasksTotal: 1, score: delivered ? 10 : 0, max: 10, note });
+  } else {
+    student.records = student.records || [];
+    const source = batch.record;
+    student.records.push({
+      ...source,
+      id: makeId(),
+      taskBatchId: batch.id,
+      taskCreatedAt: Number(source.taskCreatedAt) || Date.now(),
+      taskRemoved: false,
+      subjectId,
+      subjectName: subjects.find(item => item.id === subjectId)?.name || source.subjectName || '',
+      partialId,
+      categoryId,
+      categoryName: source.categoryName || recordParams(academicPartials.find(item => item.id === partialId), subjectId).find(item => item.id === categoryId)?.name || '',
+      tasksDelivered: delivered,
+      tasksTotal: 1,
+      score: delivered ? 10 : 0,
+      max: 10,
+      note
+    });
+  }
+  writeStore('evalpro-roster-v1', roster);
+  renderRoster();
+  renderTaskManager();
+  if (typeof renderProfile === 'function') renderProfile();
+  refreshGroupActivityEditor();
+  toast(`${batch.record.title || 'Actividad'} guardada para ${student.name}: ${delivered ? 'entregada' : 'pendiente'}.`);
+}
+
+function deleteIndividualGroupActivity(row) {
+  const student = roster.find(item => String(item.id) === String($('recordStudent')?.value));
+  const subjectId = $('recordSubject')?.value;
+  const partialId = $('recordPartial')?.value;
+  const categoryId = row?.dataset.groupActivityCategory;
+  const batchId = row?.dataset.groupActivityRow;
+  const batch = taskBatchesFor(subjectId, partialId, categoryId).find(item => String(item.id) === String(batchId));
+  const record = batch?.records.find(item => String(item.student.id) === String(student?.id) && !item.record.taskRemoved)?.record;
+  if (!student || !batch || !record) return toast('Esta actividad no está registrada para el alumno.');
+  if (!confirm(`¿Quitar “${batch.record.title || 'Actividad'}” del registro de ${student.name}? Se conservará para los demás alumnos.`)) return;
+  Object.assign(record, { taskRemoved: true, tasksDelivered: 0, tasksTotal: 1, score: 0, max: 0 });
+  writeStore('evalpro-roster-v1', roster);
+  renderRoster();
+  renderTaskManager();
+  if (typeof renderProfile === 'function') renderProfile();
+  refreshGroupActivityEditor();
+  toast(`Se quitó “${batch.record.title || 'Actividad'}” del registro de ${student.name}.`);
+}
+
+function connectGroupActivityEditor() {
+  ['recordSubject', 'recordPartial', 'recordCategory'].forEach(id => {
+    $(id)?.addEventListener('change', refreshGroupActivityEditor);
+  });
+  const baseRefreshStudents = window.refreshRecordSubjects;
+  if (typeof baseRefreshStudents === 'function') {
+    window.refreshRecordSubjects = function (...args) {
+      const result = baseRefreshStudents.apply(this, args);
+      refreshGroupActivityEditor();
+      return result;
+    };
+  }
+  const baseEditRecord = window.editRecord;
+  if (typeof baseEditRecord === 'function') {
+    window.editRecord = function (...args) {
+      const result = baseEditRecord.apply(this, args);
+      refreshGroupActivityEditor();
+      return result;
+    };
+  }
+  refreshGroupActivityEditor();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   const date = $('taskManagerDate');
   if (date && !date.value) date.value = today();
+  connectGroupActivityEditor();
   renderTaskManager();
 });

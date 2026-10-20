@@ -60,6 +60,23 @@ function renderTeacherWelcome() {
   message.textContent = `${greeting}${name ? `, ${name}` : ''}. ${phrase}`;
 }
 
+function printProfile() {
+  const profileTab = document.querySelector('.folder-tab[data-tab="profile"]');
+  if (profileTab && !profileTab.classList.contains('active')) switchTab(profileTab);
+  const body = document.body;
+  const expandedDetails = [...document.querySelectorAll('#panel-profile details')].map(item => ({ item, open: item.open }));
+  expandedDetails.forEach(({ item }) => { item.open = true; });
+  body.classList.add('printing-profile');
+  const cleanup = () => {
+    body.classList.remove('printing-profile');
+    expandedDetails.forEach(({ item, open }) => { item.open = open; });
+    window.removeEventListener('afterprint', cleanup);
+  };
+  window.addEventListener('afterprint', cleanup, { once: true });
+  window.print();
+  window.setTimeout(cleanup, 2000);
+}
+
 window.toggleTeacherSettings = function () {
   const settings = document.getElementById('teacherProfileSettings');
   const toggle = document.getElementById('teacherSettingsToggle');
@@ -340,7 +357,7 @@ function renderProfile() {
   const failedPairs = gradedPairs.filter(item => item.grade < 6).length;
   const pendingPairs = enrolledPairs.length - gradedPairs.length;
   const overallAverage = gradedPairs.length ? gradedPairs.reduce((sum, item) => sum + item.grade, 0) / gradedPairs.length : null;
-  const allRecords = roster.flatMap(student => student.records || []);
+  const allRecords = roster.flatMap(student => student.records || []).filter(record => !record.taskRemoved);
   const taskRecords = allRecords.filter(record => Number(record.tasksTotal) > 0);
   const taskTotals = taskRecords.reduce((totals, record) => ({ delivered: totals.delivered + (Number(record.tasksDelivered) || 0), total: totals.total + Number(record.tasksTotal) }), { delivered: 0, total: 0 });
   const averageDisplay = overallAverage === null ? '—' : `${overallAverage.toFixed(2)} / 10`;
@@ -363,7 +380,7 @@ function renderProfile() {
     const taskDefinitions = academicPartials.flatMap(part => getPartParams(part, subject.id)
       .filter(param => normalizeName(param.name || '').includes('tarea'))
       .map(param => `${part.id}::${param.id}`));
-    const taskRows = members.flatMap(student => (student.records || []).filter(record => record.subjectId === subject.id
+    const taskRows = members.flatMap(student => (student.records || []).filter(record => !record.taskRemoved && record.subjectId === subject.id
       && (taskDefinitions.includes(`${record.partialId}::${record.categoryId}`)
         || normalizeName(record.categoryName || '').includes('tarea')
         || Number(record.tasksTotal) > 0)));
@@ -373,7 +390,7 @@ function renderProfile() {
       const definitions = academicPartials.flatMap(part => getPartParams(part, subject.id)
         .filter(param => normalizeName(param.name || '').includes(word))
         .map(param => `${part.id}::${param.id}`));
-      return members.reduce((sum, student) => sum + (student.records || []).filter(record => record.subjectId === subject.id
+      return members.reduce((sum, student) => sum + (student.records || []).filter(record => !record.taskRemoved && record.subjectId === subject.id
         && definitions.includes(`${record.partialId}::${record.categoryId}`)).length, 0);
     };
     return { subject, members, average, passed, failed: graded.length - passed, pending: members.length - graded.length, taskRows, taskDone, taskTotal, works: categoryCount('trabaj'), participation: categoryCount('particip'), exams: students.filter(result => result.subjectId === subject.id).length };
@@ -382,7 +399,16 @@ function renderProfile() {
   const subjectBox = document.getElementById('profileSubjects');
   if (subjectBox) subjectBox.innerHTML = subjectMetrics.length ? subjectMetrics.map(({ subject, members, average, passed, failed, pending }) => {
     const percent = average === null ? 0 : Math.min(100, Math.max(0, average * 10));
-    return `<article class="profile-subject-card"><div class="profile-subject-heading"><h4>${esc(subject.name)}</h4><span>${members.length} ${members.length === 1 ? 'alumno' : 'alumnos'}</span></div><div class="profile-subject-grade"><b>${average === null ? 'S/R' : average.toFixed(2)}</b><span>promedio / 10</span></div><div class="profile-progress"><span style="width:${percent}%"></span></div><div class="profile-subject-foot"><span class="is-approved">${passed} aprobados</span><span class="is-failed">${failed} reprobados</span><span>${pending} S/R</span></div></article>`;
+    const partialHeaders = academicPartials.map(part => `<th scope="col">${esc(part.name)}</th>`).join('');
+    const rosterRows = members.length ? members.map(student => {
+      const grades = academicPartials.map(part => {
+        const grade = partialGrade(student, subject.id, part)?.grade;
+        return `<td class="${grade === undefined ? 'profile-grade-pending' : grade >= 6 ? 'profile-grade-pass' : 'profile-grade-fail'}">${Number.isFinite(grade) ? grade.toFixed(2) : 'S/R'}</td>`;
+      }).join('');
+      const finalGrade = subjectFinalGrade(student, subject);
+      return `<tr><th scope="row">${esc(student.name)}</th>${grades}<td class="${finalGrade === null ? 'profile-grade-pending' : finalGrade >= 6 ? 'profile-grade-pass' : 'profile-grade-fail'}"><b>${finalGrade === null ? 'S/R' : finalGrade.toFixed(2)}</b></td></tr>`;
+    }).join('') : `<tr><td class="profile-roster-empty" colspan="${academicPartials.length + 2}">Aún no hay alumnos inscritos en esta materia.</td></tr>`;
+    return `<article class="profile-subject-card"><div class="profile-subject-heading"><h4>${esc(subject.name)}</h4><span>${members.length} ${members.length === 1 ? 'alumno' : 'alumnos'}</span></div><div class="profile-subject-grade"><b>${average === null ? 'S/R' : average.toFixed(2)}</b><span>promedio / 10</span></div><div class="profile-progress"><span style="width:${percent}%"></span></div><div class="profile-subject-foot"><span class="is-approved">${passed} aprobados</span><span class="is-failed">${failed} reprobados</span><span>${pending} S/R</span></div><details class="profile-roster-details"><summary>Ver alumnos y calificaciones</summary><div class="profile-roster-scroll"><table class="profile-roster-table"><thead><tr><th scope="col">Alumno</th>${partialHeaders}<th scope="col">Final</th></tr></thead><tbody>${rosterRows}</tbody></table></div></details><button class="btn btn-primary profile-roster-link" type="button" onclick="openSubjectRoster('${esc(subject.id)}')">Abrir alumnos registrados</button></article>`;
   }).join('') : '<div class="profile-empty">Aún no has creado materias.</div>';
   drawProfileSubjectCharts(subjectMetrics, enrolledPairs);
 
@@ -402,6 +428,15 @@ function renderProfile() {
     return `<article class="profile-partial-card"><div class="profile-subject-heading"><h4>${esc(part.name)}</h4><span>${grades.length} calificados</span></div><b class="profile-partial-average">${average === null ? 'S/R' : `${average.toFixed(2)} / 10`}</b><div class="profile-progress"><span style="width:${coverage}%"></span></div><small>${coverage.toFixed(0)}% del peso configurado con registros</small></article>`;
   }).join('') : '<div class="profile-empty">Aún no hay parciales configurados.</div>';
   renderBackupHistory();
+}
+
+function openSubjectRoster(subjectId) {
+  const subject = subjects.find(item => String(item.id) === String(subjectId));
+  if (!subject) return;
+  const registerTab = document.querySelector('.folder-tab[data-tab="register"]');
+  if (registerTab && typeof switchTab === 'function') switchTab(registerTab);
+  if (typeof selectSubject === 'function') selectSubject(subject.id);
+  document.getElementById('rosterCard')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 async function importBackupFile(file) {

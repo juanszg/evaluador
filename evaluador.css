@@ -6551,6 +6551,27 @@ header .head-actions { grid-column: 3; justify-self: end; position: static; }
 .profile-chart-frame canvas { display: block; width: 100% !important; height: 100% !important; }
 .profile-chart-frame canvas[hidden] { display: none !important; }
 .profile-chart-empty { display: grid; place-items: center; height: 100%; margin: 0; padding: 12px; color: var(--muted); font-size: .72rem; text-align: center; }
+
+/* Vista compacta de inscritos y calificaciones dentro de cada materia del perfil. */
+.profile-roster-details { margin-top: 11px; border-top: 1px solid #c9dce6; }
+.profile-roster-details summary { padding: 9px 1px 7px; color: var(--primary); font-size: .68rem; font-weight: 850; cursor: pointer; }
+.profile-roster-details summary::marker { color: #2a9d78; }
+.profile-roster-scroll { max-width: 100%; overflow-x: auto; border: 1px solid #c9dce6; }
+.profile-roster-table { width: 100%; min-width: 420px; border-collapse: collapse; color: var(--ink); font-size: .63rem; }
+.profile-roster-table th, .profile-roster-table td { padding: 6px 8px; border: 1px solid #d4e1e8; text-align: center; white-space: nowrap; }
+.profile-roster-table thead th { background: #eaf4f9; color: #234c63; font-size: .59rem; font-weight: 850; }
+.profile-roster-table tbody th { max-width: 150px; overflow: hidden; text-align: left; text-overflow: ellipsis; }
+.profile-roster-table .profile-grade-pass { color: #147349; }
+.profile-roster-table .profile-grade-fail { color: #a33d49; }
+.profile-roster-table .profile-grade-pending, .profile-roster-empty { color: var(--muted); }
+.profile-roster-link { width: 100%; min-height: 33px; margin-top: 10px; padding: 6px 9px; font-size: .65rem; }
+[data-theme="dark"] .profile-roster-details { border-color: #35526d; }
+[data-theme="dark"] .profile-roster-scroll { border-color: #35526d; }
+[data-theme="dark"] .profile-roster-table th, [data-theme="dark"] .profile-roster-table td { border-color: #35526d; }
+[data-theme="dark"] .profile-roster-table thead th { background: #1b354b; color: #d9f2ff; }
+[data-theme="dark"] .profile-roster-table .profile-grade-pass { color: #8dffc0; }
+[data-theme="dark"] .profile-roster-table .profile-grade-fail { color: #ff9ea8; }
+@media (max-width: 640px) { .profile-roster-table { min-width: 370px; } .profile-roster-table th, .profile-roster-table td { padding: 6px; } }
 [data-theme="dark"] .profile-chart-card { border-color: #35526d; background: #102438; }
 @media (max-width: 640px) { .profile-subject-charts { grid-template-columns: minmax(0,1fr); } .profile-chart-frame { height: 205px; } }
 .profile-welcome-message{margin:8px 0 12px!important;color:#174f65!important;font-size:1rem!important;font-weight:750;line-height:1.45}
@@ -6578,3 +6599,228 @@ header .head-actions { grid-column: 3; justify-self: end; position: static; }
 [data-theme=dark] .teacher-profile-settings{border-color:#416c83;background:#102b3c}
 [data-theme=dark] .teacher-profile-settings>strong{color:#d3f1fc}
 @media(max-width:640px){.profile-title-row{gap:7px}.teacher-settings-toggle{width:33px;height:33px}.teacher-profile-settings{width:100%;max-width:none;padding:11px}}
+
+/* Tipografía unificada: Nunito para lectura y Alata para encabezados. */
+body, button, input, select, textarea { font-family: "Nunito", sans-serif !important; }
+h1, h2, h3, h4, h5, h6, .section-title, .profile-eyebrow, .profile-panel-kicker, .logo { font-family: "Alata", "Nunito", sans-serif !important; }
+
+/* Pestaña activa con contraste accesible en ambos temas. */
+#sectionNav .folder-tab.active {
+  border-color: #147ba5 !important;
+  background: linear-gradient(135deg, #167da6, #2796bf) !important;
+  color: #fff !important;
+  text-shadow: 0 1px 1px #06476555;
+  box-shadow: inset 0 3px 0 #a8e8ff, 0 -3px 12px #12779b26;
+}
+[data-theme="dark"] #sectionNav .folder-tab.active {
+  border-color: #67d9ff !important;
+  background: linear-gradient(135deg, #194f70, #236b8d) !important;
+  color: #eafaff !important;
+  box-shadow: inset 0 3px 0 #a1eaff, 0 -3px 15px #42cfff38;
+}
+
+/* Tuerca geométrica centrada y simétrica. */
+.teacher-settings-toggle { display: inline-grid; place-items: center; width: 40px; height: 40px; padding: 0; border-width: 2px; border-radius: 10px; }
+.teacher-settings-toggle svg { display: block; width: 22px; height: 22px; margin: auto; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.profile-print-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 8px 12px; border: 2px solid #2b7795; background: #e7f6fc; color: #154b67; font-size: .76rem; font-weight: 850; }
+.profile-print-button:hover { background: #cfeefa; color: #0b3d58; }
+.profile-print-button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+[data-theme="dark"] .profile-print-button { border-color: #62c9ed; background: #163b53; color: #e5f8ff; }
+[data-theme="dark"] .profile-print-button:hover { background: #205a77; color: #fff; }
+@media (max-width: 640px) { .profile-save-actions { grid-template-columns: minmax(0,1fr) auto; } .profile-print-button { grid-column: 1 / -1; width: 100%; } }
+
+@media print {
+  @page { size: A4 portrait; margin: 12mm; }
+  body.printing-profile { background: #fff !important; color: #17283b !important; font: 9pt "Nunito", sans-serif !important; }
+  body.printing-profile > header,
+  body.printing-profile > main > .folder-tabs,
+  body.printing-profile > main > .tab-panel:not(#panel-profile),
+  body.printing-profile #helpGuide { display: none !important; }
+  body.printing-profile > main { width: 100%; max-width: none; margin: 0; padding: 0; }
+  body.printing-profile #panel-profile, body.printing-profile #panel-profile[hidden] { display: block !important; padding: 0; }
+  body.printing-profile .profile-page { width: 100%; max-width: none; margin: 0; padding: 0; }
+  body.printing-profile .profile-hero { margin: 0 0 8mm; padding: 7mm; border: 1px solid #7d9aac; background: #eef6fa !important; box-shadow: none; break-inside: avoid; }
+  body.printing-profile .profile-save-actions, body.printing-profile .teacher-profile-settings, body.printing-profile .teacher-settings-toggle { display: none !important; }
+  body.printing-profile .profile-hero h2, body.printing-profile .profile-panel-heading h3 { color: #173e56 !important; }
+  body.printing-profile .profile-hero p, body.printing-profile .profile-save-status { color: #405767 !important; }
+  body.printing-profile .profile-bento { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 5mm; }
+  body.printing-profile .profile-panel { grid-column: 1 / -1; padding: 5mm; border: 1px solid #9aafbd; border-radius: 3mm; background: #fff !important; color: #17283b !important; box-shadow: none; break-inside: avoid; }
+  body.printing-profile .profile-stat-tile, body.printing-profile .profile-subject-card, body.printing-profile .profile-task-card, body.printing-profile .profile-partial-card, body.printing-profile .profile-chart-card { border: 1px solid #c4d0d8; background: #fff !important; color: #17283b !important; box-shadow: none; break-inside: avoid; }
+  body.printing-profile .profile-subject-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  body.printing-profile .profile-subject-card { break-inside: avoid; }
+  body.printing-profile .profile-roster-details > *:not(summary) { display: block !important; }
+  body.printing-profile .profile-roster-details summary { color: #174c66; }
+  body.printing-profile .profile-roster-scroll { overflow: visible; }
+  body.printing-profile .profile-roster-table { min-width: 0; font-size: 7pt; }
+  body.printing-profile .profile-roster-table th, body.printing-profile .profile-roster-table td { padding: 3px 4px; white-space: normal; }
+  body.printing-profile .profile-panel-heading h3, body.printing-profile .profile-subject-heading h4, body.printing-profile .profile-chart-card h4 { color: #173e56 !important; }
+  body.printing-profile .profile-stat-tile > span, body.printing-profile .profile-stat-tile > small, body.printing-profile .profile-subject-heading > span, body.printing-profile .profile-subject-grade > span, body.printing-profile .profile-task-total > span, body.printing-profile .profile-partial-card > small { color: #4c6170 !important; }
+  body.printing-profile .profile-subject-grade b, body.printing-profile .profile-stat-tile > b, body.printing-profile .profile-task-total > b, body.printing-profile .profile-partial-average { color: #145e48 !important; }
+  body.printing-profile canvas { max-height: 65mm !important; }
+}
+
+/* Blueprints de alto contraste con lienzo a todo el ancho del dispositivo. */
+.book-columns>.book-config {
+  box-sizing: border-box;
+  width: 100vw !important;
+  max-width: none !important;
+  margin-left: calc(50% - 50vw) !important;
+  padding-inline: max(16px, calc((100vw - 980px) / 2)) !important;
+  border: 3px solid #075f91 !important;
+  border-radius: 0 !important;
+  background-color: #c5e7f7 !important;
+  background-image: linear-gradient(#17699555 1px, transparent 1px), linear-gradient(90deg, #17699555 1px, transparent 1px), linear-gradient(#1769951c 1px, transparent 1px), linear-gradient(90deg, #1769951c 1px, transparent 1px), radial-gradient(ellipse at 50% 0%, #f5fcff 0%, #c6e8f8 78%) !important;
+  background-size: 24px 24px, 24px 24px, 6px 6px, 6px 6px, 100% 100% !important;
+  box-shadow: inset 0 0 0 8px #fff5, inset 0 0 42px #147ca333, 0 14px 34px #114d6f30 !important;
+}
+.book-config>.section-title { color: #073f63; text-shadow: 0 1px #fff, 0 0 14px #66bce755; }
+.book-config .param-hint { color: #153f59; font-weight: 650; }
+.activity-layout {
+  box-sizing: border-box;
+  width: 100vw !important;
+  max-width: none !important;
+  margin-left: calc(50% - 50vw) !important;
+  padding-inline: max(16px, calc((100vw - 1160px) / 2)) !important;
+  border: 4px solid #075f91 !important;
+  border-radius: 0 !important;
+  background-color: #b9e1f5 !important;
+  background-image: linear-gradient(#17699566 1px, transparent 1px), linear-gradient(90deg, #17699566 1px, transparent 1px), linear-gradient(#17699520 1px, transparent 1px), linear-gradient(90deg, #17699520 1px, transparent 1px), radial-gradient(ellipse at 50% 0%, #f5fcff 0%, #b9e1f5 78%) !important;
+  background-size: 24px 24px, 24px 24px, 6px 6px, 6px 6px, 100% 100% !important;
+  box-shadow: inset 0 0 0 9px #fff6, inset 0 0 48px #147ca344, 0 16px 38px #114d6f38 !important;
+}
+.activity-layout::after { inset: 10px !important; border: 2px solid #075f9140 !important; border-radius: 0 !important; }
+[data-theme=dark] .book-columns>.book-config {
+  border-color: #72d9ff !important;
+  background-color: #06182e !important;
+  background-image: linear-gradient(#55cfff88 1px, transparent 1px), linear-gradient(90deg, #55cfff88 1px, transparent 1px), linear-gradient(#55cfff2b 1px, transparent 1px), linear-gradient(90deg, #55cfff2b 1px, transparent 1px), radial-gradient(ellipse at 50% 0%, #153f60 0%, #071a31 78%) !important;
+  box-shadow: inset 0 0 0 8px #49c9ff24, inset 0 0 44px #158ad64d, 0 15px 38px #0009 !important;
+}
+[data-theme=dark] .book-config>.section-title { color: #effaff; text-shadow: 0 0 14px #55cfff66; }
+[data-theme=dark] .book-config .param-hint { color: #d5e8f4; }
+[data-theme=dark] .activity-layout {
+  border-color: #72d9ff !important;
+  background-color: #06182e !important;
+  background-image: linear-gradient(#55cfff88 1px, transparent 1px), linear-gradient(90deg, #55cfff88 1px, transparent 1px), linear-gradient(#55cfff2b 1px, transparent 1px), linear-gradient(90deg, #55cfff2b 1px, transparent 1px), radial-gradient(ellipse at 50% 0%, #153f60 0%, #071a31 78%) !important;
+  box-shadow: inset 0 0 0 9px #49c9ff2b, inset 0 0 48px #158ad655, 0 16px 42px #000b !important;
+}
+[data-theme=dark] .activity-layout::after { border-color: #72d9ff77 !important; }
+@media(max-width:640px) {
+  .book-columns>.book-config { padding: 18px 14px !important; }
+  .activity-layout { padding: 36px 10px 14px !important; }
+}
+.activity-layout { animation: none !important; }
+
+/* Asegura que el plano azul cubra toda la edición y el panel de parámetros. */
+.activity-layout {
+  display: grid !important;
+  align-items: stretch !important;
+  grid-auto-rows: max-content !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: max-content !important;
+  padding-bottom: 28px !important;
+}
+.activity-layout:has(.partial-info.is-open) {
+  max-height: none !important;
+}
+.activity-layout > .activity-card,
+.activity-layout > .partial-info {
+  align-self: stretch !important;
+  box-sizing: border-box !important;
+}
+
+/* El título de configuración debe destacar claramente sobre el blueprint. */
+.book-config > .section-title {
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto 18px !important;
+  padding: 10px 18px !important;
+  border: 2px solid #1676a2 !important;
+  border-left: 6px solid #f18a35 !important;
+  background: linear-gradient(100deg, #f5fbff, #d9f0fc) !important;
+  color: #073451 !important;
+  font-family: "Space Grotesk", "Sora", sans-serif !important;
+  font-size: clamp(1.15rem, 2.1vw, 1.55rem) !important;
+  font-weight: 850 !important;
+  line-height: 1.25 !important;
+  letter-spacing: .015em;
+  text-align: center;
+  text-shadow: none !important;
+  box-shadow: 0 4px 12px #075f9126, inset 0 1px #fff;
+}
+[data-theme="dark"] .book-config > .section-title {
+  border-color: #59c9f4 !important;
+  border-left-color: #ffad57 !important;
+  background: linear-gradient(100deg, #102c47, #173d5d) !important;
+  color: #f2faff !important;
+  text-shadow: 0 1px 0 #001326 !important;
+  box-shadow: 0 5px 16px #0008, inset 0 1px #ffffff24;
+}
+@media (max-width: 640px) {
+  .book-config > .section-title {
+    width: 100%;
+    padding: 9px 12px !important;
+    margin-bottom: 14px !important;
+    font-size: 1.12rem !important;
+  }
+}
+.group-activity-editor { grid-column: 1 / -1; min-width: 0; padding: 16px; border: 2px solid #1676a2; background: linear-gradient(135deg,#d8effb,#c4e5f5); box-shadow: inset 0 0 0 4px #ffffff8a, 0 8px 22px #164e6c24; }
+.group-activity-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
+.group-activity-kicker { color:#075f91; font-size:.64rem; font-weight:900; letter-spacing:.14em; }
+.group-activity-heading h3 { margin:3px 0 0; color:#0b3d5b; font:800 1.02rem "Space Grotesk",sans-serif; }
+.group-activity-mark { display:grid; place-items:center; width:36px; height:36px; border:1px solid #368bb1; background:#e9f8ff; color:#075f91; font-size:1.25rem; }
+.group-activity-controls { display:grid; grid-template-columns:minmax(220px,1fr) minmax(260px,1fr); gap:12px; align-items:end; }
+.group-activity-controls .field { margin:0; }
+.group-activity-controls select,.group-activity-controls input[type=text] { width:100%; min-width:0; }
+.group-activity-status { display:grid; grid-template-columns:1fr minmax(180px,1fr) auto; gap:10px; align-items:end; }
+.group-activity-status[hidden] { display:none!important; }
+.group-activity-complete { display:flex; align-items:center; gap:9px; min-height:42px; padding:8px 10px; border:1.5px solid #308b65; background:#e8f7ef; color:#155537; font-size:.78rem; font-weight:800; cursor:pointer; }
+.group-activity-complete input { position:absolute; width:1px; height:1px; opacity:0; }
+.group-activity-check { display:grid; place-items:center; width:23px; height:23px; border:2px solid #378b67; background:#fff; color:transparent; font-size:.85rem; }
+.group-activity-complete input:checked + .group-activity-check { background:#168553; color:#fff; }
+.group-activity-complete input:focus-visible + .group-activity-check { outline:3px solid #39a9d2; outline-offset:2px; }
+.group-activity-help { margin:10px 0 0; color:#315c74; font-size:.72rem; line-height:1.5; }
+[data-theme=dark] .group-activity-editor { border-color:#72d9ff; background:linear-gradient(135deg,#0c2c49,#10243d); box-shadow:inset 0 0 0 4px #55cfff12,0 10px 28px #0007; }
+[data-theme=dark] .group-activity-kicker { color:#79dcff; }
+[data-theme=dark] .group-activity-heading h3 { color:#f1f9ff; }
+[data-theme=dark] .group-activity-mark { border-color:#4a9ac0; background:#12344d; color:#9ce7ff; }
+[data-theme=dark] .group-activity-help { color:#bfd8e8; }
+[data-theme=dark] .group-activity-complete { border-color:#50fa7b; background:#123b35; color:#c5ffd5; }
+[data-theme=dark] .group-activity-check { border-color:#50fa7b; background:#091d2c; }
+[data-theme=dark] .group-activity-complete input:checked + .group-activity-check { background:#168553; }
+@media(max-width:700px) { .group-activity-controls,.group-activity-status { grid-template-columns:minmax(0,1fr); } .group-activity-editor { padding:12px; } }
+.group-activity-editor { display:block; margin:16px 0 12px; }
+.group-activity-table-wrap { width:100%; overflow-x:auto; border:1px solid #69a8c6; background:#f4fbff; }
+.group-activity-table { width:100%; min-width:760px; border-collapse:collapse; color:#173e58; font-size:.76rem; }
+.group-activity-table th,.group-activity-table td { padding:9px 10px; border:1px solid #a8c9dc; text-align:left; vertical-align:middle; }
+.group-activity-table thead th { background:#12658d; color:#f2fbff; font-size:.69rem; font-weight:850; letter-spacing:.035em; }
+.group-activity-table tbody tr:nth-child(even) { background:#e7f4fb; }
+.group-activity-table tbody tr:hover { background:#d4edf8; }
+.group-activity-table .group-activity-name { min-width:175px; }
+.group-activity-table .group-activity-name b,.group-activity-table .group-activity-name small { display:block; }
+.group-activity-table .group-activity-name small { margin-top:3px; color:#527387; font-size:.65rem; }
+.group-activity-table input.group-activity-note { width:100%; min-width:150px; min-height:34px; padding:6px 8px; border:1px solid #8bb4c9; background:#fff; color:#173e58; font:inherit; }
+.group-activity-table .group-activity-complete { width:max-content; min-width:115px; min-height:34px; margin:0; padding:5px 8px; font-size:.68rem; }
+.group-activity-table .group-activity-complete input { position:absolute; width:1px; height:1px; opacity:0; }
+.group-activity-table .group-activity-check { flex:none; width:20px; height:20px; }
+.group-activity-table .group-activity-actions { white-space:nowrap; }
+.group-activity-table .group-activity-actions button { vertical-align:middle; margin-right:5px; }
+.group-activity-table .group-activity-save { min-width:76px; padding:5px 8px; border:1px solid #1676a2; background:#0d668f; color:#fff; font-size:.68rem; }
+.group-activity-table .group-activity-save:hover { background:#084f71; }
+.group-activity-table .group-activity-remove { display:grid; place-items:center; width:32px; min-width:32px; min-height:32px; padding:5px; }
+.group-activity-table .group-activity-remove svg { width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.group-activity-table .group-activity-remove:disabled { opacity:.35; cursor:not-allowed; }
+.group-activity-empty { padding:18px!important; color:#315c74; text-align:center!important; }
+[data-theme=dark] .group-activity-table-wrap { border-color:#438eb1; background:#081c30; }
+[data-theme=dark] .group-activity-table { color:#e5f4fc; }
+[data-theme=dark] .group-activity-table th,[data-theme=dark] .group-activity-table td { border-color:#345a73; }
+[data-theme=dark] .group-activity-table thead th { background:#174565; color:#e8faff; }
+[data-theme=dark] .group-activity-table tbody tr:nth-child(even) { background:#10283e; }
+[data-theme=dark] .group-activity-table tbody tr:hover { background:#173a55; }
+[data-theme=dark] .group-activity-table .group-activity-name small,[data-theme=dark] .group-activity-empty { color:#b5d4e6; }
+[data-theme=dark] .group-activity-table input.group-activity-note { border-color:#4a738e; background:#091c2e; color:#f1f8ff; }
+[data-theme=dark] .group-activity-table .group-activity-complete { border-color:#39bf73; background:#123a31; color:#d2ffe0; }
+[data-theme=dark] .group-activity-table .group-activity-check { border-color:#50fa7b; background:#081f2b; }
+[data-theme=dark] .group-activity-table .group-activity-complete input:checked + .group-activity-check { background:#168553; }
+[data-theme=dark] .group-activity-table .group-activity-save { border-color:#53caff; background:#14638c; color:#fff; }
+@media(max-width:640px) { .group-activity-table-wrap { margin-inline:-3px; width:calc(100% + 6px); } .group-activity-table { min-width:710px; } }

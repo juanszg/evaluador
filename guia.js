@@ -10,6 +10,7 @@
         'group-tasks': { tab: 'book', target: '#taskManager', focus: '#taskManagerSubject', message: 'En “Cuaderno y seguimiento”, abre “Registro grupal”. Selecciona materia, parcial y parámetro; agrega la tarea y registra la entrega del grupo.' },
         file: { tab: 'records', target: '#globalSearch', message: 'En “Expedientes”, escribe el nombre en el buscador. Selecciona el resultado para abrir su historial y calificaciones por materia.' },
         backup: { tab: 'profile', target: '.profile-panel-backups', focus: '.profile-save-button', message: 'En “Mi perfil” puedes crear una copia con “Guardar datos”. Para llevarla a otro navegador, usa “Exportar”; para recuperarla, “Cargar” y selecciona el archivo JSON.' },
+        profile: { tab: 'profile', target: '#panel-profile', message: 'Este es tu resumen docente: materias, inscripciones, promedios, tareas y avance de los parciales.' },
         roster: { tab: 'register', target: '#rosterCard', focus: '#rosterSubject', message: 'La lista está en “Registrar alumnos”. Elige una materia para ver su grupo, filtra u ordena los alumnos y usa los controles de cada fila para abrir o editar su expediente.' },
         config: { tab: 'book', target: '#bookConfig', focus: '#configSubject', message: 'En “Cuaderno y seguimiento”, abre “Parámetros por materia y parcial”. Elige la materia y el parcial, ajusta los porcentajes y aplica la configuración.' },
         help: { message: 'Puedo guiarte para crear alumnos o materias, registrar calificaciones, administrar tareas, revisar expedientes y guardar tus datos. También puedes escribir tu duda con tus propias palabras.' }
@@ -190,6 +191,14 @@
     }
 
     function navigate(action) {
+        if (action === 'print-profile') {
+            if (panel()?.hidden) window.toggleHelpGuide(false);
+            const tab = document.querySelector('.folder-tab[data-tab="profile"]');
+            if (tab) tab.click();
+            window.toggleHelpGuide(false);
+            window.setTimeout(() => window.printProfile?.(), 150);
+            return;
+        }
         if (action === 'view-subject-table' || action === 'view-subject-config') {
             askForSubject(action === 'view-subject-config' ? 'config' : 'table');
             return;
@@ -247,12 +256,34 @@
     function answerQuestion(raw) {
         const text = normalize(raw);
         if (!text) return;
-        if (/\b(editar|corregir|cambiar nombre|apellido)\b/.test(text)) return navigate('edit-student');
-        if (/\b(expediente|buscar alumno|historial)\b/.test(text)) return navigate('file');
-        if (/\b(guardar|respaldo|backup|exportar|cargar datos|importar)\b/.test(text)) return navigate('backup');
-        if (/\b(tarea|tareas|cuaderno|trabajo grupal|participacion grupal)\b/.test(text)) return navigate('group-tasks');
-        if (/\b(parametro|porcentaje|peso|configuracion|parcial)\b/.test(text)) return navigate('config');
-        if (/\b(calificacion|nota|actividad|registro)\b/.test(text)) {
+        const has = pattern => pattern.test(text);
+        if (has(/\b(hola|buenos dias|buenas tardes|buenas noches|que tal)\b/)) {
+            addMessage('¡Hola! Puedo ayudarte a organizar materias y alumnos, capturar calificaciones, revisar expedientes, imprimir el resumen o guardar tus datos. ¿Qué necesitas hacer?', 'assistant', [
+                { label: 'Crear alumno', action: 'student' }, { label: 'Registrar calificación', action: 'grade' },
+                { label: 'Ver una materia', action: 'view-subject' }, { label: 'Imprimir resumen', action: 'print-profile' }
+            ]);
+            return;
+        }
+        if (has(/\b(imprimir|imprime|impresion|pdf)\b/) && has(/\b(perfil|resumen|estadisticas|dashboard|reporte)\b/)) return navigate('print-profile');
+        if (has(/\b(sr|sin registro|pendiente|no tiene calificacion)\b/)) {
+            addMessage('S/R significa “sin registro”: aún no hay una calificación guardada para ese parámetro. Puedes capturarla en Registro de actividad o desde la pestaña Calificaciones del expediente.', 'assistant', [
+                { label: 'Registrar actividad', action: 'activity-grade' }, { label: 'Buscar expediente', action: 'file' }
+            ]);
+            return;
+        }
+        if (has(/\b(editar|edita|corregir|corregirle|cambiar nombre|apellido|modificar alumno)\b/)) return navigate('edit-student');
+        if (has(/\b(expediente|buscar alumno|buscar estudiante|historial|ficha del alumno)\b/)) return navigate('file');
+        if (has(/\b(guardar|respaldo|backup|exportar|cargar datos|importar|recuperar datos|no perder mis datos)\b/)) return navigate('backup');
+        if (has(/\b(tarea|tareas|cuaderno|trabajo grupal|participacion grupal|entregas)\b/) && has(/\b(registrar|capturar|agregar|editar|revisar|ver|llevar|control|tarea|tareas|cuaderno)\b/)) return navigate('group-tasks');
+        if (has(/\b(parametro|porcentaje|peso|configuracion|configurar|ponderacion)\b/) && has(/\b(materia|parcial|evaluacion|calificacion|parametro|porcentaje|peso|configuracion|configurar)\b/)) return navigate('config');
+        if (has(/\b(examen|aciertos|puntaje|respuestas correctas)\b/)) return navigate('exam-grade');
+        if (has(/\b(como se aprueba|calificacion minima|nota minima|cuanto necesito para aprobar)\b/)) {
+            addMessage('La aplicación considera aprobada una calificación final de 6.00 o más sobre 10. Puedes ver aprobados, reprobados y alumnos sin registro en la tabla de Alumnos registrados.', 'assistant', [
+                { label: 'Ver alumnos registrados', action: 'roster' }, { label: 'Ver resumen', action: 'profile' }
+            ]);
+            return;
+        }
+        if (has(/\b(calificacion|calificaciones|nota|notas|actividad|registro)\b/)) {
             addMessage('¿Vas a capturar una calificación de examen o de otro parámetro?', 'assistant', [
                 { label: 'Examen', action: 'exam-grade' },
                 { label: 'Actividad individual', action: 'activity-grade' },
@@ -260,24 +291,20 @@
             ]);
             return;
         }
-        if (/\b(examen|aciertos|puntaje)\b/.test(text)) return navigate('exam-grade');
-        if (/\b(ver|consultar|abrir|revisar)\b/.test(text) && /\b(materia|asignatura)\b/.test(text)) return navigate('view-subject');
-        if (/\b(crear|nueva|nuevo|agregar)\b/.test(text) && /\b(materia|asignatura|grupo)\b/.test(text)) return navigate('subject');
-        if (/\b(aprobados|reprobados|promedio|lista|tabla|alumnos registrados)\b/.test(text)) return navigate('roster');
-        if (/\b(crear|registrar|agregar|ingresar|nuevo|nueva)\b/.test(text) && /\b(alumno|alumna|estudiante)\b/.test(text)) return navigate('student');
-        if (/\b(sr|sin registro|pendiente)\b/.test(text)) {
-            addMessage('S/R significa “sin registro”: todavía no hay una calificación guardada para ese parámetro. Puedes capturarla desde Registro de actividad o desde la pestaña Calificaciones del expediente.', 'assistant', [
-                { label: 'Registrar actividad', action: 'activity-grade' },
-                { label: 'Buscar expediente', action: 'file' }
-            ]);
-            return;
-        }
-        if (/\b(oscuro|claro|tema|colores)\b/.test(text)) {
+        if (has(/\b(ver|consultar|abrir|revisar|mostrar|enseñar)\b/) && has(/\b(materia|asignatura|grupo)\b/)) return navigate('view-subject');
+        if (has(/\b(crear|nueva|nuevo|agregar|dar de alta)\b/) && has(/\b(materia|asignatura|grupo)\b/)) return navigate('subject');
+        if (has(/\b(aprobados|reprobados|promedio|lista|tabla|alumnos registrados|grupo|inscritos)\b/)) return navigate('roster');
+        if (has(/\b(crear|registrar|agregar|ingresar|inscribir|dar de alta|nuevo|nueva)\b/) && has(/\b(alumno|alumna|estudiante|estudiantes)\b/)) return navigate('student');
+        if (has(/\b(resumen|estadisticas|dashboard|perfil docente|mi perfil)\b/)) return navigate('profile');
+        if (has(/\b(oscuro|claro|tema|colores|apariencia)\b/)) {
             addMessage('El icono de tema está en la parte superior, junto a los controles de exportación. Púlsalo para alternar entre modo claro y oscuro.');
             return;
         }
-        addMessage('No identifiqué esa acción. Prueba con “crear alumno”, “crear materia”, “registrar examen”, “editar alumno”, “tareas”, “expediente” o “guardar datos”.', 'assistant', [
-            { label: 'Ver opciones', action: 'help' }
+        if (has(/\b(que puedes hacer|como funciona|ayuda|opciones|no entiendo|no se como)\b/)) return navigate('help');
+        addMessage('Puedo ayudarte con alumnos, materias, notas, parciales, tareas, expedientes, estadísticas o copias de seguridad. Prueba a decirlo con otras palabras o elige una opción:', 'assistant', [
+            { label: 'Crear alumno', action: 'student' }, { label: 'Crear materia', action: 'subject' },
+            { label: 'Agregar calificación', action: 'grade' }, { label: 'Ver una materia', action: 'view-subject' },
+            { label: 'Buscar expediente', action: 'file' }, { label: 'Guardar datos', action: 'backup' }
         ]);
     }
 
