@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="theme-color" content="#126b91">
+  <title>Expediente del alumno · EvalPro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alata&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="expediente-publico.css?v=1">
+  <link rel="icon" href="icons/favicon.ico" sizes="any">
+</head>
+<body>
+  <header class="public-header"><div class="public-brand">Eval<span>Pro</span><small>Expediente académico</small></div><button id="publicPrintButton" class="print-button" type="button" onclick="window.print()" hidden>Imprimir / Guardar PDF</button></header>
+  <main class="public-main">
+    <section id="publicLoading" class="public-message"><h1>Abriendo expediente…</h1><p>Preparando la vista del alumno.</p></section>
+    <section id="publicError" class="public-message" hidden><h1>No se pudo abrir el expediente</h1><p id="publicErrorText">El enlace no contiene un expediente válido.</p></section>
+    <div id="publicStudentView" hidden>
+      <section class="student-hero"><span class="eyebrow">EXPEDIENTE ACADÉMICO · COPIA INFORMATIVA</span><h1 id="publicStudentName"></h1><p id="publicStudentMeta"></p><div id="publicSummary" class="public-summary"></div></section>
+      <section class="public-section"><div class="section-heading"><div><span class="eyebrow">SEGUIMIENTO ESCOLAR</span><h2>Materias y calificaciones</h2></div></div><div id="publicSubjects" class="public-subjects"></div></section>
+      <footer class="public-footer"><span>Vista de consulta generada con EvalPro</span><span id="publicGeneratedAt"></span></footer>
+    </div>
+  </main>
+  <script src="expediente-publico.js?v=1" defer></script>
+</body>
+</html>

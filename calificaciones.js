@@ -532,6 +532,120 @@ function printRoster() {
   setTimeout(clean, 1500);
 }
 
+function bytesToBase64Url(bytes) {
+  let binary = '';
+  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+  }
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+async function encodeStudentSnapshot(snapshot) {
+  const bytes = new TextEncoder().encode(JSON.stringify(snapshot));
+  if ('CompressionStream' in window) {
+    const stream = new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip'));
+    const compressed = new Uint8Array(await new Response(stream).arrayBuffer());
+    return `z${bytesToBase64Url(compressed)}`;
+  }
+  return `j${bytesToBase64Url(bytes)}`;
+}
+
+function buildStudentSnapshot(pupil) {
+  const memberships = subjects.filter(subject => (subject.studentIds || []).includes(pupil.id));
+  const subjectSnapshots = memberships.map(subject => ({
+    name: subject.name,
+    finalGrade: subjectFinalGrade(pupil, subject),
+    partials: academicPartials.map(part => {
+      const params = combinedPartialParams(part, subject.id).map(param => {
+        const grade = categoryGrade(pupil, subject.id, part, param);
+        return { name: param.name, weight: Number(param.weight) || 0, grade };
+      });
+      const grade = partialGrade(pupil, subject.id, part);
+      const records = (pupil.records || [])
+        .filter(record => !record.taskRemoved && record.subjectId === subject.id && record.partialId === part.id)
+        .map(record => {
+          const param = combinedPartialParams(part, subject.id).find(item => item.id === record.categoryId);
+          const maximum = Number(record.max) || Number(param?.weight) || 10;
+          const numeric = Number(record.score);
+          const normalizedGrade = Number.isFinite(numeric) && maximum > 0 ? numeric / maximum * 10 : null;
+          return {
+            title: record.title || param?.name || record.categoryName || 'Actividad',
+            parameter: param?.name || record.categoryName || 'Evaluación',
+            date: record.date || '',
+            grade: normalizedGrade,
+            tasks: record.tasksTotal == null ? '' : `${Number(record.tasksDelivered) || 0}/${Number(record.tasksTotal) || 0}`
+          };
+        });
+      return { name: part.name, grade: grade?.grade ?? null, params, records };
+    })
+  }));
+  return {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    student: { name: pupil.name },
+    average: studentAverage(pupil),
+    subjects: subjectSnapshots
+  };
+}
+
+async function generateStudentQR() {
+  const pupil = roster.find(student => student.id === selectedStudentId);
+  const dialog = $('studentQrDialog');
+  const qrBox = $('studentQrCode');
+  const link = $('studentQrLink');
+  if (!pupil || !dialog || !qrBox || !link) return;
+  if (!window.QRCode) {
+    toast('No se pudo cargar el generador QR. Revisa tu conexión e inténtalo de nuevo.');
+    return;
+  }
+  try {
+    const snapshot = buildStudentSnapshot(pupil);
+    const token = await encodeStudentSnapshot(snapshot);
+    const shareUrl = new URL('expediente-publico.html', window.location.href);
+    shareUrl.hash = `evalpro=${token}`;
+    qrBox.replaceChildren();
+    link.value = shareUrl.href;
+    $('studentQrTitle').textContent = `Expediente · ${pupil.name}`;
+    $('studentQrDescription').textContent = `Vista informativa creada el ${new Date(snapshot.generatedAt).toLocaleDateString('es-MX')}.`;
+    new QRCode(qrBox, { text: shareUrl.href, width: 280, height: 280, correctLevel: QRCode.CorrectLevel.L });
+    if (!dialog.open) dialog.showModal();
+  } catch (error) {
+    console.error('No se pudo generar el QR del expediente:', error);
+    toast('No se pudo generar este QR. El expediente puede contener demasiados datos.');
+  }
+}
+
+function closeStudentQR() {
+  $('studentQrDialog')?.close();
+}
+
+async function copyStudentQRLink() {
+  const link = $('studentQrLink');
+  if (!link?.value) return;
+  try {
+    await navigator.clipboard.writeText(link.value);
+    toast('Enlace del expediente copiado.');
+  } catch {
+    link.focus();
+    link.select();
+    document.execCommand('copy');
+    toast('Enlace del expediente copiado.');
+  }
+}
+
+function downloadStudentQR() {
+  const qr = $('studentQrCode');
+  const image = qr?.querySelector('img');
+  const canvas = qr?.querySelector('canvas');
+  const dataUrl = image?.src || canvas?.toDataURL('image/png');
+  if (!dataUrl) return toast('Primero genera el QR del expediente.');
+  const name = roster.find(student => student.id === selectedStudentId)?.name || 'alumno';
+  const anchor = document.createElement('a');
+  anchor.href = dataUrl;
+  anchor.download = `QR-expediente-${name.trim().replace(/[^\p{L}\p{N}-]+/gu, '-')}.png`;
+  anchor.click();
+}
+
 function partialGrade(pupil, subjectId, part) {
   const parameters = combinedPartialParams(part, subjectId);
   const graded = parameters.map(param => ({ param, grade: categoryGrade(pupil, subjectId, part, param) }))

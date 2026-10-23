@@ -15,7 +15,8 @@
         href="https://fonts.googleapis.com/css2?family=Alata&family=Nunito:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="evaluador.css?v=92">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+    <link rel="stylesheet" href="evaluador.css?v=93">
     <link rel="icon" href="icons/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/evalpro-icon-192.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
@@ -393,7 +394,7 @@
                             <p id="fileSummary" class="param-hint"></p>
                         </div>
                     </div>
-                    <div class="file-actions"><button class="btn btn-primary" onclick="printStudentFile()">▣ Guardar /
+                    <div class="file-actions"><button class="btn btn-primary" type="button" onclick="generateStudentQR()" aria-label="Generar QR para este expediente">▦ Generar QR</button><button class="btn btn-primary" onclick="printStudentFile()">▣ Guardar /
                             imprimir PDF</button><button class="btn" onclick="clearSelectedStudent()">Cerrar
                             expediente</button></div>
                 </div>
@@ -416,6 +417,15 @@
             </section>
         </div>
     </main>
+    <dialog id="studentQrDialog" class="student-qr-dialog" aria-labelledby="studentQrTitle">
+        <div class="student-qr-dialog-header"><div><span class="profile-eyebrow">ACCESO DEL ALUMNO</span><h2 id="studentQrTitle">QR del expediente</h2></div><button class="student-qr-close" type="button" onclick="closeStudentQR()" aria-label="Cerrar ventana">×</button></div>
+        <p id="studentQrDescription" class="student-qr-description">Escanea este código para abrir la vista informativa del expediente.</p>
+        <div id="studentQrCode" class="student-qr-code" aria-label="Código QR del expediente"></div>
+        <label class="student-qr-link-label" for="studentQrLink">Enlace permanente a esta copia</label>
+        <div class="student-qr-link-row"><input id="studentQrLink" type="url" readonly><button class="btn btn-primary" type="button" onclick="copyStudentQRLink()">Copiar</button></div>
+        <p class="student-qr-privacy"><strong>Importante:</strong> cualquier persona con el QR o el enlace podrá ver esta copia del expediente. Incluye calificaciones e historial, pero excluye notas internas. La copia no se actualiza automáticamente cuando editas el expediente.</p>
+        <div class="student-qr-actions"><button class="btn" type="button" onclick="downloadStudentQR()">Descargar QR</button><button class="btn btn-primary" type="button" onclick="closeStudentQR()">Listo</button></div>
+    </dialog>
     <div id="toast" class="toast"></div>
     <div id="helpGuide" class="help-guide no-print">
         <section id="helpGuidePanel" class="help-guide-panel" role="dialog" aria-modal="false"
@@ -452,7 +462,7 @@
     <script src="evaluador.js?v=27" defer></script>
     <script src="filtros.js?v=14" defer></script>
     <script src="parciales.js?v=14" defer></script>
-    <script src="calificaciones.js?v=27" defer></script>
+    <script src="calificaciones.js?v=28" defer></script>
     <script src="tareas.js?v=9" defer></script>
     <script src="backup.js?v=12" defer></script>
     <script src="guia.js?v=12" defer></script>
