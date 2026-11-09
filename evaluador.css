@@ -6242,6 +6242,9 @@ body.printing-roster .roster-action-open::after {
 @media(max-width:760px){.task-manager-roster,.task-manager-history-wrap{width:100%}}
 .task-history-table-wrap{width:100%;max-width:none}
 .task-history-column-head,.task-history-student{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:130px}
+.task-history-column-actions{display:inline-flex;gap:4px;flex:none}
+.task-history-score{border:0;background:transparent;color:inherit;font:inherit;cursor:pointer;min-width:52px;padding:7px 10px;border-radius:6px}
+.task-history-score:hover,.task-history-score:focus-visible{outline:2px solid #2f8bb8;background:rgba(47,139,184,.12)}
 .task-history-student{min-width:0}
 .task-history-column-head>span,.task-history-student>b{min-width:0;overflow-wrap:anywhere}
 .task-history-table thead th small{display:block;margin-top:3px;color:#6c8390;font-size:.62rem;font-weight:600}
@@ -6253,6 +6256,7 @@ body.printing-roster .roster-action-open::after {
 [data-theme=dark] .task-history-table thead th small{color:#b5c9d9}
 [data-theme=dark] .task-delete-icon{border-color:#ff737f;background:#3b2029;color:#ff9ea8}
 [data-theme=dark] .task-delete-icon:hover{background:#bc3445;color:#fff}
+[data-theme=dark] .task-history-score:hover,[data-theme=dark] .task-history-score:focus-visible{outline-color:#72c9f1;background:rgba(114,201,241,.18)}
 @media(max-width:760px){.task-manager-roster{width:100%}.task-history-table{min-width:max(100%,760px)}}
 
 /* Historial en flex con tabla de ancho intrínseco tipo hoja de cálculo. */

@@ -142,11 +142,12 @@ function renderTaskManagerHistory() {
   const categoryId = $('taskManagerParameter')?.value;
   const batches = taskBatchesFor(subjectId, partialId, categoryId);
   const members = roster.filter(student => (subjects.find(subject => subject.id === subjectId)?.studentIds || []).includes(student.id)).sort((a, b) => a.name.localeCompare(b.name, 'es'));
-  history.innerHTML = members.length ? `<div class="task-history-table-wrap"><table class="task-history-table"><thead><tr><th>Alumno</th>${batches.map((batch, index) => `<th title="${esc(batch.record.date || '')}"><span class="task-history-column-head"><span>${esc(batch.record.title || 'Tarea')}</span>${index === batches.length - 1 ? `<button type="button" class="task-delete-icon task-delete-column" title="Eliminar la última actividad de todo el grupo" aria-label="Eliminar la última actividad ${esc(batch.record.title || '')} de todos los alumnos" onclick="deleteTaskBatch('${esc(batch.id)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m3 4v5m6-5v5"/></svg></button>` : ''}</span><small>${esc(batch.record.date || '')}</small></th>`).join('')}<th>Promedio</th></tr></thead><tbody>${members.map(student => {
+  history.innerHTML = members.length ? `<div class="task-history-table-wrap"><table class="task-history-table"><thead><tr><th>Alumno</th>${batches.map(batch => `<th title="${esc(batch.record.date || '')}"><span class="task-history-column-head"><span>${esc(batch.record.title || 'Tarea')}</span><span class="task-history-column-actions"><button type="button" class="task-delete-icon" title="Editar nombre de actividad" aria-label="Editar ${esc(batch.record.title || 'actividad')}" onclick="renameTaskBatch('${esc(batch.id)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16.5-.8 4.3 4.3-.8L19 8.5 15.5 5 4 16.5ZM14 6.5l3.5 3.5"/></svg></button><button type="button" class="task-delete-icon task-delete-column" title="Eliminar esta actividad de todo el grupo" aria-label="Eliminar ${esc(batch.record.title || 'actividad')} de todos los alumnos" onclick="deleteTaskBatch('${esc(batch.id)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m3 4v5m6-5v5"/></svg></button></span></span><small>${esc(batch.record.date || '')}</small></th>`).join('')}<th>Promedio</th></tr></thead><tbody>${members.map(student => {
     const cells = batches.map(batch => {
       const entry = batch.records.find(item => item.student.id === student.id)?.record;
       const activeEntry = entry && !entry.taskRemoved ? entry : null;
-      return `<td class="${activeEntry && Number(activeEntry.tasksDelivered) > 0 ? 'task-history-done' : 'task-history-missing'}" title="${activeEntry ? esc(activeEntry.note || '') : 'Sin registro'}">${activeEntry ? `${Number(activeEntry.tasksDelivered) || 0}/${Number(activeEntry.tasksTotal) || 1}` : 'S/R'}</td>`;
+      const score = activeEntry ? (Number(activeEntry.tasksDelivered) > 0 ? 1 : 0) : 'S/R';
+      return `<td class="${score === 1 ? 'task-history-done' : 'task-history-missing'}" title="${activeEntry ? esc(activeEntry.note || '') : 'Sin registro'}"><button type="button" class="task-history-score" onclick="toggleTaskBatchScore('${esc(batch.id)}','${esc(student.id)}')" aria-label="${esc(student.name)} · ${esc(batch.record.title || 'actividad')}: ${score}. Clic para cambiar">${score === 'S/R' ? 'S/R' : `${score}/1`}</button></td>`;
     }).join('');
     const param = academicPartials.find(part => part.id === partialId) && getPartParams(academicPartials.find(part => part.id === partialId), subjectId).find(item => item.id === categoryId);
     const grade = param ? categoryGrade(student, subjectId, academicPartials.find(part => part.id === partialId), param) : null;
@@ -154,6 +155,35 @@ function renderTaskManagerHistory() {
     const rowAction = studentHasTasks ? `<button type="button" class="task-delete-icon" title="Eliminar la última actividad de ${esc(student.name)}" aria-label="Eliminar la última actividad registrada de ${esc(student.name)}" onclick="deleteLatestStudentTask('${esc(student.id)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m3 4v5m6-5v5"/></svg></button>` : '';
     return `<tr><th scope="row"><span class="task-history-student"><b>${esc(student.name)}</b>${rowAction}</span></th>${cells}<td class="task-history-average">${grade === null ? 'S/R' : `${grade.toFixed(2)} / 10`}</td></tr>`;
   }).join('')}</tbody></table></div>` : '<div class="empty">No hay alumnos inscritos en esta materia.</div>';
+}
+
+function renameTaskBatch(batchId) {
+  const batch = taskBatchesFor($('taskManagerSubject')?.value, $('taskManagerPartial')?.value, $('taskManagerParameter')?.value).find(item => String(item.id) === String(batchId));
+  if (!batch) return toast('No se encontró esa actividad.');
+  const title = prompt('Nuevo nombre para la actividad:', batch.record.title || '');
+  if (title === null) return;
+  const clean = title.trim();
+  if (!clean) return toast('El nombre de la actividad no puede quedar vacío.');
+  batch.records.forEach(({record}) => { record.title = clean; });
+  writeStore('evalpro-roster-v1', roster);
+  renderTaskManager(); renderRoster();
+  if (typeof refreshGroupActivityEditor === 'function') refreshGroupActivityEditor();
+  toast('Nombre de actividad actualizado.');
+}
+
+function toggleTaskBatchScore(batchId, studentId) {
+  const batch = taskBatchesFor($('taskManagerSubject')?.value, $('taskManagerPartial')?.value, $('taskManagerParameter')?.value).find(item => String(item.id) === String(batchId));
+  if (!batch) return toast('No se encontró esa actividad.');
+  const student = roster.find(item => String(item.id) === String(studentId));
+  if (!student) return;
+  let record = batch.records.find(item => String(item.student.id) === String(studentId))?.record;
+  if (!record) { record = {...batch.record, id: makeId(), taskBatchId: batch.id, subjectId: $('taskManagerSubject').value, partialId: $('taskManagerPartial').value, categoryId: $('taskManagerParameter').value}; student.records = student.records || []; student.records.push(record); }
+  const delivered = record.taskRemoved || Number(record.tasksDelivered) === 0 ? 1 : 0;
+  Object.assign(record, {taskRemoved: false, tasksDelivered: delivered, tasksTotal: 1, score: delivered ? 10 : 0, max: 10});
+  writeStore('evalpro-roster-v1', roster);
+  renderTaskManager(); renderRoster();
+  if (typeof renderProfile === 'function') renderProfile();
+  if (typeof refreshGroupActivityEditor === 'function') refreshGroupActivityEditor();
 }
 
 function deleteLatestStudentTask(studentId) {
