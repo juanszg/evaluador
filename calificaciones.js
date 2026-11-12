@@ -375,6 +375,10 @@ function addStudent() {
     return toast('Antes de registrar, configura examen y actividades para que sumen 100% en este parcial.');
   }
   if (!name) return toast(mode === 'existing' ? 'Selecciona un alumno inscrito en esta materia.' : 'Ingresa el nombre del alumno.');
+  if (document.querySelectorAll('[data-score]').length && [...document.querySelectorAll('[data-score]')].some(input => isNoRecordGrade(input.value))) {
+    if (mode === 'existing') { const pupil = roster.find(student => student.id === $('existingExamStudent').value); students = students.filter(result => !(result.studentId === pupil?.id && result.subjectId === subject.id && result.partialId === part.id)); if (pupil) pupil.records = (pupil.records || []).filter(record => !(record.categoryId === '__exam__' && record.subjectId === subject.id && record.partialId === part.id)); writeStore('evalpro-exam-students-v1', students); writeStore('evalpro-roster-v1', roster); renderRoster(); renderAll(); }
+    return toast('Examen sin registro: no se guardó una calificación.');
+  }
   if (!Number.isFinite(exam) || exam < 0 || exam > 10) return toast('Completa los puntajes del examen para calcular una nota de 0 a 10.');
   const scores = [];
   for (let index = 0; index < params.length; index++) {
@@ -795,11 +799,11 @@ function renderRoster() {
         const contribution = grade === null ? null : Number(param.weight || 0) * grade / 10;
         const status = grade === null ? 'no-record' : `grade-cell ${rosterGradeStatus(grade)}`;
         const title = grade === null ? '' : ` title="Aporte ponderado a la calificación del parcial: ${contribution.toFixed(2)} de 10" data-contribution="${contribution.toFixed(2)}"`;
-        return `<td class="${status}"${title}>${grade === null ? 'S/R' : `${grade.toFixed(2)} / 10<small class="grade-performance">${contribution.toFixed(2)} / 10</small>`}</td>`;
+        return `<td class="${status} roster-grade-cell"${title}><button type="button" class="roster-grade-value" onclick="editRosterGrade('${esc(pupil.id)}','${esc(subject.id)}','${esc(part.id)}','${esc(param.id)}',this)" aria-label="${esc(param.name)}: ${grade === null ? 'sin registro' : grade.toFixed(2)}. Editar calificación">${grade === null ? 'S/R' : `${grade.toFixed(2)} / 10<small class="grade-performance">${contribution.toFixed(2)} / 10</small>`}<span class="roster-grade-hover-edit" aria-hidden="true">✎</span></button></td>`;
       }).join('') : '';
       const finalGrade = part ? details?.grade ?? null : subjectFinalGrade(pupil, subject);
       const coverage = part ? `${(details?.registeredWeight || 0).toFixed(1)}% / ${weightTotal.toFixed(1)}% registrado` : 'Promedio de parciales disponibles';
-      return `<tr><td><b>${esc(pupil.name)}</b></td><td><button type="button" class="avatar avatar-click ${selectGenderClass(pupil.gender)}" onclick="updateGender('${esc(pupil.id)}')" aria-label="Avatar de ${esc(pupil.name)}">${avatarEmoji(pupil.gender)}</button></td>${cells}<td class="${finalGrade === null ? 'no-record' : ''}">${finalGrade === null ? 'S/R' : `${finalGrade.toFixed(2)} / 10`}<small class="grade-coverage">${coverage}</small></td><td class="roster-expediente-cell">${rosterActionButton('open', pupil)}</td><td class="roster-actions">${selectedSubjectId ? rosterActionButton('remove-subject', pupil) : ''}${rosterActionButton('edit', pupil)}${rosterActionButton('delete', pupil)}</td></tr>`;
+      return `<tr><td><b>${esc(pupil.name)}</b></td><td><button type="button" class="avatar avatar-click ${selectGenderClass(pupil.gender)}" onclick="updateGender('${esc(pupil.id)}')" aria-label="Avatar de ${esc(pupil.name)}">${avatarEmoji(pupil.gender)}</button></td>${cells}<td class="${finalGrade === null ? 'no-record' : ''}">${finalGrade === null ? 'S/R' : `${finalGrade.toFixed(2)} / 10`}<small class="grade-coverage">${coverage}</small></td><td class="roster-expediente-cell">${rosterActionButton('open', pupil)}</td><td class="roster-actions"><button type="button" class="roster-action-icon roster-action-grade-edit" onclick="toggleRosterGradeEdit(this)" title="Activar edición de calificaciones" aria-label="Activar edición de calificaciones de ${esc(pupil.name)}" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 16.5-.8 4.3 4.3-.8L19 8.5 15.5 5 4 16.5ZM14 6.5l3.5 3.5"/></svg></button>${selectedSubjectId ? rosterActionButton('remove-subject', pupil) : ''}${rosterActionButton('edit', pupil)}${rosterActionButton('delete', pupil)}</td></tr>`;
     }).join('');
     const weightLabel = part ? `Ponderación del parcial: ${parameters.map(param => `${param.name} ${Number(param.weight || 0)}%`).join(' + ') || 'Sin parámetros'} = ${weightTotal.toFixed(1)}%` : 'Calificación final del curso';
     return `<section class="subject-grade-group"><h4>${esc(subject.name)} · ${part ? esc(part.name) : 'Calificación final'}</h4><p class="param-hint">${weightLabel}</p><div class="table-wrap roster-table"><table class="grades-roster-table"><thead><tr><th>Alumno</th><th>Avatar</th>${headers}<th>${part ? 'Calificación del parcial' : 'Calificación final'}</th><th>Expediente</th><th>Acciones</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
@@ -816,6 +820,51 @@ function renderRoster() {
   updateFilterSummary();
   if (typeof renderProfile === 'function') renderProfile();
   if (typeof renderTaskManager === 'function') renderTaskManager();
+}
+
+function toggleRosterGradeEdit(button) {
+  const row = button.closest('tr');
+  if (!row) return;
+  const enabled = row.classList.toggle('roster-grade-edit-mode');
+  button.setAttribute('aria-pressed', String(enabled));
+  button.title = enabled ? 'Desactivar edición de este alumno' : 'Activar edición de este alumno';
+}
+
+function editRosterGrade(studentId, subjectId, partialId, paramId, sourceButton) {
+  if (!sourceButton?.closest('tr')?.classList.contains('roster-grade-edit-mode')) {
+    alert('selecciona el icono de edicion para editar la calificación');
+    return;
+  }
+  const pupil = roster.find(item => String(item.id) === String(studentId));
+  const part = academicPartials.find(item => String(item.id) === String(partialId));
+  const param = part && combinedPartialParams(part, subjectId).find(item => String(item.id) === String(paramId));
+  if (!pupil || !part || !param) return toast('No se encontró esa calificación.');
+  const current = categoryGrade(pupil, subjectId, part, param);
+  const input = prompt(`Nueva calificación de ${param.name} para ${pupil.name} (0 a 10):`, current === null ? '' : current.toFixed(2));
+  if (input === null) return;
+  const clean = input.trim();
+  const value = clean === '' || isNoRecordGrade(clean) ? null : Number(clean);
+  if (value !== null && (!Number.isFinite(value) || value < 0 || value > 10)) return toast('La calificación debe estar entre 0 y 10.');
+  if (param.kind === 'exam' || param.id === '__exam__') {
+    const result = examResultFor(pupil.id, subjectId, part.id);
+    if (value === null) {
+      if (result) students = students.filter(item => item !== result);
+    } else if (result) result.exam = value;
+    else students.push({studentId:pupil.id, studentName:pupil.name, subjectId, subjectName:subjects.find(item=>item.id===subjectId)?.name||'', partialId:part.id, exam:value, scores:{}, components:[]});
+    writeStore('evalpro-exam-students-v1', students);
+    migrateExamResults();
+  } else {
+    pupil.records = pupil.records || [];
+    const records = pupil.records.filter(record => !record.taskRemoved && record.subjectId === subjectId && record.partialId === part.id && record.categoryId === param.id && Number(record.max) > 0);
+    if (value === null) pupil.records = pupil.records.filter(record => !records.includes(record));
+    else if (records.length) {
+      const target = records[records.length - 1];
+      target.score = value; target.max = 10; target.scoreUnit = 'grade-out-of-10';
+    } else pupil.records.push({id:makeId(),subjectId,subjectName:subjects.find(item=>item.id===subjectId)?.name||'',partialId:part.id,categoryId:param.id,categoryName:param.name,title:`${param.name} · edición desde tabla`,date:today(),score:value,max:10});
+    writeStore('evalpro-roster-v1', roster);
+  }
+  renderRoster();
+  toast(value === null ? 'Calificación eliminada; ahora aparece S/R.' : 'Calificación actualizada.');
 }
 
 function renderFileEvaluations(pupil, memberships) {

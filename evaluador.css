@@ -6066,6 +6066,71 @@ body.printing-roster .roster-action-open::after {
   [data-theme=dark] #sectionNav .folder-tab{border-color:#365e7c;background:#12273b;color:#d9f2ff}
   [data-theme=dark] #sectionNav .folder-tab.active{border-color:#50fa7b;background:linear-gradient(110deg,#123c4d,#123a34);color:#c5ffe0;box-shadow:inset 4px 0 #50fa7b}
 }
+
+/* Encabezado compacto y controles de edición directa en las tablas. */
+.task-manager-heading{display:grid!important;grid-template-columns:auto minmax(0,1fr);align-items:center!important;justify-content:initial!important;text-align:left!important;gap:14px!important;padding:12px 18px 14px!important}
+.task-manager-heading>div,.task-manager-heading .task-manager-kicker,.task-manager-heading .section-title,.task-manager-heading .param-hint{text-align:left!important;margin-left:0!important;margin-right:0!important}
+.task-manager-heading .task-manager-mark{grid-column:1;grid-row:1;width:38px;height:38px}
+.task-manager-heading>div{grid-column:2;grid-row:1;width:100%;max-width:none}
+.task-manager-heading .section-title{margin:0;font-size:1.1rem}
+.task-manager-heading .param-hint{font-size:.7rem;line-height:1.35}
+.task-manager-controls{grid-template-columns:repeat(5,minmax(135px,1fr))!important;gap:10px;padding:12px 14px!important}
+.task-history-table-wrap{overflow-x:auto;overflow-y:visible}
+.task-history-table thead th{position:sticky;top:0;z-index:4}
+.task-history-table thead th:first-child{left:0;z-index:6}
+.task-history-table th:first-child{z-index:3}
+.roster-grade-value{display:inline-flex;flex-direction:column;align-items:center;gap:2px}
+.roster-grade-edit{display:inline-grid;place-items:center;vertical-align:middle;margin-left:5px;width:23px;height:23px;padding:3px;border:1px solid #4196b8;border-radius:5px;background:#edf8fc;color:#176b8d;cursor:pointer;opacity:.72}
+.roster-grade-edit:hover,.roster-grade-edit:focus-visible{opacity:1;background:#d9f0f8;outline:2px solid #4196b855}
+.roster-grade-edit svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+[data-theme=dark] .roster-grade-edit{border-color:#67c8ed;background:#13374b;color:#a8e9ff}
+@media(max-width:900px){.task-manager-controls{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:760px){.task-manager-heading{grid-template-columns:32px minmax(0,1fr);gap:10px!important;padding:12px 6px!important}.task-manager-heading .task-manager-mark{width:30px;height:30px}.task-manager-controls{grid-template-columns:1fr!important}.task-history-table thead th{top:0}}
+
+/* La edición se activa desde Acciones; al pasar por una nota aparece el acceso en esa celda. */
+.roster-grade-edit{display:none!important}
+.roster-grade-cell{position:relative}
+.roster-grade-value{position:relative;display:inline-flex;flex-direction:column;align-items:center;gap:2px;padding:2px 7px;border:1px solid transparent;border-radius:5px;background:transparent;color:inherit;font:inherit;cursor:default}
+.roster-grade-hover-edit{display:none;position:absolute;top:1px;right:1px;padding:1px 4px;border-radius:4px;background:#176b8d;color:#fff;font-size:.72rem;line-height:1.2}
+.roster-grade-edit-mode .roster-grade-value{cursor:pointer}
+.roster-grade-edit-mode .roster-grade-value:hover,.roster-grade-edit-mode .roster-grade-value:focus-visible{border-color:#4196b8;background:rgba(217,240,248,.72);outline:none}
+.roster-grade-edit-mode .roster-grade-value:hover .roster-grade-hover-edit,.roster-grade-edit-mode .roster-grade-value:focus-visible .roster-grade-hover-edit{display:block}
+.roster-grade-edit-mode .roster-action-grade-edit{background:#e2f5fb!important;border-color:#258cb3!important;color:#126b8d!important;box-shadow:0 0 0 2px #258cb333}
+[data-theme=dark] .roster-grade-edit-mode .roster-grade-value:hover,[data-theme=dark] .roster-grade-edit-mode .roster-grade-value:focus-visible{border-color:#67c8ed;background:#13374b}
+[data-theme=dark] .roster-grade-hover-edit{background:#55c8ef;color:#092436}
+@media(max-width:760px){.roster-grade-edit-mode .roster-grade-value{border-color:#4196b8;border-style:dashed}.roster-grade-edit-mode .roster-grade-hover-edit{display:block;position:static;margin-top:2px}}
+
+/* Estado persistente del renglón en edición y encabezado fijo del historial grupal. */
+.grades-roster-table tbody tr.roster-grade-edit-mode>td{background:#e5f7eb!important;box-shadow:inset 0 2px 0 #36a66b,inset 0 -2px 0 #36a66b}
+.grades-roster-table tbody tr.roster-grade-edit-mode>td:first-child{box-shadow:inset 3px 0 0 #23945a,inset 0 2px 0 #36a66b,inset 0 -2px 0 #36a66b}
+.grades-roster-table tbody tr.roster-grade-edit-mode>td:last-child{box-shadow:inset -3px 0 0 #23945a,inset 0 2px 0 #36a66b,inset 0 -2px 0 #36a66b}
+[data-theme=dark] .grades-roster-table tbody tr.roster-grade-edit-mode>td{background:#173d31!important;box-shadow:inset 0 2px 0 #50d58c,inset 0 -2px 0 #50d58c;color:#e2ffed}
+[data-theme=dark] .grades-roster-table tbody tr.roster-grade-edit-mode>td:first-child{box-shadow:inset 3px 0 0 #50d58c,inset 0 2px 0 #50d58c,inset 0 -2px 0 #50d58c}
+[data-theme=dark] .grades-roster-table tbody tr.roster-grade-edit-mode>td:last-child{box-shadow:inset -3px 0 0 #50d58c,inset 0 2px 0 #50d58c,inset 0 -2px 0 #50d58c}
+.task-history-table-wrap{max-height:min(68vh,720px);overflow:auto!important;overscroll-behavior:contain;scrollbar-gutter:stable}
+.task-history-table thead th{position:sticky;top:0;z-index:5}
+.task-history-table thead th:first-child{left:0;z-index:7}
+@media(max-width:760px){.task-history-table-wrap{max-height:62vh}.task-history-table thead th{top:0}}
+
+/* Controles de materia y parcial en una sola banda, con acciones cuadradas compactas. */
+#bookConfig .partial-controls{display:grid;grid-template-columns:minmax(210px,1.2fr) minmax(260px,1.5fr) minmax(260px,1.4fr);align-items:end;gap:12px}
+#bookConfig .config-control-group{display:flex;align-items:end;gap:7px;min-width:0}
+#bookConfig .config-control-group>.field{flex:1 1 auto;min-width:0;margin:0}
+#bookConfig .config-control-group .field label{display:block;min-height:1.15em;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+#bookConfig .config-icon-action{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;min-height:34px;padding:6px;border:1.5px solid #5594b5;border-radius:6px;background:#eef8fc;color:#176b8d;cursor:pointer;transition:background .15s,transform .15s}
+#bookConfig .config-icon-action:hover{transform:translateY(-1px);background:#d6eff9}
+#bookConfig .config-icon-action svg,#bookConfig .config-create-partial svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#bookConfig .config-icon-danger{border-color:#d78088;background:#fff2f2;color:#ba3645}
+#bookConfig .config-icon-danger:hover{background:#ffe0e2}
+#bookConfig .config-create-partial{display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;min-height:34px!important;height:34px;padding:0 12px}
+[data-theme=dark] #bookConfig .config-icon-action{border-color:#6bcaf0;background:#173b50;color:#a9eaff}
+[data-theme=dark] #bookConfig .config-icon-danger{border-color:#ff8290;background:#432631;color:#ffb4bb}
+[data-theme=dark] #bookConfig .config-icon-danger:hover{background:#63303a}
+@media(max-width:900px){#bookConfig .partial-controls{grid-template-columns:1fr}#bookConfig .config-control-group .field label{white-space:normal}}
+.register-roster .grades-roster-table th:last-child,.register-roster .grades-roster-table td.roster-actions{width:190px;min-width:190px;max-width:190px;box-sizing:border-box;text-align:center}
+.register-roster .grades-roster-table td.roster-actions{display:table-cell;white-space:nowrap!important;padding:8px 6px!important}
+.register-roster .roster-actions{white-space:nowrap!important}
+.register-roster .roster-actions .roster-action-icon{display:inline-grid;vertical-align:middle;margin:2px}
 @keyframes menu-pop{from{opacity:0;transform:translateY(-7px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 
 /* Controles de secciones desplegables: flecha SVG visible y estados claros. */
