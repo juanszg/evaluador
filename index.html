@@ -16,7 +16,7 @@
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
-    <link rel="stylesheet" href="evaluador.css?v=99">
+    <link rel="stylesheet" href="evaluador.css?v=109">
     <link rel="icon" href="icons/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/evalpro-icon-192.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
@@ -186,7 +186,7 @@
                             <option value="average-asc">Promedio · menor a mayor</option>
                         </select></div>
                     <div class="roster-view-actions"><span>Las celdas sin calificación aparecen como S/R. El aporte de
-                            cada parámetro se expresa en la escala final de 0 a 10.</span></div>
+                            cada parámetro se expresa en la escala final de 0 a 10.</span><button id="rosterLayoutToggle" class="roster-layout-toggle" type="button" onclick="toggleRosterLayout()" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="8" height="7" rx="1"/><rect x="13" y="4" width="8" height="7" rx="1"/><rect x="3" y="13" width="8" height="7" rx="1"/><rect x="13" y="13" width="8" height="7" rx="1"/></svg><span>Vista de tarjetas</span></button></div>
                 </div>
                 <div class="grade-legend" aria-label="Leyenda de rendimiento"><span
                         class="grade-legend-low">Reprobatorio · menos de 50%</span><span
@@ -275,7 +275,7 @@
                 <div id="taskManagerWeightInfo" class="task-manager-weight" aria-live="polite"></div>
                 <div id="taskManagerRoster" class="task-manager-roster"></div>
                 <div class="task-manager-footer"><span id="taskManagerSummary" class="param-hint">Selecciona materia, parcial y parámetro para comenzar.</span><button id="saveGroupTaskButton" class="btn btn-green" type="button" onclick="saveGroupTask()">＋ Agregar tarea</button></div>
-                <section class="task-manager-history-wrap"><h4 id="taskManagerHistoryTitle">Tareas registradas</h4><div id="taskManagerHistory" class="task-manager-history"></div></section>
+                <section class="task-manager-history-wrap"><div class="task-history-heading"><h4 id="taskManagerHistoryTitle">Tareas registradas</h4><button id="taskHistoryViewToggle" class="task-history-view-toggle" type="button" onclick="toggleTaskHistoryView()" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="8" height="7" rx="1"/><rect x="13" y="4" width="8" height="7" rx="1"/><rect x="3" y="13" width="8" height="7" rx="1"/><rect x="13" y="13" width="8" height="7" rx="1"/></svg><span>Vista de tarjetas</span></button></div><div id="taskManagerHistory" class="task-manager-history"></div></section>
             </section>
 
         </div>
@@ -461,8 +461,8 @@
     <script src="evaluador.js?v=29" defer></script>
     <script src="filtros.js?v=14" defer></script>
     <script src="parciales.js?v=17" defer></script>
-    <script src="calificaciones.js?v=34" defer></script>
-    <script src="tareas.js?v=10" defer></script>
+    <script src="calificaciones.js?v=38" defer></script>
+    <script src="tareas.js?v=11" defer></script>
     <script src="backup.js?v=12" defer></script>
     <script src="guia.js?v=12" defer></script>
 </body>

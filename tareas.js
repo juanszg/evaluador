@@ -142,6 +142,10 @@ function renderTaskManagerHistory() {
   const categoryId = $('taskManagerParameter')?.value;
   const batches = taskBatchesFor(subjectId, partialId, categoryId);
   const members = roster.filter(student => (subjects.find(subject => subject.id === subjectId)?.studentIds || []).includes(student.id)).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  const cardView = localStorage.getItem('evalpro-task-history-card-view') === 'true';
+  const viewButton = $('taskHistoryViewToggle');
+  if (viewButton) { viewButton.setAttribute('aria-pressed', String(cardView)); viewButton.querySelector('span').textContent = cardView ? 'Vista de lista' : 'Vista de tarjetas'; }
+  if (cardView) { renderTaskHistoryCards(history, batches, members, subjectId, partialId, categoryId); return; }
   history.innerHTML = members.length ? `<div class="task-history-table-wrap"><table class="task-history-table"><thead><tr><th>Alumno</th>${batches.map(batch => `<th title="${esc(batch.record.date || '')}"><span class="task-history-column-head"><span>${esc(batch.record.title || 'Tarea')}</span><span class="task-history-column-actions"><button type="button" class="task-delete-icon" title="Editar nombre de actividad" aria-label="Editar ${esc(batch.record.title || 'actividad')}" onclick="renameTaskBatch('${esc(batch.id)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16.5-.8 4.3 4.3-.8L19 8.5 15.5 5 4 16.5ZM14 6.5l3.5 3.5"/></svg></button><button type="button" class="task-delete-icon task-delete-column" title="Eliminar esta actividad de todo el grupo" aria-label="Eliminar ${esc(batch.record.title || 'actividad')} de todos los alumnos" onclick="deleteTaskBatch('${esc(batch.id)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m3 4v5m6-5v5"/></svg></button></span></span><small>${esc(batch.record.date || '')}</small></th>`).join('')}<th>Promedio</th></tr></thead><tbody>${members.map(student => {
     const cells = batches.map(batch => {
       const entry = batch.records.find(item => item.student.id === student.id)?.record;
@@ -155,6 +159,35 @@ function renderTaskManagerHistory() {
     const rowAction = studentHasTasks ? `<button type="button" class="task-delete-icon" title="Eliminar la última actividad de ${esc(student.name)}" aria-label="Eliminar la última actividad registrada de ${esc(student.name)}" onclick="deleteLatestStudentTask('${esc(student.id)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m3 4v5m6-5v5"/></svg></button>` : '';
     return `<tr><th scope="row"><span class="task-history-student"><b>${esc(student.name)}</b>${rowAction}</span></th>${cells}<td class="task-history-average">${grade === null ? 'S/R' : `${grade.toFixed(2)} / 10`}</td></tr>`;
   }).join('')}</tbody></table></div>` : '<div class="empty">No hay alumnos inscritos en esta materia.</div>';
+}
+
+function toggleTaskHistoryView() {
+  const cards = localStorage.getItem('evalpro-task-history-card-view') !== 'true';
+  localStorage.setItem('evalpro-task-history-card-view', String(cards));
+  renderTaskManagerHistory();
+}
+
+function shortTaskStudentName(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  return parts.length > 1 ? `${parts[0]} ${parts[1][0].toUpperCase()}.` : (parts[0] || 'Alumno');
+}
+
+function renderTaskHistoryCards(history, batches, members, subjectId, partialId, categoryId) {
+  if (!members.length) { history.innerHTML = '<div class="empty">No hay alumnos inscritos en esta materia.</div>'; return; }
+  if (!batches.length) { history.innerHTML = '<div class="empty">Todavía no hay actividades registradas para este parámetro.</div>'; return; }
+  history.innerHTML = `<div class="task-history-cards">${batches.map(batch => `<article class="task-activity-card"><header class="task-activity-card-head"><div><h5>${esc(batch.record.title || 'Actividad')}</h5><time>${esc(batch.record.date || 'Sin fecha')}</time></div><div class="task-activity-card-actions"><button type="button" class="task-delete-icon" title="Editar nombre" aria-label="Editar ${esc(batch.record.title || 'actividad')}" onclick="renameTaskBatch('${esc(batch.id)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16.5-.8 4.3 4.3-.8L19 8.5 15.5 5 4 16.5ZM14 6.5l3.5 3.5"/></svg></button><button type="button" class="task-delete-icon" title="Eliminar actividad de todo el grupo" aria-label="Eliminar ${esc(batch.record.title || 'actividad')}" onclick="deleteTaskBatch('${esc(batch.id)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m3 4v5m6-5v5"/></svg></button></div></header><div class="task-activity-students">${members.map(student => { const record = batch.records.find(item => String(item.student.id) === String(student.id))?.record; const active = record && !record.taskRemoved ? record : null; const delivered = Boolean(active && Number(active.tasksDelivered) > 0); return `<div class="task-activity-student"><span class="task-activity-student-name" title="${esc(student.name)}">${esc(shortTaskStudentName(student.name))}</span><button type="button" class="task-activity-delivery ${active ? (delivered ? 'is-delivered' : 'is-missing') : 'is-unregistered'}" onclick="toggleTaskBatchScore('${esc(batch.id)}','${esc(student.id)}')" aria-pressed="${delivered}" aria-label="${esc(student.name)} · ${esc(batch.record.title || 'actividad')}: ${active ? (delivered ? '1 de 1 entregada' : '0 de 1 entregada') : 'sin registro'}"><span class="task-activity-checkbox" aria-hidden="true">${delivered ? '✓' : ''}</span><b>${active ? `${delivered ? 1 : 0}/1` : 'S/R'}</b></button>${active ? `<button type="button" class="task-delete-icon task-activity-remove" title="Quitar esta actividad de ${esc(student.name)}" aria-label="Quitar actividad de ${esc(student.name)}" onclick="deleteTaskBatchForStudent('${esc(batch.id)}','${esc(student.id)}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m3 4v5m6-5v5"/></svg></button>` : '<span class="task-activity-remove-placeholder"></span>'}</div>`; }).join('')}</div></article>`).join('')}</div>`;
+}
+
+function deleteTaskBatchForStudent(batchId, studentId) {
+  const subjectId = $('taskManagerSubject')?.value, partialId = $('taskManagerPartial')?.value, categoryId = $('taskManagerParameter')?.value;
+  const batch = taskBatchesFor(subjectId, partialId, categoryId).find(item => String(item.id) === String(batchId));
+  const student = roster.find(item => String(item.id) === String(studentId));
+  const record = batch?.records.find(item => String(item.student.id) === String(studentId))?.record;
+  if (!batch || !student || !record || record.taskRemoved) return;
+  if (!confirm(`¿Quitar “${batch.record.title || 'Actividad'}” del registro de ${student.name}?`)) return;
+  Object.assign(record, {taskRemoved:true,tasksDelivered:0,tasksTotal:1,score:0,max:0});
+  writeStore('evalpro-roster-v1', roster); renderTaskManager(); renderRoster();
+  if (typeof refreshGroupActivityEditor === 'function') refreshGroupActivityEditor();
 }
 
 function renameTaskBatch(batchId) {
