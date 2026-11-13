@@ -6131,6 +6131,8 @@ body.printing-roster .roster-action-open::after {
 /* Vista opcional de tarjetas para alumnos en teléfonos pequeños. */
 .roster-layout-toggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:6px 10px;border:1.5px solid var(--line);border-radius:7px;background:var(--surface);color:var(--primary);font:750 .74rem 'Nunito',sans-serif;cursor:pointer;white-space:nowrap}
 .roster-card-expediente{display:none}
+.roster-card-index{display:none}
+.roster-cards-mobile .roster-card-index{display:inline}
 .roster-layout-toggle svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7}
 @media(max-width:760px){
   .roster-view-actions{align-items:center;gap:8px}
@@ -6281,6 +6283,23 @@ html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .r
   [data-theme=dark] #rosterCard>.section-title .roster-print-button{font-size:.57rem}
 }
 @media(max-width:360px){#rosterCard>.section-title{gap:4px;font-size:.78rem}#rosterCard>.section-title .roster-print-button{padding-inline:5px;font-size:.53rem}#taskManagerRoster.task-manager-roster{gap:5px;padding:5px}#taskManagerRoster .task-roster-row{padding:6px 4px}}
+@media(max-width:700px){
+  #rosterCard{box-sizing:border-box;width:100%;max-width:100%;padding:12px 8px}
+  #rosterCard .roster-view-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:end;gap:8px;width:100%;margin:10px 0;padding:10px}
+  #rosterCard .roster-view-controls>.field{min-width:0;margin:0}
+  #rosterCard .roster-view-controls>.field label{font-size:.68rem;line-height:1.2}
+  #rosterCard .roster-view-controls select{box-sizing:border-box;width:100%;min-width:0;padding-inline:8px;font-size:.74rem}
+  #rosterCard .roster-view-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:0}
+  #rosterCard .roster-view-actions>span{flex:1 1 100%;font-size:.67rem;line-height:1.35}
+  #rosterCard .grade-legend{margin-block:8px}
+  #rosterCard .roster-student-lookup{margin-block:10px}
+  #rosterList.roster-cards-mobile{box-sizing:border-box;width:100%;max-width:100%;margin:10px 0 18px}
+  #rosterList.roster-cards-mobile .subject-grade-group{box-sizing:border-box;width:100%;max-width:100%;margin:0 auto 10px}
+  #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Alumno"]{font-size:1.28rem!important}
+  #rosterList.roster-cards-mobile .roster-card-index{display:inline}
+  #rosterList.roster-cards-mobile .roster-card-index{color:var(--primary);font-weight:900}
+  [data-theme=dark] #rosterList.roster-cards-mobile .roster-card-index{color:#91b9ec}
+}
 #rosterCard>.section-title::before{height:20px!important;top:3px!important}
 .task-history-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px}
 .task-history-heading h4{margin:0}
