@@ -2950,7 +2950,7 @@ select {
 .stat strong,
 .record-score,
 .badge {
-  font-family: Inconsolata, monospace;
+  font-family: "Space Mono", monospace;
   font-variant-numeric: tabular-nums
 }
 
@@ -3515,7 +3515,7 @@ select {
   display: block;
   margin-top: 3px;
   color: var(--muted);
-  font: 600 .7rem Inconsolata, monospace
+  font: 600 .7rem "Space Mono", monospace
 }
 
 .exam-parameters-summary {
@@ -3560,7 +3560,7 @@ select {
   display: block;
   margin-top: 3px;
   color: var(--muted);
-  font: 600 .68rem Inconsolata, monospace;
+  font: 600 .68rem "Space Mono", monospace;
   white-space: nowrap
 }
 
@@ -3943,7 +3943,7 @@ textarea,
 
 .grades-roster-table td.no-record {
   color: var(--muted);
-  font: 700 .78rem Inconsolata, monospace
+  font: 700 .78rem "Space Mono", monospace
 }
 
 .grades-roster-table th {
@@ -4084,7 +4084,7 @@ textarea,
 }
 
 .percent-entry>span {
-  font: 700 .78rem Inconsolata, monospace;
+  font: 700 .78rem "Space Mono", monospace;
   color: var(--primary);
   white-space: nowrap
 }
@@ -4632,7 +4632,7 @@ textarea,
   z-index: 1;
   color: #286284;
   content: "ZONA DE EDICIÓN · REGISTRO ACTIVO";
-  font: 800 .65rem Inconsolata, monospace;
+  font: 800 .65rem "Space Mono", monospace;
   letter-spacing: .12em
 }
 
@@ -5012,7 +5012,7 @@ textarea,
   border-radius: 4px;
   background: #cbe5f4;
   color: #185778;
-  font: 800 .7rem Inconsolata, monospace;
+  font: 800 .7rem "Space Mono", monospace;
   letter-spacing: .14em
 }
 
@@ -6261,6 +6261,85 @@ html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .r
 html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .roster-action-delete{border-color:#db6675;color:#c34456}
 @media(max-width:390px){html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody tr{gap:7px;padding:9px}html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions{gap:7px!important}html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .roster-action-icon,html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{width:48px;height:48px;flex-basis:48px!important;min-width:48px!important}}
 
+/* Grid de tarjetas por alumno: cuatro columnas horizontal y dos vertical en tablet. */
+#rosterList:not(.roster-cards-mobile) .roster-card-expediente{display:none!important}
+.roster-card-final-label{display:none}
+#rosterList.roster-cards-mobile{display:block!important;width:100%;max-width:100%;margin:12px auto}
+#rosterList.roster-cards-mobile .subject-grade-group{box-sizing:border-box;width:100%;max-width:100%;margin:0 0 14px;padding:0;border-radius:12px}
+#rosterList.roster-cards-mobile .roster-table{width:100%;max-width:100%;overflow:visible}
+#rosterList.roster-cards-mobile .grades-roster-table,#rosterList.roster-cards-mobile .grades-roster-table tbody{display:block;width:100%;min-width:0!important;max-width:100%}
+#rosterList.roster-cards-mobile .grades-roster-table thead{display:none}
+#rosterList.roster-cards-mobile .grades-roster-table tbody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:12px;background:color-mix(in srgb,var(--surface) 82%,var(--primary-soft));border-radius:0 0 12px 12px}
+#rosterList.roster-cards-mobile .grades-roster-table tbody tr{position:relative;box-sizing:border-box;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;gap:7px;width:100%;min-width:0;margin:0;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--surface);box-shadow:0 3px 9px #12394c16}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td{box-sizing:border-box;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;min-width:0!important;width:auto!important;max-width:none!important;padding:6px!important;border:1px solid var(--line);border-radius:7px;white-space:normal!important;overflow-wrap:anywhere;text-align:left!important;font-size:.72rem}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td::before{content:attr(data-label);display:block;color:var(--muted);font-size:.56rem;font-weight:850;letter-spacing:.04em;text-transform:uppercase}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Alumno"]{grid-column:1/-1;min-height:52px;padding:8px 52px 8px 9px!important;background:var(--primary-soft);font-size:.91rem}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Alumno"]::before,#rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Avatar"]::before{display:none}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Avatar"]{position:absolute;top:9px;right:9px;display:grid;place-items:center;width:39px!important;height:39px!important;min-width:39px!important;padding:0!important;border-radius:50%;overflow:hidden}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Avatar"] .avatar{box-sizing:border-box;width:33px!important;height:33px!important;min-width:33px!important;border-radius:50%!important}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-grade-cell{min-height:56px;padding:6px!important}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Final"]{grid-column:1/-1;position:relative;display:grid;grid-template-columns:66px 1fr;grid-template-rows:auto auto;align-items:center;gap:3px 8px;min-height:74px;padding:7px!important}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Final"]::before{display:none}
+#rosterList.roster-cards-mobile .roster-card-final-label{display:block;grid-column:2;grid-row:1;color:var(--primary);font-size:.62rem;font-weight:900}
+#rosterList.roster-cards-mobile .roster-card-ring{grid-column:1;grid-row:1/3;display:grid;place-items:center;width:60px;height:60px;border:6px solid var(--line);border-radius:50%;font-size:1rem;font-weight:900}
+#rosterList.roster-cards-mobile .roster-card-progress{grid-column:2;grid-row:2;height:7px;overflow:hidden;border-radius:99px;background:var(--line)}
+#rosterList.roster-cards-mobile .roster-card-progress i{display:block;height:100%;border-radius:inherit;background:var(--primary)}
+#rosterList.roster-cards-mobile .roster-card-final .grade-coverage{grid-column:2;grid-row:3;font-size:.56rem;line-height:1.2}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-expediente-cell{display:none}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions{grid-column:1/-1;display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;padding:5px 0!important;border:0;background:transparent}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions::before{display:none}
+#rosterList.roster-cards-mobile .roster-actions .roster-action-icon{box-sizing:border-box;width:38px;height:38px;flex:0 0 38px;padding:6px;border-radius:8px}
+#rosterList.roster-cards-mobile .roster-actions .roster-action-icon svg{width:21px;height:21px}
+#rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{display:inline-flex;box-sizing:border-box;width:58px;height:38px;min-width:58px;flex:0 0 58px;flex-direction:row;gap:3px;padding:4px;border:1.5px solid #e4bb51;border-radius:8px;background:#fffaf0;color:#a47712;font-size:.58rem}
+#rosterList.roster-cards-mobile .roster-actions .roster-card-expediente::after{content:'exp'}
+#rosterList.roster-cards-mobile .roster-actions .roster-card-expediente svg{width:19px;height:19px}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody tr{border-color:#bfd5e4;background:#f9fcff;box-shadow:0 4px 10px #28608018}
+[data-theme=dark] #rosterList.roster-cards-mobile .grades-roster-table tbody{background:#0d1d30}
+[data-theme=dark] #rosterList.roster-cards-mobile .grades-roster-table tbody tr{border:1.5px solid #47617e;border-radius:12px;background:#17263a;box-shadow:0 4px 10px #0005}
+[data-theme=dark] #rosterList.roster-cards-mobile .grades-roster-table tbody td{border-color:#344e69;background:#17263a;color:#cbdcf2}
+[data-theme=dark] #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Alumno"]{border-color:#344e69;background:#203b5b;color:#f2f6ff}
+[data-theme=dark] #rosterList.roster-cards-mobile .roster-card-final-label{color:#91b9ec}
+@media(min-width:900px){#rosterList.roster-cards-mobile .grades-roster-table tbody{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(min-width:761px) and (max-width:899px){#rosterList.roster-cards-mobile .grades-roster-table tbody{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){#rosterCard{width:100%;max-width:100%;padding-inline:8px}#rosterList.roster-cards-mobile{width:100%;max-width:100%}#rosterList.roster-cards-mobile .grades-roster-table tbody{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:9px}}
+@media(max-width:430px){#rosterList.roster-cards-mobile .grades-roster-table tbody{grid-template-columns:1fr;gap:9px;padding:8px}}
+.roster-list-final-label{display:inline-block;margin-right:5px;color:var(--primary);font-size:.68em;font-weight:900}
+#rosterList.roster-cards-mobile .roster-list-final-label{display:none}
+[data-theme=dark] #rosterList.roster-cards-mobile .grades-roster-table tbody{overflow:hidden}
+[data-theme=dark] #rosterList.roster-cards-mobile .grades-roster-table tbody tr{min-width:0;overflow:hidden}
+[data-theme=dark] #rosterList.roster-cards-mobile .grades-roster-table tbody td{min-width:0!important;max-width:100%;overflow:hidden;font-size:.65rem}
+[data-theme=dark] #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Alumno"]{font-size:.98rem!important;line-height:1.2}
+[data-theme=dark] #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-grade-cell{padding:5px!important}
+[data-theme=dark] #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-grade-cell::before{font-size:.49rem;line-height:1.15;letter-spacing:.06em;overflow-wrap:anywhere}
+[data-theme=dark] #rosterList.roster-cards-mobile .roster-grade-value{max-width:100%;font-size:.9rem;white-space:normal;overflow-wrap:anywhere}
+[data-theme=dark] #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Final"]{grid-template-columns:54px minmax(0,1fr);min-width:0;gap:3px 6px;padding:6px!important}
+[data-theme=dark] #rosterList.roster-cards-mobile .roster-card-ring{width:50px;height:50px;border-width:5px;font-size:.88rem}
+[data-theme=dark] #rosterList.roster-cards-mobile .roster-card-final-label{font-size:.58rem}
+[data-theme=dark] #rosterList.roster-cards-mobile .roster-card-final .grade-coverage{font-size:.5rem;overflow-wrap:anywhere}
+[data-theme=dark] #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions{overflow:visible}
+
+/* Igualar la geometría de las tarjetas Dark a Light; solo cambia el color, no la maqueta. */
+#rosterList.roster-cards-mobile .grades-roster-table tbody tr{grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;gap:7px;width:100%;min-width:0;margin:0;padding:10px;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 3px 9px #12394c16}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td{box-sizing:border-box;min-width:0!important;max-width:100%;overflow:hidden;font-size:.68rem}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Alumno"]{grid-column:1/-1;min-height:52px;padding:8px 52px 8px 9px!important;font-size:1rem!important;line-height:1.2}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Avatar"]{top:9px;right:9px;width:39px!important;height:39px!important;min-width:39px!important;padding:0!important;border-radius:50%;overflow:hidden}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Avatar"] .avatar{width:33px!important;height:33px!important;min-width:33px!important;border-radius:50%!important}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-grade-cell{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px;min-height:34px;padding:5px 8px!important;border-radius:7px}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-grade-cell::before{display:block;max-width:100%;font-size:.55rem;line-height:1.15;letter-spacing:.04em;overflow-wrap:anywhere}
+#rosterList.roster-cards-mobile .roster-grade-value{display:inline-flex;flex-direction:row;align-items:center;justify-self:end;gap:4px;max-width:100%;padding:0;font-size:.82rem;white-space:nowrap}
+#rosterList.roster-cards-mobile .roster-grade-readable,#rosterList.roster-cards-mobile .roster-grade-value .grade-performance{display:none!important}
+#rosterList.roster-cards-mobile .roster-card-percent{display:inline!important;font:800 .82rem monospace}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Final"]{grid-column:1/-1;grid-template-columns:54px minmax(0,1fr);grid-template-rows:auto auto;min-height:68px;padding:6px!important}
+#rosterList.roster-cards-mobile .roster-card-ring{width:50px;height:50px;border-width:5px;font-size:.88rem}
+#rosterList.roster-cards-mobile .roster-card-final-label{font-size:.58rem}
+[data-theme=dark] #rosterList.roster-cards-mobile .grades-roster-table tbody tr{border:1px solid #47617e;border-radius:12px;background:#17263a;box-shadow:0 3px 9px #0005}
+[data-theme=dark] #rosterList.roster-cards-mobile .grades-roster-table tbody td{border-color:#344e69;background:#17263a;color:#cbdcf2}
+[data-theme=dark] #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Alumno"]{border-color:#344e69;background:#203b5b;color:#f2f6ff;font-size:1rem!important}
+[data-theme=dark] #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-grade-cell{background:#17263a;color:#cbdcf2}
+[data-theme=dark] #rosterList.roster-cards-mobile .roster-grade-value,[data-theme=dark] #rosterList.roster-cards-mobile .roster-card-percent{color:#91b9ec}
+[data-theme=dark] #rosterList.roster-cards-mobile .roster-card-ring{border-color:#294866;color:#f2f6ff}
+@media(max-width:430px){#rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-grade-cell{min-height:32px;padding:4px 7px!important}#rosterList.roster-cards-mobile .roster-grade-value,#rosterList.roster-cards-mobile .roster-card-percent{font-size:.76rem}}
+
 /* Ajustes mobile-first para cabeceras compactas y captura grupal en tres columnas. */
 @media(max-width:700px){
   #rosterCard>.section-title{position:relative;display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;align-items:center;gap:8px 10px;width:100%;font-size:.9rem;line-height:1.15}
@@ -6329,6 +6408,391 @@ html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .r
 [data-theme=dark] .task-activity-delivery.is-delivered{border-color:#3c8562;background:#123329;color:#8dffc0}
 [data-theme=dark] .task-activity-delivery.is-missing{border-color:#94505c;background:#35232b;color:#ffb9b9}
 @media(max-width:700px){.task-history-heading{gap:7px}.task-history-view-toggle{padding:5px 7px;font-size:.64rem}.task-history-cards{grid-template-columns:1fr;gap:9px}.task-activity-students{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:7px}.task-activity-student{grid-template-columns:minmax(0,1fr) auto 21px;padding:4px}.task-activity-student-name{font-size:.61rem}.task-activity-delivery{font-size:.58rem;padding:3px 4px}.task-activity-remove{width:21px;height:21px}}
+
+/* Dark: mismas proporciones y alineación de acciones que Light. */
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody{
+  gap:16px;
+  padding:14px;
+  background:#091626;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody tr{
+  gap:6px;
+  padding:9px;
+  border-color:#47617e;
+  border-radius:12px;
+  background:#17263a;
+  box-shadow:0 3px 9px #0005;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-grade-cell{
+  min-height:30px;
+  padding:3px 7px!important;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-grade-cell::before{
+  font-family:"Space Mono",monospace;
+}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td::before,
+#rosterList.roster-cards-mobile .roster-card-final-label,
+#rosterList.roster-cards-mobile .roster-grade-value,
+#rosterList.roster-cards-mobile .roster-card-percent,
+#rosterList.roster-cards-mobile .roster-card-final .grade-coverage,
+#rosterList.roster-cards-mobile .roster-card-status{
+  font-family:"Space Mono",monospace!important;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-grade-value,
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-percent,
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-final-label,
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-final .grade-coverage,
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-status{
+  font-family:"Space Mono",monospace!important;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions{
+  display:flex;
+  flex-direction:row;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:center;
+  gap:6px;
+  padding:5px 0!important;
+  border:0;
+  background:transparent;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-icon{
+  box-sizing:border-box;
+  width:38px;
+  height:38px;
+  flex:0 0 38px;
+  padding:6px;
+  border-radius:8px;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-icon svg{
+  width:21px;
+  height:21px;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{
+  display:inline-flex;
+  box-sizing:border-box;
+  width:58px;
+  height:38px;
+  min-width:58px;
+  flex:0 0 58px;
+  flex-direction:row;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  padding:4px;
+  border:1.5px solid #e4bb51;
+  border-radius:8px;
+  background:#fffaf0;
+  color:#a47712;
+  font-size:.58rem;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente::after{content:"exp"}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente svg{width:19px;height:19px}
+
+/* Igualar las acciones Dark a la referencia Light: botones pastel en una cuadrícula 2 × 2. */
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions{
+  display:grid!important;
+  grid-template-columns:repeat(2,58px);
+  justify-content:center!important;
+  justify-items:center;
+  align-items:center!important;
+  gap:12px 14px!important;
+  width:100%;
+  padding:8px 0!important;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-icon,
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{
+  box-sizing:border-box;
+  width:58px!important;
+  height:58px!important;
+  min-width:58px!important;
+  flex:0 0 58px!important;
+  border-radius:12px!important;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-icon{
+  padding:8px!important;
+  border-width:2px;
+  box-shadow:0 2px 5px #14334a17;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-icon svg{width:25px!important;height:25px!important}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{
+  display:inline-flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:1px;
+  padding:5px!important;
+  border:2px solid #e4bb51!important;
+  background:linear-gradient(145deg,#fffaf0,#f8edcf)!important;
+  color:#a47712!important;
+  font-size:.57rem!important;
+  line-height:1;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente::after{content:"exp";font-size:.56rem;letter-spacing:.08em}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente svg{width:25px!important;height:25px!important}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-open{border-color:#e4bb51;background:linear-gradient(145deg,#fffaf0,#f8edcf);color:#a47712}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-grade-edit{border-color:#398fd0;background:linear-gradient(145deg,#f1faff,#d8eef9);color:#2478b5}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-edit{border-color:#32a775;background:linear-gradient(145deg,#f3fff8,#d9f1e4);color:#25865c}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-delete{border-color:#db6675;background:linear-gradient(145deg,#fff8f8,#f8e2e4);color:#c34456}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-remove-subject{border-color:#bda3df;background:linear-gradient(145deg,#fcf9ff,#ece1fa);color:#7043a3}
+@media(max-width:390px){
+  [data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions{grid-template-columns:repeat(2,48px);gap:8px 10px!important}
+  [data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-icon,
+  [data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{width:48px!important;height:48px!important;min-width:48px!important;flex-basis:48px!important}
+  [data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-icon svg,
+  [data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente svg{width:21px!important;height:21px!important}
+}
+
+/* Rediseño de contraste exclusivo para las tarjetas de alumnos en Dark. */
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody{
+  background:#071321;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody tr{
+  border:1px solid #476b91;
+  background:#101e31;
+  box-shadow:0 5px 14px #02081399, inset 0 0 0 1px #ffffff08;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td{
+  border-color:#365472;
+  background:#14263c;
+  color:#e3efff;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td::before,
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-final-label{
+  color:#a9c9f4;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Alumno"]{
+  border-color:#537ca6;
+  background:linear-gradient(120deg,#1d4269,#245483);
+  color:#f5f9ff;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Avatar"]{
+  border-color:#c0dcff;
+  background:#102238;
+  box-shadow:0 0 0 3px #4f9de044;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-grade-cell{
+  border-color:#3d6287;
+  background:#0d1b2c;
+  color:#d8eaff;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-grade-value,
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-percent{
+  color:#b9d8ff;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-final{
+  border-color:#4a7198!important;
+  background:linear-gradient(145deg,#142a43,#0e1d30)!important;
+  color:#edf5ff;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-ring{
+  border-color:#4f83b4;
+  background:#10243a;
+  color:#f3f8ff;
+  box-shadow:inset 0 0 0 3px #0b1929;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-progress{background:#304f70}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-progress i{background:linear-gradient(90deg,#49a8ff,#74d6ff)}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-final .grade-coverage{color:#b6cce7}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-status{border-color:#6b9dd1;background:#142a43;color:#c2dcff}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.grade-status-low{
+  border-color:#ff6d7a;
+  background:#54232e;
+  color:#ffd4d8;
+  box-shadow:inset 0 0 0 1px #ff6d7a;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.grade-status-warning{
+  border-color:#f1c65c;
+  background:#51421e;
+  color:#ffecb2;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.grade-status-good{
+  border-color:#5fe096;
+  background:#174831;
+  color:#c5ffda;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.grade-status-perfect{
+  border:2px solid #71ffa2;
+  background:#12643a;
+  color:#effff3;
+  box-shadow:inset 0 0 0 2px #d0ffdc80,0 0 0 2px #62f28b55;
+}
+
+/* Acabado profesional de alto contraste para tarjetas DARK. */
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody{
+  background:#050b14;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody tr{
+  border:1px solid #3a526f;
+  background:#0c1726;
+  box-shadow:0 10px 26px #0009,0 1px 0 #b9d8ff12 inset;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td{
+  border-color:#263c56;
+  background:#111f31;
+  color:#e8f0fb;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td::before,
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-final-label{
+  color:#a9bdd7;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Alumno"]{
+  border-color:#38658e;
+  background:linear-gradient(120deg,#15304c,#1a3b5d);
+  color:#f7faff;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-grade-cell{
+  border-color:#2d4865;
+  background:#0b1522;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-grade-value,
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-percent{
+  color:#d6e8ff;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-final{
+  border-color:#365474!important;
+  background:linear-gradient(145deg,#122239,#0b1522)!important;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-ring{
+  border-color:#3e6b91;
+  background:#0a1726;
+  color:#f7faff;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-progress{background:#263b53}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-progress i{background:linear-gradient(90deg,#39a8ff,#72d4ff)}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-final .grade-coverage{color:#b4c6dc}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.grade-status-low{background:#481d29;color:#ffdce0;border-color:#ff6578}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.grade-status-warning{background:#493817;color:#fff0bd;border-color:#f4c451}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.grade-status-good{background:#123b2a;color:#ceffe0;border-color:#4ee08b}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.grade-status-perfect{background:#08733c;color:#f2fff6;border-color:#75ffa6}
+
+/* Hub compacto basado en el HTML de referencia; estructura común para Light y Dark. */
+#rosterList.roster-cards-mobile .grades-roster-table tbody tr{
+  width:100%;max-width:264px;justify-self:center;align-self:start;gap:8px;margin:0;padding:0;
+  border:1.5px solid var(--line);border-radius:14px;overflow:hidden;
+  background:var(--surface);box-shadow:0 8px 20px #07132126;
+}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Alumno"]{
+  grid-column:1/-1;min-height:52px;padding:0 12px!important;border:0;border-bottom:1.5px solid var(--line);
+  border-radius:0;background:var(--primary-soft);font-size:1rem!important;
+}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Avatar"]{
+  top:8px;right:12px;width:36px!important;height:36px!important;min-width:36px!important;
+  border:2px solid var(--primary);border-radius:50%;background:var(--surface);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 25%,transparent);
+}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Avatar"] .avatar{width:30px!important;height:30px!important;min-width:30px!important}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-grade-cell{
+  grid-column:1/-1;min-height:34px;padding:0 10px!important;border:1.5px solid var(--line);border-radius:9px;
+  background:var(--surface);display:flex;flex-direction:row;justify-content:space-between;align-items:center;
+}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-grade-cell::before{font-size:.58rem;letter-spacing:.1em}
+#rosterList.roster-cards-mobile .roster-grade-value{font-size:.82rem;}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Final"]{
+  grid-column:1/-1;display:grid;grid-template-columns:56px minmax(0,1fr);grid-template-rows:auto auto auto;
+  align-items:center;gap:5px 12px;min-height:82px;padding:10px!important;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);
+}
+#rosterList.roster-cards-mobile .roster-card-final-label{grid-column:2;grid-row:1;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase}
+#rosterList.roster-cards-mobile .roster-card-ring{grid-column:1;grid-row:1/4;width:56px;height:56px;border:0;border-radius:50%;font-size:.88rem}
+#rosterList.roster-cards-mobile .roster-card-progress{grid-column:2;grid-row:2;height:6px;border-radius:99px}
+#rosterList.roster-cards-mobile .roster-card-final .grade-coverage{grid-column:2;grid-row:3;font-size:.58rem;line-height:1.3}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions{
+  grid-column:1/-1;display:grid!important;grid-template-columns:repeat(2,64px);justify-content:center;justify-items:center;gap:12px 16px;padding:0!important;
+  border:0;background:transparent;
+}
+#rosterList.roster-cards-mobile .roster-actions .roster-action-icon,
+#rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{
+  box-sizing:border-box;width:64px!important;min-width:64px!important;height:64px!important;min-height:64px;
+  flex:0 0 64px!important;padding:6px!important;border:2px solid currentColor;border-radius:12px!important;
+}
+#rosterList.roster-cards-mobile .roster-actions .roster-action-icon svg,
+#rosterList.roster-cards-mobile .roster-actions .roster-card-expediente svg{width:24px!important;height:24px!important}
+#rosterList.roster-cards-mobile .roster-actions .roster-action-icon svg{width:28px!important;height:28px!important}
+#rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{flex-direction:column;gap:0;background:var(--surface);font:800 .48rem "Space Mono",monospace}
+#rosterList.roster-cards-mobile .roster-actions .roster-card-expediente::after{content:"EXP";font-size:.45rem}
+#rosterList.roster-cards-mobile .roster-actions .roster-action-open{color:#b27a00}
+#rosterList.roster-cards-mobile .roster-actions .roster-action-grade-edit{color:#1682c4}
+#rosterList.roster-cards-mobile .roster-actions .roster-action-remove-subject{color:#8155c7}
+#rosterList.roster-cards-mobile .roster-actions .roster-action-edit{color:#128257}
+#rosterList.roster-cards-mobile .roster-actions .roster-action-delete{color:#d33b50}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody tr{--surface:#fff;--primary-soft:#d6e8fb;--line:#5c7fae}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody tr{--surface:#0a111d;--primary-soft:#0f2a4a;--line:#3b5c88;background:#0a111d}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Alumno"]{background:#0f2a4a;color:#f5f9ff}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-grade-cell{background:#101a2b}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Final"]{background:#101a2b}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-card-ring{background:transparent;color:#f5f9ff}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-icon{background:#101a2b}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-open{background:#101a2b;color:#ffc93d}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-grade-edit{background:#101a2b;color:#4db3ff}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-remove-subject{background:#101a2b;color:#c19bff}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-edit{background:#101a2b;color:#3df09a}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-delete{background:#101a2b;color:#ff5d70}
+@media(max-width:760px){#rosterList.roster-cards-mobile .grades-roster-table tbody tr{max-width:100%}}
+@media(max-width:390px){
+  #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions{grid-template-columns:repeat(2,58px);gap:9px 12px}
+  #rosterList.roster-cards-mobile .roster-actions .roster-action-icon,
+  #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{width:58px!important;min-width:58px!important;height:58px!important;min-height:58px;flex-basis:58px!important}
+  #rosterList.roster-cards-mobile .roster-actions .roster-action-icon svg{width:25px!important;height:25px!important}
+}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions{
+  display:grid!important;grid-template-columns:repeat(2,64px)!important;justify-content:center!important;justify-items:center!important;
+  align-items:center!important;gap:12px 16px!important;padding:0!important;
+}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .roster-action-icon,
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{
+  box-sizing:border-box;width:64px!important;min-width:64px!important;height:64px!important;min-height:64px!important;
+  flex:0 0 64px!important;border-radius:12px!important;
+}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{flex-direction:column!important;gap:1px!important}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .roster-action-icon svg,
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente svg{width:25px!important;height:25px!important}
+@media(max-width:390px){
+  html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions{grid-template-columns:repeat(2,58px)!important;gap:9px 12px!important}
+  html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .roster-action-icon,
+  html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{width:58px!important;min-width:58px!important;height:58px!important;min-height:58px!important;flex-basis:58px!important}
+}
+/* Igualar escala tipográfica y espacios de Light a Dark, conservando la paleta Light. */
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody tr{gap:8px;padding:0}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Alumno"]{font-size:1rem!important}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-grade-cell{min-height:34px;padding:0 10px!important}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-grade-cell::before{font-size:.58rem;letter-spacing:.1em}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-grade-value{font-size:.82rem}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Final"]{grid-template-columns:56px minmax(0,1fr);grid-template-rows:auto auto auto;gap:5px 12px;min-height:82px;padding:10px!important}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-card-final-label{font-size:.62rem;letter-spacing:.12em}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-card-ring{width:56px;height:56px;border-width:0;font-size:.88rem}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-card-progress{height:6px}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-card-final .grade-coverage{font-size:.58rem;line-height:1.3}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody tr{padding:0 0 10px}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-grade-cell{padding:0 12px!important}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Final"]{padding:12px!important}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions{padding-bottom:4px!important}
+/* Mantener el semáforo de la tabla también en las filas compactas de parámetros. */
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell.grade-status-low{background:#ffe0e0!important;color:#8b1d27!important;border-color:#d84a52!important;box-shadow:inset 0 0 0 1px #d84a52}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell.grade-status-warning{background:#fff0c2!important;color:#704900!important;border-color:#d39a18!important}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell.grade-status-good{background:#d7f1dd!important;color:#155c37!important;border-color:#4a9d63!important}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell.grade-status-perfect{background:#8ee2a3!important;color:#064d27!important;border:2px solid #168343!important;box-shadow:inset 0 0 0 2px #ffffff80,0 0 0 2px #16834330}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell.grade-status-low{background:#481d29!important;color:#ffdce0!important;border-color:#ff6578!important}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell.grade-status-warning{background:#493817!important;color:#fff0bd!important;border-color:#f4c451!important}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell.grade-status-good{background:#123b2a!important;color:#ceffe0!important;border-color:#4ee08b!important}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell.grade-status-perfect{background:#08733c!important;color:#f2fff6!important;border:2px solid #75ffa6!important}
+/* Mayor legibilidad de etiquetas y resultados en las filas de parámetros. */
+#rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell::before{
+  color:#173b55!important;font-size:.64rem!important;font-weight:900!important;letter-spacing:.11em!important;
+}
+#rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell .roster-grade-value{
+  color:inherit!important;font-size:.9rem!important;font-weight:900!important;text-shadow:0 1px 0 #ffffff55;
+}
+#rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell.grade-status-low::before{color:#761d27!important}
+#rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell.grade-status-warning::before{color:#654000!important}
+#rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell.grade-status-good::before{color:#14502f!important}
+#rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell.grade-status-perfect::before{color:#064521!important}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell::before{color:#edf5ff!important}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell .roster-grade-value{
+  color:#ffffff!important;font-weight:900!important;text-shadow:0 0 8px #ffffff35;
+}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell.grade-status-low::before{color:#ffdce0!important}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell.grade-status-warning::before{color:#fff0bd!important}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell.grade-status-good::before{color:#ceffe0!important}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table td.roster-grade-cell.grade-status-perfect::before{color:#f2fff6!important}
 .register-roster .grades-roster-table th:last-child,.register-roster .grades-roster-table td.roster-actions{width:190px;min-width:190px;max-width:190px;box-sizing:border-box;text-align:center}
 .register-roster .grades-roster-table td.roster-actions{display:table-cell;white-space:nowrap!important;padding:8px 6px!important}
 .register-roster .roster-actions{white-space:nowrap!important}
