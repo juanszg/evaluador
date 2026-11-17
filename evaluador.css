@@ -7283,6 +7283,16 @@ html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .r
 [data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;flex-basis:38px!important;padding:2px!important;border-radius:8px!important}
 [data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions{grid-template-columns:repeat(4,38px)!important;grid-auto-flow:column;justify-content:center!important}
 html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions{grid-template-columns:repeat(4,38px)!important;grid-auto-flow:column;justify-content:center!important;gap:8px!important}
+[data-theme="light"] #rosterList.roster-cards-mobile .grades-roster-table tbody{padding:12px!important;border-radius:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--primary-soft) 68%,#d8efff),#cce8f5),repeating-linear-gradient(0deg,#ffffff24 0 1px,transparent 1px 18px),repeating-linear-gradient(90deg,#ffffff24 0 1px,transparent 1px 18px)!important}
+[data-theme="light"] #rosterList.roster-cards-mobile .grades-roster-table tbody tr{padding:5px!important;border-radius:16px!important;box-shadow:0 4px 12px #142c4224}
+.zen-trigger{display:inline-flex!important;align-items:center;justify-content:center;gap:5px;min-width:42px;min-height:38px;padding:6px 9px!important;border:2px solid #1684b4!important;border-radius:8px!important;background:linear-gradient(135deg,#e7f8ff,#cdeafa)!important;color:#075779!important;font:800 .7rem "Arvo",serif!important;box-shadow:0 3px 10px #0c557033}
+.zen-trigger svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.zen-trigger:hover{background:#bce9fb!important;transform:translateY(-1px)}
+[data-theme="dark"] .zen-trigger{border-color:#54d4f5!important;background:linear-gradient(135deg,#123b55,#174a61)!important;color:#dcf8ff!important}
+body.zen-mode::after{content:"";position:fixed;inset:0;z-index:9990;background:#061321b8;backdrop-filter:blur(5px)}
+.zen-active{position:fixed!important;inset:14px!important;z-index:9991!important;width:auto!important;max-width:none!important;max-height:calc(100dvh - 28px)!important;overflow:auto!important;margin:0!important;padding:clamp(16px,3vw,34px)!important;border:3px solid #1684b4!important;border-radius:14px!important;background:var(--surface)!important;box-shadow:0 24px 80px #0009!important}
+[data-theme="dark"] .zen-active{border-color:#54d4f5!important;background:#0b1928!important}
+body.zen-mode{overflow:hidden}
 [data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Avatar"] .avatar.avatar-male{color:#d9f0ff!important;background:#1265a3!important;border:2px solid #55baff!important;box-shadow:0 0 0 3px #319bea55,0 0 14px #168de888!important}
 [data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Avatar"] .avatar.avatar-female{color:#ffe0f4!important;background:#a33277!important;border:2px solid #ff83ce!important;box-shadow:0 0 0 3px #ed62b355,0 0 14px #ed62b388!important}
 .subject-color-apply { width: 100%; min-height: 38px; margin-top: 8px; }
