@@ -732,6 +732,11 @@ function rosterActionButton(action, pupil) {
   return `<button type="button" class="roster-action-icon roster-action-${action}" onclick="${controls.handler}('${esc(pupil.id)}')" title="${esc(controls.label)}" aria-label="${esc(controls.label)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${controls.icon}</svg></button>`;
 }
 
+function rosterGradeActions(pupil, subject, part) {
+  const open = rosterActionButton('open', pupil).replace('roster-action-icon roster-action-open','roster-action-icon roster-action-open roster-card-expediente');
+  return `${open}<button type="button" class="roster-action-icon roster-action-grade-edit" onclick="toggleRosterGradeEdit(this)" title="Editar calificaciones" aria-label="Editar calificaciones de ${esc(pupil.name)}" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16.5-.8 4.3 4.3-.8L19 8.5 15.5 5 4 16.5ZM14 6.5l3.5 3.5"/></svg></button>${rosterActionButton('remove-subject', pupil).replace('removeFromSubject','removeStudentFromSubject').replace(`('${esc(pupil.id)}')`,`('${esc(pupil.id)}','${esc(subject.id)}')`)}<button type="button" class="roster-action-icon roster-action-delete-partial" onclick="deleteStudentPartialGrades('${esc(pupil.id)}','${esc(subject.id)}','${esc(part?.id||'')}')" title="Borrar calificaciones de este parcial" aria-label="Borrar calificaciones de ${esc(pupil.name)} en ${esc(subject.name)} · ${esc(part?.name||'parcial')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m3 4v5m6-5v5"/></svg></button>`;
+}
+
 function renderRosterSearchResults() {
   const box = $('rosterStudentResults');
   if (!box) return;
@@ -800,13 +805,12 @@ function renderRoster() {
         const status = grade === null ? 'no-record' : `grade-cell ${rosterGradeStatus(grade)}`;
         const title = grade === null ? '' : ` title="Aporte ponderado a la calificación del parcial: ${contribution.toFixed(2)} de 10" data-contribution="${contribution.toFixed(2)}"`;
         const cardLabel=normalizeName(param.name)==='participacion'?'Particip.':String(param.name).length>12?`${String(param.name).slice(0,11).trim()}.`:param.name;
-        return `<td class="${status} roster-grade-cell" data-label="${esc(cardLabel)}"${title}><button type="button" class="roster-grade-value" onclick="editRosterGrade('${esc(pupil.id)}','${esc(subject.id)}','${esc(part.id)}','${esc(param.id)}',this)" aria-label="${esc(param.name)}: ${grade === null ? 'sin registro' : grade.toFixed(2)}. Editar calificación">${grade === null ? 'S/R' : `<span class="roster-grade-readable">${grade.toFixed(2)} / 10</span><span class="roster-card-percent">${Math.round(grade*10)}%</span><small class="grade-performance">${contribution.toFixed(2)} / 10</small>`}<span class="roster-grade-hover-edit" aria-hidden="true">✎</span></button></td>`;
+        return `<td class="${status} roster-grade-cell" data-label="${esc(cardLabel)}"${title}><button type="button" class="roster-grade-value" onclick="editRosterGrade('${esc(pupil.id)}','${esc(subject.id)}','${esc(part.id)}','${esc(param.id)}',this)" aria-label="${esc(param.name)}: ${grade === null ? 'sin registro' : grade.toFixed(2)}. Editar calificación">${grade === null ? 'S/R' : `<span class="roster-grade-readable">${grade.toFixed(2)} / 10</span><span class="roster-card-percent">${Math.round(grade*10)}%</span><small class="grade-performance">${contribution.toFixed(1)}% / ${Number(param.weight||0).toFixed(1)}%</small>`}<span class="roster-grade-hover-edit" aria-hidden="true">✎</span></button></td>`;
       }).join('') : '';
       const finalGrade = part ? details?.grade ?? null : subjectFinalGrade(pupil, subject);
       const coverage = part ? `${(details?.registeredWeight || 0).toFixed(1)}% / ${weightTotal.toFixed(1)}% registrado` : 'Promedio de parciales disponibles';
       const progress = part && weightTotal ? Math.min(100,Math.max(0,(details?.registeredWeight||0)/weightTotal*100)) : (finalGrade===null?0:100);
-      const cardFileAction=rosterActionButton('open',pupil).replace('roster-action-icon roster-action-open','roster-action-icon roster-action-open roster-card-expediente');
-      return `<tr><td data-label="Alumno"><b><span class="roster-card-index">${pupilIndex+1}.</span> ${esc(pupil.name)}</b></td><td data-label="Avatar"><button type="button" class="avatar avatar-click ${selectGenderClass(pupil.gender)}" onclick="updateGender('${esc(pupil.id)}')" aria-label="Avatar de ${esc(pupil.name)}">${avatarEmoji(pupil.gender)}</button></td>${cells}<td data-label="Final" class="roster-card-final ${finalGrade === null ? 'no-record' : ''}"><span class="roster-list-final-label">Final</span><span class="roster-card-final-label">Final</span><span class="roster-card-ring">${finalGrade === null ? 'S/R' : finalGrade.toFixed(2)}</span><span class="roster-card-progress"><i style="width:${progress.toFixed(1)}%"></i></span><small class="grade-coverage">${coverage}</small></td><td data-label="Expediente" class="roster-expediente-cell">${rosterActionButton('open', pupil)}</td><td data-label="Acciones" class="roster-actions">${cardFileAction}<button type="button" class="roster-action-icon roster-action-grade-edit" onclick="toggleRosterGradeEdit(this)" title="Activar edición de calificaciones" aria-label="Activar edición de calificaciones de ${esc(pupil.name)}" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 16.5-.8 4.3 4.3-.8L19 8.5 15.5 5 4 16.5ZM14 6.5l3.5 3.5"/></svg></button>${selectedSubjectId ? rosterActionButton('remove-subject', pupil) : ''}${rosterActionButton('edit', pupil)}${rosterActionButton('delete', pupil)}</td></tr>`;
+      return `<tr><td data-label="Alumno"><b><span class="roster-card-index">${pupilIndex+1}.</span> ${esc(pupil.name)}</b></td><td data-label="Avatar"><button type="button" class="avatar avatar-click ${selectGenderClass(pupil.gender)}" onclick="updateGender('${esc(pupil.id)}')" aria-label="Avatar de ${esc(pupil.name)}">${avatarEmoji(pupil.gender)}</button></td>${cells}<td data-label="Final" class="roster-card-final ${finalGrade === null ? 'no-record' : ''}"><span class="roster-list-final-label">Final</span><span class="roster-card-final-label">Final</span><span class="roster-card-ring">${finalGrade === null ? 'S/R' : finalGrade.toFixed(2)}</span><span class="roster-card-progress"><i style="width:${progress.toFixed(1)}%"></i></span><small class="grade-coverage">${coverage}</small></td><td data-label="Expediente" class="roster-expediente-cell">${rosterActionButton('open', pupil)}</td><td data-label="Acciones" class="roster-actions">${rosterGradeActions(pupil,subject,part)}</td></tr>`;
     }).join('');
     const weightLabel = part ? `Ponderación del parcial: ${parameters.map(param => `${param.name} ${Number(param.weight || 0)}%`).join(' + ') || 'Sin parámetros'} = ${weightTotal.toFixed(1)}%` : 'Calificación final del curso';
     return `<section class="subject-grade-group"><h4>${esc(subject.name)} · ${part ? esc(part.name) : 'Calificación final'}</h4><p class="param-hint">${weightLabel}</p><div class="table-wrap roster-table"><table class="grades-roster-table"><thead><tr><th>Alumno</th><th>Avatar</th>${headers}<th>${part ? 'Calificación del parcial' : 'Calificación final'}</th><th>Expediente</th><th>Acciones</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
@@ -837,7 +841,7 @@ function toggleRosterGradeEdit(button) {
   button.title = enabled ? 'Desactivar edición de este alumno' : 'Activar edición de este alumno';
 }
 
-function editRosterGrade(studentId, subjectId, partialId, paramId, sourceButton) {
+async function editRosterGrade(studentId, subjectId, partialId, paramId, sourceButton) {
   if (!sourceButton?.closest('tr')?.classList.contains('roster-grade-edit-mode')) {
     alert('selecciona el icono de edicion para editar la calificación');
     return;
@@ -847,7 +851,7 @@ function editRosterGrade(studentId, subjectId, partialId, paramId, sourceButton)
   const param = part && combinedPartialParams(part, subjectId).find(item => String(item.id) === String(paramId));
   if (!pupil || !part || !param) return toast('No se encontró esa calificación.');
   const current = categoryGrade(pupil, subjectId, part, param);
-  const input = prompt(`Nueva calificación de ${param.name} para ${pupil.name} (0 a 10):`, current === null ? '' : current.toFixed(2));
+  const input = await appPrompt(`Nueva calificación de ${param.name} para ${pupil.name} (0 a 10, o S/R):`, current === null ? '' : current.toFixed(2));
   if (input === null) return;
   const clean = input.trim();
   const value = clean === '' || isNoRecordGrade(clean) ? null : Number(clean);
@@ -1081,8 +1085,9 @@ function removeStudentById(studentId, subjectId, partialId = examConfigPartialId
   renderRoster();
 }
 
-function removeRosterStudent(studentId) {
-  if (!confirm('¿Estás seguro de eliminar al alumno y su expediente?')) return;
+async function removeRosterStudent(studentId) {
+  if (!await appConfirm('¿Eliminar por completo al alumno y su expediente? Esta acción puede deshacerse durante unos segundos.')) return;
+  saveRosterUndoPoint();
   roster = roster.filter(student => student.id !== studentId);
   subjects.forEach(subject => { subject.studentIds = (subject.studentIds || []).filter(id => id !== studentId); });
   students = students.filter(result => result.studentId !== studentId);
@@ -1092,6 +1097,7 @@ function removeRosterStudent(studentId) {
   renderSubjects();
   renderRoster();
   renderAll();
+  toastWithUndo('Alumno y expediente eliminados.');
 }
 
 function createSubject() {

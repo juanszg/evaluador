@@ -5930,6 +5930,56 @@ textarea,
   }
 }
 
+/* Keep the roster printout focused on student information in either layout. */
+@page roster {
+  size: A4 landscape;
+  margin: 8mm
+}
+
+@media print {
+  body.printing-roster #rosterList.roster-cards-mobile {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 auto !important
+  }
+
+  body.printing-roster .roster-expediente-cell,
+  body.printing-roster .roster-actions,
+  body.printing-roster .grades-roster-table thead th:nth-last-child(-n+2) {
+    display: none !important
+  }
+
+  body.printing-roster .roster-action-icon,
+  body.printing-roster .roster-card-expediente {
+    display: none !important
+  }
+
+  body.printing-roster #rosterCard {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important
+  }
+
+  body.printing-roster .subject-grade-group {
+    width: 100% !important;
+    margin: 0 auto 8mm !important
+  }
+
+  body.printing-roster .grades-roster-table {
+    width: 100% !important;
+    margin: 0 auto !important;
+    table-layout: auto;
+    font-size: 8pt
+  }
+
+  body.printing-roster .grades-roster-table th,
+  body.printing-roster .grades-roster-table td {
+    padding: 5px 7px;
+    vertical-align: middle
+  }
+}
+
 .roster-view-actions {
   display: flex;
   align-items: center;
@@ -6750,6 +6800,21 @@ html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .r
   html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .roster-action-icon,
   html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{width:58px!important;min-width:58px!important;height:58px!important;min-height:58px!important;flex-basis:58px!important}
 }
+
+/* Parámetros por materia: encabezado legible y sección plegable tipo modo Zen. */
+#bookConfig>.section-title{font-family:"Anonymous Pro",monospace!important;text-transform:none!important;letter-spacing:.015em;font-size:clamp(1.15rem,2.2vw,1.75rem)}
+#bookConfig.collapsible-target.is-collapsed{min-height:0}
+#bookConfig.collapsible-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#bookConfig .collapse-toggle{flex:none}
+#bookConfig .collapse-toggle::before{content:"◉";font-size:1.05rem;line-height:1;color:currentColor}
+#bookConfig .collapse-toggle .collapse-label{display:none}
+#bookConfig.collapsible-heading{padding-right:4px}
+#bookConfig .collapse-toggle{min-width:40px;min-height:40px;padding:7px}
+#rosterList:not(.roster-cards-mobile) .roster-card-percent{display:none!important}
+.roster-action-delete-partial{border-color:#db6675!important;background:linear-gradient(145deg,#fff8f8,#f8e2e4)!important;color:#c34456!important}
+[data-theme="dark"] .roster-action-delete-partial{border-color:#ff7080!important;background:linear-gradient(145deg,#482630,#321b25)!important;color:#ffc0c7!important}
+.toast-undo-button{margin-left:10px;padding:5px 9px;border:1px solid currentColor;border-radius:5px;background:#fff;color:#075779;font-weight:850;cursor:pointer}
+[data-theme="dark"] .toast-undo-button{background:#12344b;color:#b5f3ff}
 /* Igualar escala tipográfica y espacios de Light a Dark, conservando la paleta Light. */
 html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody tr{gap:8px;padding:0}
 html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Alumno"]{font-size:1rem!important}
@@ -7167,6 +7232,59 @@ html[data-subject-theme] .folder-tabs { border-bottom-color: var(--primary); }
 .subject-color-swatch[data-color="green"] { --swatch: #21894e; }
 .subject-color-swatch[data-color="gray"] { --swatch: #778292; }
 .subject-color-swatch[data-color="red"] { --swatch: #c74652; }
+.subject-color-swatch[data-color="pink"] { --swatch: #d94d91; }
+.subject-color-swatch[data-color="brown"] { --swatch: #8b5a3c; }
+.subject-color-swatch[data-color="royal"] { --swatch: #3158c9; }
+.subject-color-swatch[data-color="teal"] { --swatch: #138b91; }
+.subject-color-swatch[data-color="navy"] { --swatch: #263e68; }
+.subject-color-swatch[data-color="cyan"] { --swatch: #27a9c7; }
+.subject-color-swatches{grid-template-columns:repeat(4,minmax(0,1fr))}
+.evalpro-alert{width:min(440px,calc(100vw - 30px));margin:auto;padding:24px;border:2px solid #1684b4;border-radius:14px;background:linear-gradient(145deg,#f2faff,#d9effa);color:#123c59;box-shadow:0 22px 70px #061a2a88;text-align:center}
+.evalpro-alert::backdrop{background:#061727b8;backdrop-filter:blur(4px)}
+.evalpro-alert-mark{display:grid;place-items:center;width:42px;height:42px;margin:0 auto 10px;border:2px solid #1684b4;border-radius:50%;background:#d4effa;color:#08658d;font:700 1.5rem "Arvo",serif}
+.evalpro-alert h2{margin:0 0 10px;color:#0a5276;font:700 1.35rem "Arvo",serif}
+.evalpro-alert-message{margin:0 0 20px;font:700 1.05rem/1.5 "Anonymous Pro",monospace;overflow-wrap:anywhere}
+.evalpro-alert-ok{min-width:130px;padding:10px 18px;border:2px solid #08769f;border-radius:8px;background:#08769f;color:#fff;font:700 1rem "Arvo",serif;cursor:pointer}
+[data-theme="dark"] .evalpro-alert{border-color:#42c5f0;background:linear-gradient(145deg,#12334b,#0b2033);color:#e7f7ff}
+[data-theme="dark"] .evalpro-alert-mark{border-color:#54d4f5;background:#174562;color:#d7f8ff}
+[data-theme="dark"] .evalpro-alert h2{color:#a8eaff}
+[data-theme="dark"] .evalpro-alert-ok{border-color:#42c5f0;background:#12648a;color:#fff}
+.evalpro-prompt-input{width:100%;min-height:48px;margin:4px 0 18px;padding:10px 12px;border:2px solid #1684b4;border-radius:8px;background:#fff;color:#123c59;font:700 1.1rem "Anonymous Pro",monospace}
+.evalpro-prompt-input:focus{outline:3px solid #49bce955;border-color:#08769f}
+.evalpro-prompt .evalpro-alert-ok{border-color:#16834f;background:linear-gradient(135deg,#25a86b,#12844f);color:#fff}
+[data-theme="dark"] .evalpro-prompt .evalpro-alert-ok{border-color:#40d68a;background:linear-gradient(135deg,#168653,#0d6840);color:#fff}
+.evalpro-prompt-actions{display:flex;justify-content:center;gap:10px}
+.evalpro-confirm .evalpro-alert-mark{border-color:#d34b61;background:#fff0f2;color:#ae2940}
+.evalpro-confirm .evalpro-alert-ok{border-color:#c73b52;background:linear-gradient(135deg,#d94b62,#b92e49);color:#fff}
+[data-theme="dark"] .evalpro-confirm .evalpro-alert-mark{border-color:#ff8290;background:#482630;color:#ffc0c7}
+[data-theme="dark"] .evalpro-confirm .evalpro-alert-ok{border-color:#ff7080;background:linear-gradient(135deg,#b83a50,#84283c);color:#fff}
+.evalpro-prompt-cancel{min-width:110px;padding:10px 16px;border:2px solid #6c91a5;border-radius:8px;background:#e7f2f8;color:#234d65;font:700 1rem "Arvo",serif;cursor:pointer}
+[data-theme="dark"] .evalpro-prompt-input{border-color:#42c5f0;background:#071a2a;color:#f0faff}
+[data-theme="dark"] .evalpro-prompt-cancel{border-color:#4d7892;background:#19354a;color:#e5f7ff}
+/* Tarjetas: reducir el dibujo interno 20% y recuperar espacio alrededor del icono. */
+#rosterList.roster-cards-mobile .roster-actions .roster-action-icon{padding:3px!important}
+#rosterList.roster-cards-mobile .roster-actions .roster-action-icon svg{width:22px!important;height:22px!important}
+#rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{padding:3px!important}
+#rosterList.roster-cards-mobile .roster-actions .roster-card-expediente svg{width:19px!important;height:19px!important}
+@media(max-width:390px){
+  #rosterList.roster-cards-mobile .roster-actions .roster-action-icon svg{width:20px!important;height:20px!important}
+  #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente svg{width:18px!important;height:18px!important}
+}
+#rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions{grid-template-columns:repeat(2,38px)!important;gap:8px 10px!important}
+#rosterList.roster-cards-mobile .roster-actions .roster-action-icon,
+#rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{box-sizing:border-box;width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;flex:0 0 38px!important;padding:2px!important;border-radius:8px!important}
+#rosterList.roster-cards-mobile .roster-actions .roster-action-icon svg{width:20px!important;height:20px!important}
+#rosterList.roster-cards-mobile .roster-actions .roster-card-expediente svg{width:17px!important;height:17px!important}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions{grid-template-columns:repeat(2,38px)!important;gap:8px 10px!important}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .roster-action-icon,
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;flex-basis:38px!important;padding:2px!important;border-radius:8px!important}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions{grid-template-columns:repeat(4,38px)!important;gap:8px!important}
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-action-icon,
+[data-theme="dark"] #rosterList.roster-cards-mobile .roster-actions .roster-card-expediente{width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;flex-basis:38px!important;padding:2px!important;border-radius:8px!important}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions{grid-template-columns:repeat(4,38px)!important;grid-auto-flow:column;justify-content:center!important}
+html:not([data-theme="dark"]) #rosterList.roster-cards-mobile .grades-roster-table tbody td.roster-actions{grid-template-columns:repeat(4,38px)!important;grid-auto-flow:column;justify-content:center!important;gap:8px!important}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Avatar"] .avatar.avatar-male{color:#d9f0ff!important;background:#1265a3!important;border:2px solid #55baff!important;box-shadow:0 0 0 3px #319bea55,0 0 14px #168de888!important}
+[data-theme="dark"] #rosterList.roster-cards-mobile .grades-roster-table tbody td[data-label="Avatar"] .avatar.avatar-female{color:#ffe0f4!important;background:#a33277!important;border:2px solid #ff83ce!important;box-shadow:0 0 0 3px #ed62b355,0 0 14px #ed62b388!important}
 .subject-color-apply { width: 100%; min-height: 38px; margin-top: 8px; }
 .subject-color-apply:disabled { opacity: .55; cursor: not-allowed; }
 .help-guide-form { flex-wrap: wrap; }
@@ -7179,6 +7297,18 @@ html[data-subject-theme] .folder-tabs { border-bottom-color: var(--primary); }
 :root[data-theme="dark"][data-subject-theme="green"] { --primary:#70d394; --primary-soft:#1d3b2a; --accent:#8ce0a8; --green:#77cf94; --green-soft:#203a2a; --orange:#d99970; --orange-soft:#3b2b22; --surface:#17271e; --surface2:#1e3226; --line:#3d694e; }
 :root[data-theme="dark"][data-subject-theme="gray"] { --primary:#b3c0d0; --primary-soft:#293542; --accent:#cad3de; --green:#a8bcaf; --green-soft:#28372f; --orange:#c3a58c; --orange-soft:#3a3028; --surface:#202832; --surface2:#29333e; --line:#4a5867; }
 :root[data-theme="dark"][data-subject-theme="red"] { --primary:#ff8992; --primary-soft:#40262b; --accent:#ffabb1; --green:#c3b78b; --green-soft:#393522; --orange:#e4937b; --orange-soft:#3e2a25; --surface:#2d2023; --surface2:#38272b; --line:#70434a; }
+:root[data-subject-theme="pink"]{--primary:#b83275;--primary-soft:#f8e2ef;--accent:#dc70a8;--green:#43866b;--green-soft:#e5f3ed;--orange:#bd7047;--orange-soft:#f8e9df;--surface:#fff9fc;--surface2:#fbedf5;--line:#e8c5d8}
+:root[data-subject-theme="brown"]{--primary:#805034;--primary-soft:#f1e5db;--accent:#b27a54;--green:#627d53;--green-soft:#e8f0e2;--orange:#b36c38;--orange-soft:#f7e9dc;--surface:#fffaf6;--surface2:#f6ede5;--line:#dfc8b6}
+:root[data-subject-theme="royal"]{--primary:#3158c9;--primary-soft:#e4eaff;--accent:#6585ed;--green:#32805c;--green-soft:#e3f2e9;--orange:#bd7238;--orange-soft:#f8eade;--surface:#f9faff;--surface2:#edf1ff;--line:#c4d0f1}
+:root[data-subject-theme="teal"]{--primary:#087c82;--primary-soft:#def3f1;--accent:#42aaa5;--green:#25835a;--green-soft:#e4f3e9;--orange:#b76b40;--orange-soft:#f8e9df;--surface:#f7fffe;--surface2:#eaf8f6;--line:#bfdfdc}
+:root[data-subject-theme="navy"]{--primary:#29466f;--primary-soft:#e1eaf5;--accent:#6484ad;--green:#367453;--green-soft:#e4f0e8;--orange:#b97743;--orange-soft:#f8eadc;--surface:#f8fbff;--surface2:#edf3fa;--line:#c4d2e3}
+:root[data-subject-theme="cyan"]{--primary:#087d9c;--primary-soft:#ddf3f8;--accent:#3daec7;--green:#278359;--green-soft:#e3f3e9;--orange:#b86b3e;--orange-soft:#f7e9df;--surface:#f7fdff;--surface2:#e9f7fb;--line:#bfdee7}
+:root[data-theme="dark"][data-subject-theme="pink"]{--primary:#f18abd;--primary-soft:#42263a;--accent:#f5a8cf;--green:#8cceaa;--green-soft:#263b30;--orange:#e7a078;--orange-soft:#3e2c25;--surface:#2a1d29;--surface2:#352435;--line:#70435d}
+:root[data-theme="dark"][data-subject-theme="brown"]{--primary:#d8a47d;--primary-soft:#3c2d25;--accent:#e2b28f;--green:#a9c98c;--green-soft:#2c3827;--orange:#e0a06b;--orange-soft:#3b2d23;--surface:#2c241f;--surface2:#382c24;--line:#6a5140}
+:root[data-theme="dark"][data-subject-theme="royal"]{--primary:#91aaff;--primary-soft:#26345d;--accent:#afbdff;--green:#83d6a4;--green-soft:#203b30;--orange:#e7a16b;--orange-soft:#3b2c22;--surface:#1d2340;--surface2:#272d4c;--line:#4b5e9a}
+:root[data-theme="dark"][data-subject-theme="teal"]{--primary:#70d8d2;--primary-soft:#173d40;--accent:#96e4dc;--green:#78d49d;--green-soft:#1e3b2b;--orange:#e4a078;--orange-soft:#3d2b24;--surface:#172b30;--surface2:#20383c;--line:#3c706f}
+:root[data-theme="dark"][data-subject-theme="navy"]{--primary:#a6c9ff;--primary-soft:#233752;--accent:#c0d7ff;--green:#82d6a1;--green-soft:#203b2d;--orange:#e2a276;--orange-soft:#3b2c24;--surface:#182638;--surface2:#213248;--line:#415e7e}
+:root[data-theme="dark"][data-subject-theme="cyan"]{--primary:#74d9f2;--primary-soft:#173b48;--accent:#9beaff;--green:#7bd6a0;--green-soft:#1f3c2e;--orange:#e3a078;--orange-soft:#3b2b23;--surface:#142a35;--surface2:#1b3743;--line:#3b6b7c}
 
 /* Ajuste extra para que el robot y el panel de ayuda respiren en pantallas pequeñas. */
 @media (max-width: 520px) {
