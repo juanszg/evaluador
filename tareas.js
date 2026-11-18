@@ -62,6 +62,80 @@ function renderTaskManager() {
   if (historyTitle) historyTitle.textContent = param ? `${param.name} registrados` : 'Actividades registradas';
   renderTaskManagerHistory();
   renderTaskParameterCount();
+  renderActivityOverview();
+}
+
+function activityOverviewKind(record) {
+  const name = normalizeName(`${record.categoryName || ''} ${record.categoryId || ''}`);
+  if (name.includes('examen')) return 'examen';
+  if (name.includes('cuaderno')) return 'cuaderno';
+  if (name.includes('trabaj')) return 'trabajo';
+  if (name.includes('tarea')) return 'tarea';
+  return 'otros';
+}
+
+function renderActivityOverview() {
+  const results = $('activityOverviewResults');
+  if (!results) return;
+  const subjectSelect = $('activityOverviewSubject');
+  const partialSelect = $('activityOverviewPartial');
+  const oldSubject = subjectSelect.value, oldPartial = partialSelect.value;
+  subjectSelect.innerHTML = '<option value="">Todas las materias</option>' + subjects.map(item => `<option value="${esc(item.id)}">${esc(item.name)}</option>`).join('');
+  partialSelect.innerHTML = '<option value="">Todos los parciales</option>' + academicPartials.map(item => `<option value="${esc(item.id)}">${esc(item.name)}</option>`).join('');
+  subjectSelect.value = subjects.some(item => item.id === oldSubject) ? oldSubject : '';
+  partialSelect.value = academicPartials.some(item => item.id === oldPartial) ? oldPartial : '';
+  const kind = $('activityOverviewCategory').value;
+  const query = normalizeName($('activityOverviewSearch').value);
+  const view = localStorage.getItem('evalpro-activity-overview-view') || 'table';
+  const toggle = $('activityOverviewViewToggle');
+  toggle.textContent = view === 'table' ? 'Vista de tarjetas' : 'Vista de tabla';
+  toggle.setAttribute('aria-pressed', String(view === 'cards'));
+  const subjectsById = new Map(subjects.map(item => [String(item.id), item.name]));
+  const partialsById = new Map(academicPartials.map(item => [String(item.id), item.name]));
+  const entries = [];
+  roster.forEach(student => (student.records || []).forEach(record => {
+    if (record.taskRemoved) return;
+    const category = activityOverviewKind(record);
+    const title = record.title || 'Actividad';
+    const inferredSubject = category === 'examen' ? subjects.find(item => normalizeName(item.name) === normalizeName(title)) : null;
+    const subjectId = String(record.subjectId || inferredSubject?.id || '');
+    const subjectName = record.subjectName || subjectsById.get(subjectId) || (category === 'examen' && inferredSubject ? inferredSubject.name : 'Materia sin especificar');
+    const partialId = String(record.partialId || '');
+    if (subjectSelect.value && subjectId !== subjectSelect.value) return;
+    if (partialSelect.value && partialId !== partialSelect.value) return;
+    if (kind && category !== kind) return;
+    if (query && !normalizeName(`${student.name} ${title} ${subjectName} ${record.categoryName || ''}`).includes(query)) return;
+    const score = Number(record.score), max = Number(record.max);
+    let grade = 'S/R';
+    if (Number.isFinite(score) && Number.isFinite(max) && max > 0) {
+      grade = record.tasksTotal ? `${record.tasksDelivered ?? 0}/${record.tasksTotal}` : record.scoreUnit === 'partial-percent' ? `${score.toFixed(1)}% del parcial` : `${score.toFixed(2)} / ${max.toFixed(2)}`;
+    }
+    entries.push({student:student.name,subject:subjectName,partial:partialsById.get(partialId) || 'Sin parcial',category:record.categoryName || 'Actividad',kind,title,date:record.date || 'Sin fecha',grade,note:record.note || ''});
+  }));
+  entries.sort((a,b)=>a.subject.localeCompare(b.subject,'es')||a.student.localeCompare(b.student,'es')||a.date.localeCompare(b.date,'es')||a.title.localeCompare(b.title,'es'));
+  $('activityOverviewSummary').textContent = `${entries.length} registro(s) · ${new Set(entries.map(item=>item.student)).size} alumno(s) · ${subjectSelect.value ? subjectsById.get(subjectSelect.value) : 'Todas las materias'}`;
+  if (!entries.length) { results.innerHTML = '<div class="empty">No hay actividades que coincidan con estos filtros.</div>'; return; }
+  if (view === 'cards') {
+    results.innerHTML = `<div class="activity-overview-cards">${entries.map(item=>`<article class="activity-overview-item"><header><span class="activity-overview-type type-${item.kind}">${esc(item.category)}</span><time>${esc(item.date)}</time></header><h4>${esc(item.title)}</h4><p class="activity-overview-student">${esc(item.student)}</p><div class="activity-overview-meta"><span>${esc(item.subject)}</span><span>${esc(item.partial)}</span><b>${esc(item.grade)}</b></div>${item.note?`<p class="activity-overview-note">${esc(item.note)}</p>`:''}</article>`).join('')}</div>`;
+  } else {
+    results.innerHTML = `<div class="activity-overview-table-wrap"><table class="activity-overview-table"><thead><tr><th>Alumno</th><th>Materia</th><th>Parcial</th><th>Tipo</th><th>Actividad / evaluación</th><th>Fecha</th><th>Resultado</th><th>Observaciones</th></tr></thead><tbody>${entries.map(item=>`<tr><td>${esc(item.student)}</td><td>${esc(item.subject)}</td><td>${esc(item.partial)}</td><td>${esc(item.category)}</td><td>${esc(item.title)}</td><td>${esc(item.date)}</td><td><b>${esc(item.grade)}</b></td><td>${esc(item.note || '—')}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+}
+
+function toggleActivityOverviewView() {
+  localStorage.setItem('evalpro-activity-overview-view',localStorage.getItem('evalpro-activity-overview-view')==='cards'?'table':'cards');
+  renderActivityOverview();
+}
+
+function printActivityOverview() {
+  const savedView = localStorage.getItem('evalpro-activity-overview-view') || 'table';
+  localStorage.setItem('evalpro-activity-overview-view', 'table');
+  renderActivityOverview();
+  document.body.classList.add('printing-activity-overview');
+  const cleanup=()=>{document.body.classList.remove('printing-activity-overview');localStorage.setItem('evalpro-activity-overview-view',savedView);renderActivityOverview();};
+  window.addEventListener('afterprint',cleanup,{once:true});
+  window.print();
+  setTimeout(cleanup,1500);
 }
 
 function isTaskManagerParam(param) {

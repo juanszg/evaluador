@@ -7829,3 +7829,55 @@ h1, h2, h3, h4, h5, h6, .section-title, .profile-eyebrow, .profile-panel-kicker,
   .zen-active.student-card { width: var(--zen-fit-width, 100vw) !important; height: var(--zen-fit-height, 100dvh) !important; }
   .zen-exit { top: 8px !important; right: 8px !important; }
 }
+
+/* Seguimiento grupal reservado para una futura reactivación. */
+#groupActivityEditor { display: none !important; }
+#panel-activity > .activity-page-title,
+#panel-activity > .activity-page-intro,
+#panel-activity > .edit-zone-heading,
+#panel-activity > .activity-layout { display: none !important; }
+
+.activity-overview-card { width:min(100%,1500px); margin:20px auto; padding:clamp(14px,2vw,24px); }
+.activity-overview-heading { display:flex; align-items:center; justify-content:space-between; gap:18px; padding-bottom:14px; border-bottom:1px solid var(--line); }
+.activity-overview-heading h3 { margin:4px 0; color:var(--primary); }
+.activity-overview-heading p { margin:4px 0 0; }
+.activity-overview-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.activity-overview-filters { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:16px 0 10px; padding:14px; border:1.5px solid var(--line); border-radius:10px; background:var(--surface2); }
+.activity-overview-filters .field { min-width:0; margin:0; }
+.activity-overview-summary { margin:8px 0 12px; color:var(--muted); font-size:.76rem; font-weight:750; }
+.activity-overview-table-wrap { width:100%; overflow:auto; border:1.5px solid var(--line); border-radius:9px; }
+.activity-overview-table { width:100%; min-width:950px; border-collapse:collapse; font-size:.75rem; }
+.activity-overview-table th,.activity-overview-table td { padding:9px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+.activity-overview-table th { position:sticky; top:0; z-index:2; background:var(--primary-soft); color:var(--primary); font-weight:850; }
+.activity-overview-table td b { color:var(--primary); white-space:nowrap; }
+.activity-overview-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr)); gap:12px; }
+.activity-overview-item { min-width:0; padding:13px; border:1.5px solid var(--line); border-radius:10px; background:var(--surface); box-shadow:0 4px 14px #15395714; }
+.activity-overview-item header,.activity-overview-meta { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.activity-overview-item time { color:var(--muted); font-size:.67rem; }
+.activity-overview-type { display:inline-flex; padding:4px 7px; border-radius:5px; background:var(--primary-soft); color:var(--primary); font-size:.66rem; font-weight:850; }
+.activity-overview-type.type-examen { background:#e8e1f6; color:#6944a0; }
+.activity-overview-type.type-tarea { background:#e2f3e9; color:#197346; }
+.activity-overview-type.type-cuaderno { background:#e1eff8; color:#176b92; }
+.activity-overview-type.type-trabajo { background:#fff0df; color:#a45a16; }
+.activity-overview-item h4 { margin:10px 0 3px; color:var(--ink); font-size:.9rem; overflow-wrap:anywhere; }
+.activity-overview-student { margin:0 0 10px; color:var(--primary); font-weight:850; }
+.activity-overview-meta { flex-wrap:wrap; padding-top:8px; border-top:1px solid var(--line); font-size:.69rem; }
+.activity-overview-meta b { color:var(--green); font-family:"Space Mono",monospace; }
+.activity-overview-note { margin:8px 0 0; color:var(--muted); font-size:.68rem; overflow-wrap:anywhere; }
+[data-theme="dark"] .activity-overview-item { box-shadow:0 5px 18px #0004; }
+[data-theme="dark"] .activity-overview-type.type-examen { background:#30244b; color:#d8c2ff; }
+[data-theme="dark"] .activity-overview-type.type-tarea { background:#123a2d; color:#9af0b7; }
+[data-theme="dark"] .activity-overview-type.type-cuaderno { background:#14354b; color:#9cddff; }
+[data-theme="dark"] .activity-overview-type.type-trabajo { background:#49301c; color:#ffd09b; }
+@media(max-width:850px) { .activity-overview-filters { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:600px) { .activity-overview-card { width:100%; padding:12px 9px; } .activity-overview-heading { align-items:flex-start; flex-direction:column; gap:10px; } .activity-overview-actions { width:100%; } .activity-overview-actions .btn { flex:1; } .activity-overview-filters { grid-template-columns:1fr; gap:8px; padding:10px; } }
+@media print {
+  body.printing-activity-overview { background:#fff!important; color:#152d3c!important; }
+  body.printing-activity-overview > header,body.printing-activity-overview > main > .folder-tabs,body.printing-activity-overview > main > .tab-panel:not(#panel-book),body.printing-activity-overview #helpGuide { display:none!important; }
+  body.printing-activity-overview > main,body.printing-activity-overview #panel-book { display:block!important; width:100%!important; max-width:none!important; margin:0!important; padding:0!important; }
+  body.printing-activity-overview #panel-book > :not(#activityOverview),body.printing-activity-overview #activityOverview .no-print { display:none!important; }
+  body.printing-activity-overview #activityOverview,body.printing-activity-overview #activityOverview[hidden] { display:block!important; width:100%!important; margin:0!important; padding:0!important; border:0!important; box-shadow:none!important; }
+  body.printing-activity-overview .activity-overview-table-wrap { overflow:visible!important; border:0!important; }
+  body.printing-activity-overview .activity-overview-table { min-width:0!important; font-size:7pt!important; }
+  body.printing-activity-overview .activity-overview-table th,body.printing-activity-overview .activity-overview-table td { position:static!important; padding:4px!important; color:#18394d!important; border:1px solid #b8c9d3!important; white-space:normal!important; }
+}

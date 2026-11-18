@@ -2,7 +2,7 @@
 const defaultParams=[{name:'Teoría',weight:70,max:16},{name:'Ejercicios',weight:30,max:9}];
 const defaultBookParams=[{id:'tareas',name:'Tareas',weight:30},{id:'trabajos',name:'Trabajos',weight:25},{id:'examenes',name:'Exámenes',weight:25},{id:'participacion',name:'Participación',weight:10},{id:'cuaderno',name:'Cuaderno',weight:10}];
 function readStore(key,fallback){try{const value=JSON.parse(localStorage.getItem(key));return value??fallback}catch{return fallback}}
-function writeStore(key,value){try{localStorage.setItem(key,JSON.stringify(value))}catch{toast('No se pudo guardar. Revisa el espacio disponible del navegador.')}}
+function writeStore(key,value){try{localStorage.setItem(key,JSON.stringify(value));if(typeof renderActivityOverview==='function')renderActivityOverview()}catch{toast('No se pudo guardar. Revisa el espacio disponible del navegador.')}}
 function isNoRecordGrade(value){return ['sr','s/r','sinregistro'].includes(String(value??'').trim().toLowerCase().replace(/\s+/g,''))}
 let params=readStore('evalpro-exam-params-v1',defaultParams.map(p=>({...p}))),students=readStore('evalpro-exam-students-v1',[]),barChart=null,doughnutChart=null;
 let roster=readStore('evalpro-roster-v1',[]),bookParams=readStore('evalpro-book-params-v1',defaultBookParams.map(p=>({...p}))),selectedStudentId=null;
