@@ -1,5 +1,20 @@
 // Integra el examen y las actividades del cuaderno en una sola ponderación por materia y parcial.
 var examConfigPartialId = '';
+function appSuccess(message) {
+  let dialog = $('evalproSuccessDialog');
+  if (!dialog) {
+    dialog = document.createElement('dialog');
+    dialog.id = 'evalproSuccessDialog';
+    dialog.className = 'evalpro-alert evalpro-success';
+    dialog.innerHTML = '<div class="evalpro-alert-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.2 4.2L19 7"/></svg></div><h2>¡Registro completado!</h2><p class="evalpro-alert-message"></p><button type="button" class="evalpro-alert-ok">Continuar</button>';
+    document.body.append(dialog);
+    dialog.querySelector('button').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+  }
+  dialog.querySelector('.evalpro-alert-message').textContent = String(message);
+  dialog.showModal();
+}
+
 function renderNewStudentSubjectOptions() {
   const select = $('newStudentSubject');
   if (!select) return;
@@ -37,10 +52,10 @@ function registerStudentToSubject() {
   const avatar = $('newStudentAvatar');
   if (avatar) { avatar.className = 'avatar avatar-picker avatar-neutral'; avatar.textContent = avatarEmoji(registrationGender); }
   const message = alreadyEnrolled
-    ? `${pupil.name} ya estaba inscrito en ${subject.name}.`
-    : `${existing ? 'Alumno existente agregado' : 'Alumno registrado'}: ${pupil.name} · ${subject.name}.`;
+    ? `${pupil.name} ya estaba asignado a la materia ${subject.name}.`
+    : `Alumno ${pupil.name} asignado a la materia ${subject.name}.`;
   if (feedback) feedback.textContent = message;
-  toast(message);
+  appSuccess(message);
 }
 
 function examConfigKey(subjectId = examConfigSubjectId, partialId = examConfigPartialId) {

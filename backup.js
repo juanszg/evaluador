@@ -1,6 +1,7 @@
 // Respaldo portable de los datos locales de EvalPro.
 let profileSubjectBarChart = null;
 let profileEnrollmentPieChart = null;
+let pendingTeacherAvatar = undefined;
 const BACKUP_KEYS = {
   roster: 'evalpro-roster-v1',
   subjects: 'evalpro-subjects-v1',
@@ -42,11 +43,16 @@ function renderTeacherWelcome() {
   if (!message) return;
   let profile = { name: '' };
   try {
-    profile = JSON.parse(localStorage.getItem(BACKUP_KEYS.teacherProfile) || '{"name":""}') || profile;
+    profile = JSON.parse(localStorage.getItem(BACKUP_KEYS.teacherProfile) || '{"name":"","avatar":""}') || profile;
   } catch { /* Usa el saludo genérico si el perfil guardado está dañado. */ }
   const name = typeof profile.name === 'string' ? profile.name.trim() : '';
   if (input && input !== document.activeElement && input.value !== name) input.value = name;
   if (title) title.textContent = name || 'Mi perfil';
+  const avatarImage = document.getElementById('teacherProfileAvatarImage');
+  const avatarBox = document.getElementById('teacherProfileAvatar');
+  const avatar = pendingTeacherAvatar === undefined ? (typeof profile.avatar === 'string' ? profile.avatar : '') : pendingTeacherAvatar;
+  if (avatarImage) { avatarImage.src = avatar; avatarImage.hidden = !avatar; }
+  if (avatarBox) avatarBox.classList.toggle('has-image', Boolean(avatar));
   const hour = new Date().getHours();
   const period = hour < 12 ? 'morning' : hour < 19 ? 'afternoon' : 'evening';
   const phrases = {
@@ -91,18 +97,73 @@ document.getElementById('teacherProfileForm')?.addEventListener('submit', event 
   const input = document.getElementById('teacherNameInput');
   const name = input?.value.trim() || '';
   try {
-    localStorage.setItem(BACKUP_KEYS.teacherProfile, JSON.stringify({ name }));
+    let currentProfile = {};
+    try { currentProfile = JSON.parse(localStorage.getItem(BACKUP_KEYS.teacherProfile) || '{}') || {}; } catch { /* Reemplaza un perfil inválido. */ }
+    const avatar = pendingTeacherAvatar === undefined ? (currentProfile.avatar || '') : pendingTeacherAvatar;
+    localStorage.setItem(BACKUP_KEYS.teacherProfile, JSON.stringify({ name, avatar }));
+    pendingTeacherAvatar = undefined;
     renderTeacherWelcome();
     const settings = document.getElementById('teacherProfileSettings');
     const toggle = document.getElementById('teacherSettingsToggle');
     if (settings) settings.hidden = true;
     toggle?.setAttribute('aria-expanded', 'false');
-    toast(name ? 'Nombre de docente guardado.' : 'Se quitó el nombre de docente.');
+    toast(name ? 'Perfil docente guardado.' : 'Se quitó el nombre de docente.');
   } catch (error) {
     console.error('No se pudo guardar el perfil docente:', error);
     toast('No se pudo guardar el nombre. Revisa el espacio del navegador.');
   }
 });
+
+async function prepareTeacherAvatar(file) {
+  if (!file || !file.type.startsWith('image/')) throw new Error('Selecciona un archivo de imagen válido.');
+  if (file.size > 12 * 1024 * 1024) throw new Error('La imagen debe pesar menos de 12 MB.');
+  let bitmap, objectUrl = '';
+  if (typeof createImageBitmap === 'function') bitmap = await createImageBitmap(file);
+  else {
+    objectUrl = URL.createObjectURL(file);
+    bitmap = await new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error('No se pudo abrir esta imagen.'));
+      image.src = objectUrl;
+    });
+  }
+  try {
+    const side = Math.min(bitmap.width, bitmap.height);
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 360;
+    const context = canvas.getContext('2d');
+    context.drawImage(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, 360, 360);
+    let image = canvas.toDataURL('image/webp', .84);
+    if (!image.startsWith('data:image/webp')) image = canvas.toDataURL('image/jpeg', .86);
+    return image;
+  } finally { bitmap.close?.(); if (objectUrl) URL.revokeObjectURL(objectUrl); }
+}
+
+document.getElementById('teacherAvatarInput')?.addEventListener('change', async event => {
+  const fileInput = event.currentTarget;
+  const file = fileInput.files?.[0];
+  if (!file) return;
+  const status = document.getElementById('teacherAvatarStatus');
+  try {
+    pendingTeacherAvatar = await prepareTeacherAvatar(file);
+    renderTeacherWelcome();
+    if (status) status.textContent = 'Imagen lista. Pulsa “Guardar perfil” para conservarla.';
+  } catch (error) {
+    fileInput.value = '';
+    if (status) status.textContent = error.message || 'No se pudo procesar la imagen.';
+    toast(error.message || 'No se pudo procesar la imagen.');
+  }
+});
+
+window.clearTeacherProfileImage = function () {
+  pendingTeacherAvatar = '';
+  renderTeacherWelcome();
+  const input = document.getElementById('teacherAvatarInput');
+  const status = document.getElementById('teacherAvatarStatus');
+  if (input) input.value = '';
+  if (status) status.textContent = 'Se quitará la imagen al guardar el perfil.';
+};
 
 function buildBackupEnvelope(data = readBackupData(), exportedAt = new Date().toISOString()) {
   return { app: 'EvalPro', schemaVersion: 1, exportedAt, data };

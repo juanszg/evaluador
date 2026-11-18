@@ -16,7 +16,7 @@
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
-    <link rel="stylesheet" href="evaluador.css?v=149">
+    <link rel="stylesheet" href="evaluador.css?v=153">
     <link rel="icon" href="icons/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/evalpro-icon-192.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
@@ -42,7 +42,7 @@
         <div id="panel-profile" class="tab-panel">
             <div class="profile-page">
                 <section class="profile-hero">
-                    <div class="profile-hero-copy"><span class="profile-eyebrow">PANEL DOCENTE · CICLO ESCOLAR</span><div class="profile-title-row"><h2 id="teacherNameTitle">Mi perfil</h2><button id="teacherSettingsToggle" class="teacher-settings-toggle" type="button" aria-label="Configuración del perfil" title="Configuración del perfil" aria-expanded="false" aria-controls="teacherProfileSettings" onclick="toggleTeacherSettings()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4.1 12 2.4l2 1.7 2.4-.9.8 2.6 2.6 1-.9 2.6L21 12l-2.1 2.6.9 2.6-2.6 1-.8 2.6-2.4-.9-2 1.7-2-1.7-2.4.9-.8-2.6-2.6-1 .9-2.6L3 12l2.1-2.6-.9-2.6 2.6-1 .8-2.6z"/><circle cx="12" cy="12" r="3.2"/></svg></button></div><p id="profileWelcomeMessage" class="profile-welcome-message" aria-live="polite">¡Bienvenido! Un vistazo al avance de tus grupos, materias y actividades del semestre.</p><div id="teacherProfileSettings" class="teacher-profile-settings" hidden><strong>Configuración del perfil</strong><form id="teacherProfileForm" class="teacher-profile-form"><label for="teacherNameInput">Nombre de docente</label><div class="teacher-profile-controls"><input id="teacherNameInput" type="text" maxlength="70" autocomplete="name" placeholder="Escribe tu nombre"><button class="btn btn-primary" type="submit">Guardar nombre</button></div></form></div></div>
+                    <div class="profile-hero-copy"><span class="profile-eyebrow">PANEL DOCENTE · CICLO ESCOLAR</span><div class="profile-title-row"><span id="teacherProfileAvatar" class="teacher-profile-avatar" aria-label="Imagen de perfil"><span class="teacher-profile-avatar-fallback" aria-hidden="true">👤</span><img id="teacherProfileAvatarImage" alt="Imagen de perfil" hidden></span><h2 id="teacherNameTitle">Mi perfil</h2><button id="teacherSettingsToggle" class="teacher-settings-toggle" type="button" aria-label="Configuración del perfil" title="Configuración del perfil" aria-expanded="false" aria-controls="teacherProfileSettings" onclick="toggleTeacherSettings()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4.1 12 2.4l2 1.7 2.4-.9.8 2.6 2.6 1-.9 2.6L21 12l-2.1 2.6.9 2.6-2.6 1-.8 2.6-2.4-.9-2 1.7-2-1.7-2.4.9-.8-2.6-2.6-1 .9-2.6L3 12l2.1-2.6-.9-2.6 2.6-1 .8-2.6z"/><circle cx="12" cy="12" r="3.2"/></svg></button></div><p id="profileWelcomeMessage" class="profile-welcome-message" aria-live="polite">¡Bienvenido! Un vistazo al avance de tus grupos, materias y actividades del semestre.</p><div id="teacherProfileSettings" class="teacher-profile-settings" hidden><strong>Configuración del perfil</strong><form id="teacherProfileForm" class="teacher-profile-form"><label for="teacherNameInput">Nombre de docente</label><div class="teacher-profile-controls"><input id="teacherNameInput" type="text" maxlength="70" autocomplete="name" placeholder="Escribe tu nombre"><button class="btn btn-primary" type="submit">Guardar perfil</button></div><div class="teacher-avatar-settings"><div><label for="teacherAvatarInput">Imagen de perfil</label><small>Sube una foto, icono o imagen con emoji (PNG, JPG o WEBP).</small></div><input id="teacherAvatarInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/*"><button type="button" id="teacherAvatarRemove" class="btn btn-sm" onclick="clearTeacherProfileImage()">Quitar imagen</button></div><p id="teacherAvatarStatus" class="teacher-avatar-status" aria-live="polite"></p></form></div></div>
                     <div class="profile-save-actions"><span id="profileLastSaved" class="profile-save-status">Aún no hay copias guardadas</span><button class="btn btn-green profile-save-button" type="button" onclick="saveBackupSnapshot()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h12l4 4v14H3V3z"/><path d="M7 3v6h10V3M7 21v-7h10v7"/><circle cx="12" cy="17.5" r="1.1"/></svg>Guardar datos</button><button class="btn profile-print-button no-print" type="button" onclick="printProfile()" aria-label="Imprimir resumen del perfil"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7zM17 11h.01"/></svg><span>Imprimir resumen</span></button></div>
                 </section>
                 <div class="profile-bento">
@@ -462,9 +462,9 @@
     <script src="evaluador.js?v=43" defer></script>
     <script src="filtros.js?v=16" defer></script>
     <script src="parciales.js?v=19" defer></script>
-    <script src="calificaciones.js?v=47" defer></script>
-    <script src="tareas.js?v=15" defer></script>
-    <script src="backup.js?v=13" defer></script>
+    <script src="calificaciones.js?v=48" defer></script>
+    <script src="tareas.js?v=16" defer></script>
+    <script src="backup.js?v=14" defer></script>
     <script src="guia.js?v=14" defer></script>
 </body>
 
