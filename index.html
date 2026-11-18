@@ -12,11 +12,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Alata&family=Arvo:wght@400;700&family=Anonymous+Pro:wght@400;700&family=Nunito:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Alata&family=Arvo:wght@400;700&family=Anonymous+Pro:wght@400;700&family=Lato:wght@400;700;900&family=Nunito:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
-    <link rel="stylesheet" href="evaluador.css?v=136">
+    <link rel="stylesheet" href="evaluador.css?v=146">
     <link rel="icon" href="icons/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/evalpro-icon-192.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
@@ -230,30 +230,6 @@
                             onclick="assignMemberToSubject()">＋ Asignar a materia</button></div>
                 </div>
             </section>
-            <div class="book-columns">
-
-                <section id="bookConfig" class="card book-config">
-                    <h3 class="section-title">Parámetros por materia y parcial</h3>
-                    <p class="param-hint">Los pesos de los parámetros configurados, incluido el examen si lo nombraste
-                        así, deben sumar 100% por parcial.</p>
-                    <div class="partial-controls">
-                        <div class="config-control-group config-subject-group"><div class="field"><label for="configSubject">Materia que estás configurando</label><select
-                                id="configSubject" onchange="selectConfigSubject(this.value); applySubjectTheme(this.value)"></select></div><button type="button" class="config-icon-action config-icon-danger" onclick="deleteConfiguredSubject()" title="Eliminar materia" aria-label="Eliminar materia"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m3 4v5m6-5v5"/></svg></button></div>
-                        <div class="config-control-group config-partial-group"><div class="field"><label for="partialSelector">Parcial que estás configurando</label><select
-                                id="partialSelector" onchange="selectPartial(this.value)"></select></div><button type="button" class="config-icon-action" onclick="editConfiguredPartial()" title="Editar nombre del parcial" aria-label="Editar nombre del parcial"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16.5-.8 4.3 4.3-.8L19 8.5 15.5 5 4 16.5ZM14 6.5l3.5 3.5"/></svg></button><button type="button" class="config-icon-action config-icon-danger" onclick="deleteConfiguredPartial()" title="Eliminar parcial" aria-label="Eliminar parcial"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m3 4v5m6-5v5"/></svg></button></div>
-                        <div class="config-control-group config-create-partial-group"><div class="field"><label for="newPartialName">Crear parcial</label><input id="newPartialName"
-                                placeholder="Ej. Parcial 2"></div><button class="btn btn-primary config-create-partial" type="button"
-                            onclick="createPartial()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Crear</span></button></div>
-                    </div>
-                    <div id="bookParams" class="param-list"></div>
-                    <div class="btn-group"><button class="btn btn-orange" onclick="addBookParam()">＋ Agregar
-                            parámetro</button><button class="btn btn-primary" onclick="saveBookParams()">Guardar
-                            parámetros</button></div>
-                    <p id="bookWeightHint" class="param-hint" aria-live="polite" role="status"></p>
-                </section>
-            </div>
-
-
             <section id="taskManager" class="card task-manager-card">
                 <header class="task-manager-heading">
                     <span class="task-manager-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3.5h8l4 4V20H5V3.5h2Z"/><path d="M14 3.5V8h5M8 13h8M8 16.5h8"/></svg></span>
@@ -353,6 +329,18 @@
                 </section>
                 <aside id="partialInfo" class="partial-info" aria-live="polite"></aside>
             </div>
+            <section id="bookConfig" class="card book-config">
+                <h3 class="section-title">Parámetros por materia y parcial</h3>
+                <p class="param-hint">Los pesos de los parámetros configurados, incluido el examen si lo nombraste así, deben sumar 100% por parcial.</p>
+                <div class="partial-controls">
+                    <div class="config-control-group config-subject-group"><div class="field"><label for="configSubject">Materia que estás configurando</label><select id="configSubject" onchange="selectConfigSubject(this.value); applySubjectTheme(this.value)"></select></div><button type="button" class="config-icon-action config-icon-danger" onclick="deleteConfiguredSubject()" title="Eliminar materia" aria-label="Eliminar materia"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m3 4v5m6-5v5"/></svg></button></div>
+                    <div class="config-control-group config-partial-group"><div class="field"><label for="partialSelector">Parcial que estás configurando</label><select id="partialSelector" onchange="selectPartial(this.value)"></select></div><button type="button" class="config-icon-action" onclick="editConfiguredPartial()" title="Editar nombre del parcial" aria-label="Editar nombre del parcial"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16.5-.8 4.3 4.3-.8L19 8.5 15.5 5 4 16.5ZM14 6.5l3.5 3.5"/></svg></button><button type="button" class="config-icon-action config-icon-danger" onclick="deleteConfiguredPartial()" title="Eliminar parcial" aria-label="Eliminar parcial"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-.8 13H6.8L6 7m3 4v5m6-5v5"/></svg></button></div>
+                    <div class="config-control-group config-create-partial-group"><div class="field"><label for="newPartialName">Crear parcial</label><input id="newPartialName" placeholder="Ej. Parcial 2"></div><button class="btn btn-primary config-create-partial" type="button" onclick="createPartial()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Crear</span></button></div>
+                </div>
+                <div id="bookParams" class="param-list"></div>
+                <div class="btn-group"><button class="btn btn-orange" onclick="addBookParam()">＋ Agregar parámetro</button><button class="btn btn-primary" onclick="saveBookParams()">Guardar parámetros</button></div>
+                <p id="bookWeightHint" class="param-hint" aria-live="polite" role="status"></p>
+            </section>
         </div>
         <div id="panel-records" class="tab-panel" hidden>
             <h2 class="section-title">Expedientes</h2>
@@ -458,13 +446,13 @@
             <img src="icons/guia-robot-144.png" alt="" aria-hidden="true" width="43" height="43">
         </button>
     </div>
-    <script src="evaluador.js?v=37" defer></script>
-    <script src="filtros.js?v=14" defer></script>
+    <script src="evaluador.js?v=42" defer></script>
+    <script src="filtros.js?v=16" defer></script>
     <script src="parciales.js?v=18" defer></script>
     <script src="calificaciones.js?v=47" defer></script>
-    <script src="tareas.js?v=11" defer></script>
-    <script src="backup.js?v=12" defer></script>
-    <script src="guia.js?v=12" defer></script>
+    <script src="tareas.js?v=14" defer></script>
+    <script src="backup.js?v=13" defer></script>
+    <script src="guia.js?v=14" defer></script>
 </body>
 
 </html>

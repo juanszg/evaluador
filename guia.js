@@ -12,7 +12,7 @@
         backup: { tab: 'profile', target: '.profile-panel-backups', focus: '.profile-save-button', message: 'En “Mi perfil” puedes crear una copia con “Guardar datos”. Para llevarla a otro navegador, usa “Exportar”; para recuperarla, “Cargar” y selecciona el archivo JSON.' },
         profile: { tab: 'profile', target: '#panel-profile', message: 'Este es tu resumen docente: materias, inscripciones, promedios, tareas y avance de los parciales.' },
         roster: { tab: 'register', target: '#rosterCard', focus: '#rosterSubject', message: 'La lista está en “Registrar alumnos”. Elige una materia para ver su grupo, filtra u ordena los alumnos y usa los controles de cada fila para abrir o editar su expediente.' },
-        config: { tab: 'book', target: '#bookConfig', focus: '#configSubject', message: 'En “Cuaderno y seguimiento”, abre “Parámetros por materia y parcial”. Elige la materia y el parcial, ajusta los porcentajes y aplica la configuración.' },
+        config: { tab: 'activity', target: '#bookConfig', focus: '#configSubject', message: 'En “Registro de actividad”, abre “Parámetros por materia y parcial”. Elige la materia y el parcial, ajusta los porcentajes y aplica la configuración.' },
         help: { message: 'Puedo guiarte para crear alumnos o materias, registrar calificaciones, administrar tareas, revisar expedientes y guardar tus datos. También puedes escribir tu duda con tus propias palabras.' }
     };
 
@@ -51,7 +51,7 @@
 
     function openSubjectRoute(subject, part, intent) {
         const isConfig = intent === 'config';
-        const tabName = isConfig ? 'book' : 'register';
+        const tabName = isConfig ? 'activity' : 'register';
         const targetSelector = isConfig ? '#bookConfig' : '#rosterCard';
         const tab = document.querySelector(`.folder-tab[data-tab="${tabName}"]`);
         if (tab) tab.click();

@@ -156,11 +156,13 @@ function saveBackupSnapshot() {
     // The downloaded JSON remains a portable backup even if local browser storage is full.
     downloadBackupEnvelope(backup, snapshot?.filename || `evalpro-respaldo-${savedAt.slice(0, 19).replace(/[:.]/g, '-')}.json`);
     renderBackupHistory();
+    const savedDate = new Date(savedAt);
+    const dateLabel = new Intl.DateTimeFormat('es-MX', {day:'2-digit',month:'short',year:'numeric'}).format(savedDate).replace(/\./g,'');
+    const timeLabel = new Intl.DateTimeFormat('es-MX', {hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(savedDate);
+    const message = `Respaldo ${dateLabel} · ${timeLabel} con éxito`;
     const status = document.getElementById('profileLastSaved');
-    if (status) status.textContent = `Último guardado: ${new Date(savedAt).toLocaleString('es-MX')}`;
-    toast(snapshot
-      ? 'Datos guardados en el historial y descargados como archivo JSON.'
-      : 'Se descargó el respaldo; libera espacio del navegador para guardarlo en el historial.');
+    if (status) status.textContent = message;
+    toast(snapshot ? `${message}. JSON descargado y guardado en el historial.` : `${message}. JSON descargado; no se pudo añadir al historial local.`);
   } catch (error) {
     console.error('No se pudo guardar el respaldo:', error);
     toast('No se pudo crear el respaldo. Revisa el almacenamiento del navegador.');
